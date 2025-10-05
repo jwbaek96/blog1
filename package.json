@@ -1,0 +1,45 @@
+{
+  "name": "google-sheets-blog",
+  "version": "1.0.0",
+  "description": "A serverless blog system powered by Google Sheets and vanilla JavaScript",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve .",
+    "dev": "python -m http.server 8000",
+    "build": "echo 'No build process needed for static site'",
+    "test": "echo 'No tests specified'",
+    "lint": "echo 'Run manual code review'",
+    "deploy": "echo 'Push to GitHub for automatic deployment'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jwbaek96/blog1.git"
+  },
+  "keywords": [
+    "blog",
+    "google-sheets",
+    "serverless",
+    "vanilla-javascript",
+    "static-site",
+    "github-pages",
+    "cms",
+    "rich-text-editor"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jwbaek96/blog1/issues"
+  },
+  "homepage": "https://jwbaek96.github.io/blog1/",
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

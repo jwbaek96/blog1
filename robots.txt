@@ -1,0 +1,23 @@
+# robots.txt for Google Sheets Blog
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://jwbaek96.github.io/blog1/sitemap.xml
+
+# Disallow caching and config directories
+Disallow: /js/config.js
+Disallow: /.git/
+Disallow: /apps-script/
+
+# Allow all other content
+Allow: /css/
+Allow: /js/
+Allow: /images/
+Allow: *.html
+Allow: *.css
+Allow: *.js
+
+# Crawl delay
+Crawl-delay: 1
