@@ -7,7 +7,6 @@ class BlogApp {
         this.currentPage = 1;
         this.postsPerPage = CONFIG.POSTS_PER_PAGE;
         this.currentTag = getUrlParameter('tag') || '';
-        this.currentQuery = getUrlParameter('q') || '';
         this.isLoading = false;
         
         this.init();
@@ -25,6 +24,12 @@ class BlogApp {
         try {
             await this.loadPosts();
             this.renderPage();
+            
+            // Check if there's a post in URL
+            const postId = getUrlParameter('post');
+            if (postId) {
+                this.openPostDetail(postId);
+            }
         } catch (error) {
             console.error('❌ Blog initialization error:', error);
             this.showError('블로그를 초기화하는데 실패했습니다.');
@@ -36,12 +41,24 @@ class BlogApp {
      */
     async loadPosts() {
         try {
+            console.log('📡 Fetching posts from Google Sheets...');
             this.allPosts = await window.SheetsAPI.fetchPosts();
             this.filterPosts();
             console.log(`✅ Loaded ${this.allPosts.length} posts`);
+            
+            // Debug: Show first few posts
+            if (this.allPosts.length > 0) {
+                console.log('📋 Loaded posts:', this.allPosts.slice(0, 3).map(p => ({
+                    id: p.id,
+                    title: p.title,
+                    idType: typeof p.id
+                })));
+            } else {
+                console.warn('⚠️ No posts loaded! Check Google Sheets configuration.');
+            }
         } catch (error) {
             console.error('❌ Error loading posts:', error);
-            throw new Error('포스트를 불러오는데 실패했습니다');
+            console.log('⚠️ Failed to load posts. Please check your Google Sheets configuration.');
         }
     }
 
@@ -56,11 +73,6 @@ class BlogApp {
             filteredPosts = window.SheetsAPI.filterByTag(filteredPosts, this.currentTag);
         }
 
-        // Filter by search query
-        if (this.currentQuery) {
-            filteredPosts = window.SheetsAPI.searchPosts(filteredPosts, this.currentQuery);
-        }
-
         this.posts = filteredPosts;
         this.currentPage = 1; // Reset to first page
     }
@@ -69,54 +81,20 @@ class BlogApp {
      * Setup event listeners
      */
     setupEventListeners() {
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        const searchBtn = document.getElementById('searchBtn');
-
-        if (searchInput) {
-            searchInput.value = this.currentQuery;
-            
-            // Debounced search
-            const debouncedSearch = debounce((query) => {
-                this.handleSearch(query);
-            }, 500);
-
-            searchInput.addEventListener('input', (e) => {
-                debouncedSearch(e.target.value);
-            });
-
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    this.handleSearch(e.target.value);
-                }
-            });
-        }
-
-        if (searchBtn) {
-            searchBtn.addEventListener('click', () => {
-                const query = searchInput?.value || '';
-                this.handleSearch(query);
-            });
-        }
-
         // Browser back/forward buttons
-        window.addEventListener('popstate', () => {
+        window.addEventListener('popstate', (e) => {
             this.currentTag = getUrlParameter('tag') || '';
-            this.currentQuery = getUrlParameter('q') || '';
+            const postId = getUrlParameter('post');
+            
+            if (postId) {
+                this.openPostDetail(postId);
+            } else {
+                this.closeSidebarLayout();
+            }
+            
             this.filterPosts();
             this.renderPage();
         });
-    }
-
-    /**
-     * Handle search
-     * @param {string} query - Search query
-     */
-    handleSearch(query) {
-        this.currentQuery = query.trim();
-        setUrlParameter('q', this.currentQuery);
-        this.filterPosts();
-        this.renderPage();
     }
 
     /**
@@ -217,8 +195,186 @@ class BlogApp {
         const postsHTML = currentPosts.map(post => this.renderPostCard(post)).join('');
         postsContainer.innerHTML = postsHTML;
 
+        // Add post click handlers
+        this.setupPostClickHandlers();
+
         // Add lazy loading for images
         this.setupLazyLoading();
+    }
+
+    /**
+     * Setup post click handlers
+     */
+    setupPostClickHandlers() {
+        const postCards = document.querySelectorAll('.post-card');
+        postCards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                const postId = card.dataset.postId;
+                this.openPostDetail(postId);
+            });
+        });
+    }
+
+    /**
+     * Open post detail in sidebar
+     * @param {string} postId - Post ID
+     */
+    async openPostDetail(postId) {
+        try {
+            console.log('🔍 Looking for post ID:', postId);
+            console.log('📊 Available posts:', this.allPosts.length);
+            console.log('📋 All post IDs:', this.allPosts.map(p => ({ id: p.id, title: p.title })));
+            
+            const post = this.allPosts.find(p => p.id === postId);
+            if (!post) {
+                console.error('❌ Post not found:', postId);
+                console.log('💡 Available posts:', this.allPosts);
+                
+                // Try to find by string comparison
+                const postByString = this.allPosts.find(p => String(p.id) === String(postId));
+                if (postByString) {
+                    console.log('✅ Found post with string comparison');
+                    this.loadPostInSidebar(postByString);
+                    return;
+                }
+                
+                showToast('포스트를 찾을 수 없습니다', 'error');
+                return;
+            }
+
+            console.log('✅ Post found:', post.title);
+            this.loadPostInSidebar(post);
+            
+        } catch (error) {
+            console.error('❌ Error opening post:', error);
+            showToast('포스트를 불러오는데 실패했습니다', 'error');
+        }
+    }
+
+    /**
+     * Load post in sidebar
+     * @param {Object} post - Post object
+     */
+    async loadPostInSidebar(post) {
+        // Show sidebar layout
+        this.showSidebarLayout();
+        
+        // Load post content
+        await this.loadPostContent(post);
+        
+        // Update URL
+        const url = new URL(window.location);
+        url.searchParams.set('post', post.id);
+        window.history.pushState({ postId: post.id }, '', url);
+    }
+
+    /**
+     * Show sidebar layout
+     */
+    showSidebarLayout() {
+        const body = document.body;
+        const postSidebar = document.getElementById('postSidebar');
+        
+        if (!postSidebar) {
+            // Create post sidebar
+            const sidebar = document.createElement('div');
+            sidebar.id = 'postSidebar';
+            sidebar.className = 'post-sidebar';
+            sidebar.innerHTML = `
+                <div class="post-sidebar-header">
+                    <button class="close-sidebar" id="closeSidebar">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="post-sidebar-content" id="postSidebarContent">
+                    <div class="loading-spinner">로딩 중...</div>
+                </div>
+            `;
+            body.appendChild(sidebar);
+            
+            // Add close handler
+            document.getElementById('closeSidebar').addEventListener('click', () => {
+                this.closeSidebarLayout();
+            });
+        }
+        
+        body.classList.add('sidebar-open');
+    }
+
+    /**
+     * Close sidebar layout
+     */
+    closeSidebarLayout() {
+        const body = document.body;
+        body.classList.remove('sidebar-open');
+        
+        // Update URL
+        const url = new URL(window.location);
+        url.searchParams.delete('post');
+        window.history.pushState({}, '', url);
+    }
+
+    /**
+     * Load post content into sidebar
+     * @param {Object} post - Post object
+     */
+    async loadPostContent(post) {
+        const contentContainer = document.getElementById('postSidebarContent');
+        if (!contentContainer) return;
+
+        try {
+            // Show loading
+            contentContainer.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>포스트를 불러오는 중...</p>
+                </div>
+            `;
+
+            // Simulate loading (in real app, you'd fetch full post content)
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const tagsHTML = post.tags.map(tag => 
+                `<span class="post-detail-tag">${tag}</span>`
+            ).join('');
+
+            contentContainer.innerHTML = `
+                <article class="post-detail">
+                    ${post.thumbnail ? `
+                        <div class="post-detail-image">
+                            <img src="${post.thumbnail}" alt="${post.title}" />
+                        </div>
+                    ` : ''}
+                    
+                    <div class="post-detail-header">
+                        <h1 class="post-detail-title">${post.title}</h1>
+                        
+                        <div class="post-detail-meta">
+                            <span class="post-date">${formatDate(post.date)}</span>
+                        </div>
+                        
+                        <div class="post-detail-tags">
+                            ${tagsHTML}
+                        </div>
+                    </div>
+                    
+                    <div class="post-detail-content">
+                        <p>${post.excerpt}</p>
+                    </div>
+                </article>
+            `;
+
+        } catch (error) {
+            console.error('Error loading post content:', error);
+            contentContainer.innerHTML = `
+                <div class="error-message">
+                    <h3>오류가 발생했습니다</h3>
+                    <p>포스트를 불러오는데 실패했습니다.</p>
+                </div>
+            `;
+        }
     }
 
     /**
@@ -227,43 +383,57 @@ class BlogApp {
      * @returns {string} HTML string
      */
     renderPostCard(post) {
-        const thumbnailSrc = post.thumbnail || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+        const hasThumbnail = post.thumbnail && post.thumbnail.trim() !== '';
         
         const tagsHTML = post.tags.map(tag => 
-            `<a href="?tag=${encodeURIComponent(tag)}" class="post-tag">${tag}</a>`
+            `<a href="?tag=${encodeURIComponent(tag)}" class="post-tag" onclick="event.stopPropagation()">${tag}</a>`
         ).join('');
 
-        return `
-            <article class="post-card">
-                <img src="${thumbnailSrc}" 
-                     alt="${post.title}" 
-                     class="post-card-image"
-                     loading="lazy"
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
-                
-                <div class="post-card-content">
-                    <h2 class="post-card-title">
-                        <a href="post.html?id=${post.id}">${post.title}</a>
-                    </h2>
-                    
-                    <div class="post-card-meta">
-                        <span class="post-date">${formatDate(post.date)}</span>
-                        <span class="post-author">${post.author}</span>
-                        <span class="read-time">${post.readTime}분 읽기</span>
+        if (hasThumbnail) {
+            // 썸네일이 있는 경우: 배경 이미지 카드
+            return `
+                <article class="post-card post-card-with-image" data-post-id="${post.id}" style="background-image: url('${post.thumbnail}')">
+                    <div class="post-card-overlay">
+                        <div class="post-card-content">
+                            <div class="post-card-meta">
+                                <span class="post-date">${formatDate(post.date)}</span>
+                            </div>
+                            
+                            <h2 class="post-card-title">
+                                ${post.title}
+                            </h2>
+                            
+                            <p class="post-card-excerpt">${post.excerpt}</p>
+                            
+                            <div class="post-card-tags">
+                                ${tagsHTML}
+                            </div>
+                        </div>
                     </div>
-                    
-                    <p class="post-card-excerpt">${post.excerpt}</p>
-                    
-                    <div class="post-card-tags">
-                        ${tagsHTML}
+                </article>
+            `;
+        } else {
+            // 썸네일이 없는 경우: 기본 카드
+            return `
+                <article class="post-card post-card-no-image" data-post-id="${post.id}">
+                    <div class="post-card-content">
+                        <div class="post-card-meta">
+                            <span class="post-date">${formatDate(post.date)}</span>
+                        </div>
+                        
+                        <h2 class="post-card-title">
+                            ${post.title}
+                        </h2>
+                        
+                        <p class="post-card-excerpt">${post.excerpt}</p>
+                        
+                        <div class="post-card-tags">
+                            ${tagsHTML}
+                        </div>
                     </div>
-                    
-                    <div class="post-card-footer">
-                        <a href="post.html?id=${post.id}" class="read-more">더 읽기 →</a>
-                    </div>
-                </div>
-            </article>
-        `;
+                </article>
+            `;
+        }
     }
 
     /**
@@ -424,9 +594,7 @@ class BlogApp {
 
         let message = '포스트가 없습니다.';
         
-        if (this.currentQuery) {
-            message = `"${this.currentQuery}"에 대한 검색 결과가 없습니다.`;
-        } else if (this.currentTag) {
+        if (this.currentTag) {
             message = `"${this.currentTag}" 태그의 포스트가 없습니다.`;
         }
 
@@ -434,7 +602,7 @@ class BlogApp {
             <div class="empty-state">
                 <h3>${message}</h3>
                 <p>다른 검색어나 태그를 시도해보세요.</p>
-                ${this.currentQuery || this.currentTag ? 
+                ${this.currentTag ? 
                     '<button class="btn btn-secondary" onclick="app.clearFilters()">필터 초기화</button>' : 
                     '<a href="editor.html" class="btn btn-primary">첫 번째 포스트 작성하기</a>'
                 }
@@ -447,17 +615,11 @@ class BlogApp {
      */
     clearFilters() {
         this.currentTag = '';
-        this.currentQuery = '';
         
         // Update URL
         const url = new URL(window.location);
         url.searchParams.delete('tag');
-        url.searchParams.delete('q');
         window.history.replaceState({}, '', url);
-        
-        // Update search input
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) searchInput.value = '';
         
         // Re-filter and render
         this.filterPosts();
@@ -472,8 +634,6 @@ class BlogApp {
         
         if (this.currentTag) {
             title = `${this.currentTag} - ${CONFIG.BLOG_TITLE}`;
-        } else if (this.currentQuery) {
-            title = `"${this.currentQuery}" 검색 결과 - ${CONFIG.BLOG_TITLE}`;
         }
         
         document.title = title;
@@ -542,19 +702,10 @@ document.addEventListener('keydown', (e) => {
         refreshBlog();
     }
     
-    // Escape: Clear search and filters
+    // Escape: Clear filters
     if (e.key === 'Escape') {
-        if (app && (app.currentQuery || app.currentTag)) {
+        if (app && app.currentTag) {
             app.clearFilters();
-        }
-    }
-    
-    // /: Focus search
-    if (e.key === '/' && !e.ctrlKey && !e.metaKey && e.target.tagName !== 'INPUT') {
-        e.preventDefault();
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.focus();
         }
     }
 });

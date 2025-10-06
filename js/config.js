@@ -2,11 +2,12 @@
 
 const CONFIG = {
     // Google Apps Script
-    APPS_SCRIPT_URL: 'AKfycbwRlgbQblWQM_wWDB2J0LwVxlDv_VhbcoTN4TxgYp8rIBfDxLv-AHAk0jcphladrR9H',
+    APPS_SCRIPT_URL: 'AKfycbxq4BUF0YX6YH9sdy_0lhNSdh3dKHv8LsNtSBKsBYmubR6WWJLI7ax2nJs0HAQ1kWeP', // 사용하지 않음 (하위 호환성)
+    UPLOAD_API_URL: 'https://script.google.com/macros/s/AKfycbxq4BUF0YX6YH9sdy_0lhNSdh3dKHv8LsNtSBKsBYmubR6WWJLI7ax2nJs0HAQ1kWeP/exec', // 실제 Apps Script 배포 URL
     
     // Google Sheets
-    GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY',
-    GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXRuG3cRUqGABTludaX-ddVgqUCsfJ0EV37n3IifaAbREUxSqa4rJYp64evCH15v9hC8O-YSNMtPMc/pub?output=csv',
+    GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 실제 Google 스프레드시트 ID
+    GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXRuG3cRUqGABTludaX-ddVgqUCsfJ0EV37n3IifaAbREUxSqa4rJYp64evCH15v9hC8O-YSNMtPMc/pub?output=csv', // 실제 공개된 시트 CSV URL
     
     // Blog Settings
     BLOG_TITLE: 'My Google Sheets Blog',
@@ -66,7 +67,7 @@ const CONFIG = {
 
 // Validation function
 function validateConfig() {
-    const requiredFields = ['GOOGLE_SHEET_ID', 'APPS_SCRIPT_URL'];
+    const requiredFields = ['GOOGLE_SHEET_ID', 'UPLOAD_API_URL'];
     const missingFields = requiredFields.filter(field => !CONFIG[field] || CONFIG[field].includes('YOUR_'));
     
     if (missingFields.length > 0) {

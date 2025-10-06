@@ -2,7 +2,7 @@
 
 class UploadManager {
     constructor() {
-        this.appsScriptUrl = CONFIG.APPS_SCRIPT_URL;
+        this.appsScriptUrl = CONFIG.UPLOAD_API_URL;
         this.maxFileSize = CONFIG.MAX_FILE_SIZE;
         this.allowedImageTypes = CONFIG.ALLOWED_IMAGE_TYPES;
         this.allowedVideoTypes = CONFIG.ALLOWED_VIDEO_TYPES;

@@ -381,62 +381,10 @@ function loadScript(src) {
 }
 
 /**
- * Dark mode utilities
- */
-const DarkMode = {
-    init() {
-        const saved = localStorage.getItem('darkMode');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = saved ? saved === 'true' : systemPrefersDark;
-        
-        this.set(isDark);
-        this.setupToggle();
-        this.watchSystemChange();
-    },
-    
-    set(isDark) {
-        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-        localStorage.setItem('darkMode', isDark.toString());
-        
-        const toggle = document.getElementById('darkModeToggle');
-        if (toggle) {
-            toggle.textContent = isDark ? '☀️' : '🌙';
-            toggle.title = isDark ? '라이트 모드로 전환' : '다크 모드로 전환';
-        }
-    },
-    
-    toggle() {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        this.set(!isDark);
-    },
-    
-    setupToggle() {
-        const toggle = document.getElementById('darkModeToggle');
-        if (toggle) {
-            toggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.toggle();
-            });
-        }
-    },
-    
-    watchSystemChange() {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            // Only auto-switch if user hasn't manually set preference
-            if (!localStorage.getItem('darkMode')) {
-                this.set(e.matches);
-            }
-        });
-    }
-};
-
-/**
  * Initialize utilities
  */
 function initUtils() {
-    if (CONFIG.FEATURES.DARK_MODE) {
-        DarkMode.init();
-    }
+    // Utilities initialized
 }
 
 // Auto-initialize on DOM ready
@@ -464,7 +412,6 @@ if (typeof window !== 'undefined') {
         setUrlParameter,
         scrollToElement,
         copyToClipboard,
-        loadScript,
-        DarkMode
+        loadScript
     };
 }

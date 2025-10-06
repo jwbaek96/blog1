@@ -15,6 +15,7 @@
 
 // Configuration
 const BLOG_FOLDER_ID = '1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb'; // Replace with your actual folder ID
+const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE'; // Replace with your Google Sheets ID
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov'];
@@ -78,14 +79,44 @@ function checkDrivePermissions() {
 }
 
 /**
- * Handle POST requests (file uploads)
+ * Handle POST requests (file uploads and post saving)
  */
 function doPost(e) {
   try {
-    console.log('📁 Upload request received');
+    console.log('� POST request received');
     
     // Parse request data
     const requestData = JSON.parse(e.postData.contents);
+    
+    // Check request type
+    if (requestData.action === 'savePost') {
+      return handlePostSave(requestData);
+    } else if (requestData.file) {
+      return handleFileUpload(requestData);
+    } else {
+      throw new Error('Invalid request: no action specified or file data missing');
+    }
+    
+  } catch (error) {
+    console.error('❌ Request error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
+}
+
+/**
+ * Handle file upload requests
+ */
+function handleFileUpload(requestData) {
+  try {
+    console.log('📁 File upload request received');
+    
     const fileData = requestData.file;
     
     // Validate request
@@ -150,6 +181,68 @@ function doPost(e) {
     
   } catch (error) {
     console.error('❌ Upload error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
+}
+
+/**
+ * Handle post save requests
+ */
+function handlePostSave(requestData) {
+  try {
+    console.log('💾 Post save request received');
+    
+    // Validate post data
+    const postData = requestData.postData;
+    if (!postData || !postData.title) {
+      throw new Error('Invalid post data: title is required');
+    }
+    
+    // Get spreadsheet
+    const spreadsheet = getSpreadsheet();
+    const sheet = spreadsheet.getActiveSheet();
+    
+    // Generate unique ID
+    const postId = generatePostId();
+    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    // Prepare row data (adjust column order to match your sheet structure)
+    const rowData = [
+      postId,                           // A: ID
+      postData.title || 'Untitled',    // B: Title  
+      postData.author || 'Admin',      // C: Author
+      currentDate,                     // D: Date
+      postData.excerpt || '',          // E: Excerpt
+      postData.content || '',          // F: Content
+      postData.tags || '',             // G: Tags (comma-separated)
+      postData.readTime || 5,          // H: Read Time
+      postData.thumbnail || ''         // I: Thumbnail
+    ];
+    
+    // Add row to sheet
+    sheet.appendRow(rowData);
+    
+    console.log(`✅ Post saved successfully: ${postData.title} (ID: ${postId})`);
+    
+    const response = {
+      success: true,
+      postId: postId,
+      title: postData.title,
+      message: 'Post saved to Google Sheets successfully',
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(response);
+    
+  } catch (error) {
+    console.error('❌ Post save error:', error.toString());
     
     const errorResponse = {
       success: false,
@@ -455,4 +548,96 @@ function setupGuide() {
   console.log('- Choose "Web app" type');
   console.log('- Set execute as "Me" and access to "Anyone"');
   console.log('- Copy the deployment URL to your config.js');
+}
+
+/**
+ * Get or create spreadsheet for blog posts
+ */
+function getSpreadsheet() {
+  try {
+    if (!SPREADSHEET_ID || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID_HERE') {
+      throw new Error('SPREADSHEET_ID not configured. Please update the script with your Google Sheets ID.');
+    }
+    
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    console.log(`📊 Using spreadsheet: ${spreadsheet.getName()}`);
+    return spreadsheet;
+    
+  } catch (error) {
+    if (error.toString().includes('not found')) {
+      throw new Error('Spreadsheet not found. Please check your SPREADSHEET_ID.');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Generate unique post ID
+ */
+function generatePostId() {
+  return Date.now().toString();
+}
+
+/**
+ * Initialize spreadsheet with headers if needed
+ */
+function initializeSpreadsheet() {
+  try {
+    const spreadsheet = getSpreadsheet();
+    const sheet = spreadsheet.getActiveSheet();
+    
+    // Check if headers exist
+    const firstRow = sheet.getRange(1, 1, 1, 9).getValues()[0];
+    const hasHeaders = firstRow[0] === 'ID' || firstRow[0] === 'id';
+    
+    if (!hasHeaders) {
+      console.log('📝 Adding headers to spreadsheet...');
+      const headers = ['ID', 'Title', 'Author', 'Date', 'Excerpt', 'Content', 'Tags', 'ReadTime', 'Thumbnail'];
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      
+      // Format header row
+      const headerRange = sheet.getRange(1, 1, 1, headers.length);
+      headerRange.setFontWeight('bold');
+      headerRange.setBackground('#f0f0f0');
+      
+      console.log('✅ Headers added successfully');
+    } else {
+      console.log('✅ Headers already exist');
+    }
+    
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Spreadsheet initialization error:', error.toString());
+    return false;
+  }
+}
+
+/**
+ * Test post saving functionality
+ */
+function testPostSave() {
+  console.log('🧪 Testing post save functionality...');
+  
+  const testPostData = {
+    action: 'savePost',
+    postData: {
+      title: 'Test Post from Apps Script',
+      author: 'Test Author',
+      excerpt: 'This is a test post created from Google Apps Script',
+      content: '<p>This is the test content with <strong>HTML formatting</strong>.</p>',
+      tags: 'test,apps-script,google-sheets',
+      readTime: 3,
+      thumbnail: ''
+    }
+  };
+  
+  try {
+    const result = handlePostSave(testPostData);
+    console.log('✅ Test result:', result);
+    return result;
+  } catch (error) {
+    console.error('❌ Test failed:', error.toString());
+    return false;
+  }
 }

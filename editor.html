@@ -21,9 +21,6 @@
                     <a href="/">My Blog</a>
                 </div>
                 <nav class="nav">
-                    <a href="/" class="nav-link">홈</a>
-                    <a href="/editor.html" class="nav-link active">에디터</a>
-                    <a href="#" class="nav-link" id="darkModeToggle">🌙</a>
                 </nav>
             </div>
         </div>
@@ -35,109 +32,92 @@
             <div class="editor-container">
                 <!-- Editor Header -->
                 <div class="editor-header">
-                    <h1>리치 텍스트 에디터</h1>
-                    <p>Google Drive 통합 이미지/동영상 업로드 지원</p>
                 </div>
 
                 <!-- Post Metadata -->
                 <div class="post-metadata">
-                    <input type="text" id="postTitle" placeholder="포스트 제목을 입력하세요..." class="title-input">
-                    <input type="text" id="postAuthor" placeholder="작성자" class="author-input">
-                    <input type="text" id="postTags" placeholder="태그 (쉼표로 구분)" class="tags-input">
+                    <input type="text" id="postTitle" placeholder="Untitled..." class="title-input">
+                    <div class="tags-container">
+                        <div class="tags-wrapper" id="tagsWrapper">
+                            <!-- 태그들이 여기에 동적으로 추가됩니다 -->
+                            <input type="text" id="tagInput" class="tag-input" placeholder="태그 입력 후 쉼표나 엔터">
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Editor Toolbar -->
-                <div class="editor-toolbar">
-                    <!-- Text Formatting -->
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" data-command="bold" title="굵게 (Ctrl+B)">
-                            <strong>B</strong>
-                        </button>
-                        <button type="button" class="toolbar-btn" data-command="italic" title="기울임 (Ctrl+I)">
-                            <em>I</em>
-                        </button>
-                        <button type="button" class="toolbar-btn" data-command="underline" title="밑줄 (Ctrl+U)">
-                            <u>U</u>
-                        </button>
-                        <button type="button" class="toolbar-btn" data-command="strikeThrough" title="취소선">
-                            <s>S</s>
-                        </button>
-                    </div>
+                <!-- Simple Editor Container -->
+                <div class="simple-editor-wrapper">
 
-                    <!-- Headings -->
-                    <div class="toolbar-group">
-                        <select class="toolbar-select" id="headingSelect">
-                            <option value="">일반 텍스트</option>
+                    <div class="simple-toolbar">
+                        
+                        <select onchange="format('formatBlock', this.value); this.value=''">
+                            <option value="">단락 스타일</option>
                             <option value="h1">제목 1</option>
                             <option value="h2">제목 2</option>
                             <option value="h3">제목 3</option>
+                            <option value="p">본문</option>
                         </select>
-                    </div>
-
-                    <!-- Alignment -->
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" data-command="justifyLeft" title="왼쪽 정렬">
-                            ⬅️
-                        </button>
-                        <button type="button" class="toolbar-btn" data-command="justifyCenter" title="가운데 정렬">
-                            ↔️
-                        </button>
-                        <button type="button" class="toolbar-btn" data-command="justifyRight" title="오른쪽 정렬">
-                            ➡️
-                        </button>
-                    </div>
-
-                    <!-- Lists -->
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" data-command="insertUnorderedList" title="글머리 기호">
-                            • 목록
-                        </button>
-                        <button type="button" class="toolbar-btn" data-command="insertOrderedList" title="번호 매기기">
-                            1. 목록
-                        </button>
-                    </div>
-
-                    <!-- Media Upload -->
-                    <div class="toolbar-group">
-                        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                        <input type="file" id="videoUpload" accept="video/*" style="display: none;">
                         
-                        <button type="button" class="toolbar-btn" id="imageUploadBtn" title="이미지 업로드">
-                            📷 이미지
-                        </button>
-                        <button type="button" class="toolbar-btn" id="videoUploadBtn" title="동영상 업로드">
-                            🎥 동영상
-                        </button>
-                        <button type="button" class="toolbar-btn" id="linkBtn" title="링크 추가">
-                            🔗 링크
-                        </button>
+                        <select onchange="format('fontSize', this.value); this.value=''">
+                            <option value="">글자 크기</option>
+                            <option value="1">매우 작게</option>
+                            <option value="3">작게</option>
+                            <option value="5">보통</option>
+                            <option value="6">크게</option>
+                            <option value="7">매우 크게</option>
+                        </select>
+                        
+                        <div class="separator"></div>
+                        <button onclick="format('bold')" title="굵게 (Ctrl+B)"><b>B</b></button>
+                        <button onclick="format('italic')" title="기울임 (Ctrl+I)"><i>I</i></button>
+                        <button onclick="format('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+                        <button onclick="format('strikeThrough')" title="취소선"><s>S</s></button>
+                        <div class="separator"></div>
+                        <div class="color-button-wrapper">
+                            <button class="color-button text-color-btn" onclick="document.getElementById('textColor').click()" title="글자 색">
+                                <span class="color-letter">A</span>
+                                <span class="color-bar" id="textColorBar"></span>
+                                <input type="color" id="textColor" onchange="changeTextColor(this.value)" style="display: none;">
+                            </button>
+                        </div>
+                        <div class="color-picker">
+                            <input type="color" id="bgColor" onchange="format('hiliteColor', this.value)" title="배경 색">
+                        </div>                        
+                        
+                        <div class="separator"></div>
+                        
+                        <button onclick="format('insertUnorderedList')" title="글머리 기호">• 목록</button>
+                        <button onclick="format('insertOrderedList')" title="번호 매기기">1. 목록</button>
+                        
+                        <div class="separator"></div>
+                        
+                        <button onclick="format('justifyLeft')" title="왼쪽 정렬">≡</button>
+                        <button onclick="format('justifyCenter')" title="가운데 정렬">≡</button>
+                        <button onclick="format('justifyRight')" title="오른쪽 정렬">≡</button>
+                        <button onclick="format('justifyFull')" title="양쪽 정렬">≡</button>
+                        
+                        
+                        
+                        <div class="separator"></div>
+                        
+                        <button onclick="insertLink()" title="링크 삽입">🔗</button>
+                        <button onclick="format('unlink')" title="링크 제거">🔗✕</button>
+                        
+                        <div class="separator"></div>
+                        
+                        <button onclick="format('undo')" title="실행 취소">↶</button>
+                        <button onclick="format('redo')" title="다시 실행">↷</button>
+                        
+                        <div class="separator"></div>
+                        
+                        <button id="codeViewToggle" onclick="toggleCodeView()" title="HTML 코드 보기">HTML</button>
+                    </div>
+                    
+                    <div class="simple-editor" contenteditable="true" id="editor">
+                        <p>✍️ 여기에 텍스트를 입력하세요.</p>
                     </div>
 
-                    <!-- Colors -->
-                    <div class="toolbar-group">
-                        <input type="color" id="textColor" title="글자 색상" value="#000000">
-                        <input type="color" id="backgroundColor" title="배경 색상" value="#ffffff">
-                    </div>
 
-                    <!-- Actions -->
-                    <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" id="undoBtn" title="실행 취소 (Ctrl+Z)">
-                            ↩️
-                        </button>
-                        <button type="button" class="toolbar-btn" id="redoBtn" title="다시 실행 (Ctrl+Y)">
-                            ↪️
-                        </button>
-                        <button type="button" class="toolbar-btn" id="clearBtn" title="모두 지우기">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Editor Content -->
-                <div class="editor-content">
-                    <div id="editor" contenteditable="true" class="rich-editor" placeholder="여기에 내용을 작성하세요...">
-                        <p>여기에 내용을 작성하세요...</p>
-                    </div>
                 </div>
 
                 <!-- Upload Progress -->
@@ -150,29 +130,7 @@
 
                 <!-- Editor Actions -->
                 <div class="editor-actions">
-                    <button type="button" class="btn btn-secondary" id="previewBtn">미리보기</button>
-                    <button type="button" class="btn btn-primary" id="exportBtn">HTML 내보내기</button>
                     <button type="button" class="btn btn-success" id="saveBtn">Google Sheets에 저장</button>
-                </div>
-
-                <!-- HTML Output -->
-                <div class="html-output" id="htmlOutput" style="display: none;">
-                    <h3>생성된 HTML 코드</h3>
-                    <textarea id="htmlCode" readonly></textarea>
-                    <button type="button" class="btn btn-secondary" id="copyHtmlBtn">복사</button>
-                </div>
-
-                <!-- Preview Modal -->
-                <div id="previewModal" class="modal" style="display: none;">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h3>미리보기</h3>
-                            <button type="button" class="modal-close" id="closePreview">&times;</button>
-                        </div>
-                        <div class="modal-body" id="previewContent">
-                            <!-- 미리보기 내용 -->
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -196,5 +154,96 @@
     <script src="js/utils.js"></script>
     <script src="js/upload.js"></script>
     <script src="js/editor.js"></script>
+    
+    <!-- Tags Input Script -->
+    <script>
+        // Tags functionality
+        class TagsInput {
+            constructor() {
+                this.tags = [];
+                this.tagInput = document.getElementById('tagInput');
+                this.tagsWrapper = document.getElementById('tagsWrapper');
+                
+                this.init();
+            }
+            
+            init() {
+                this.tagInput.addEventListener('keydown', (e) => {
+                    if (e.key === ',' || e.key === 'Enter') {
+                        e.preventDefault();
+                        this.addTag();
+                    } else if (e.key === 'Backspace' && this.tagInput.value === '') {
+                        this.removeLastTag();
+                    }
+                });
+                
+                this.tagInput.addEventListener('blur', () => {
+                    if (this.tagInput.value.trim()) {
+                        this.addTag();
+                    }
+                });
+            }
+            
+            addTag() {
+                const value = this.tagInput.value.trim();
+                if (value && !this.tags.includes(value)) {
+                    this.tags.push(value);
+                    this.renderTags();
+                    this.tagInput.value = '';
+                }
+            }
+            
+            removeTag(tagToRemove) {
+                this.tags = this.tags.filter(tag => tag !== tagToRemove);
+                this.renderTags();
+            }
+            
+            removeLastTag() {
+                if (this.tags.length > 0) {
+                    this.tags.pop();
+                    this.renderTags();
+                }
+            }
+            
+            renderTags() {
+                // 기존 태그들 제거 (input 제외)
+                const existingTags = this.tagsWrapper.querySelectorAll('.tag');
+                existingTags.forEach(tag => tag.remove());
+                
+                // 새 태그들 추가
+                this.tags.forEach(tagText => {
+                    const tagElement = document.createElement('div');
+                    tagElement.className = 'tag';
+                    tagElement.innerHTML = `
+                        <span>${tagText}</span>
+                        <button type="button" class="tag-remove" onclick="tagsInput.removeTag('${tagText}')">&times;</button>
+                    `;
+                    
+                    // input 앞에 삽입
+                    this.tagsWrapper.insertBefore(tagElement, this.tagInput);
+                });
+            }
+            
+            getTags() {
+                return this.tags;
+            }
+            
+            setTags(tags) {
+                this.tags = tags || [];
+                this.renderTags();
+            }
+            
+            getTagsString() {
+                return this.tags.join(', ');
+            }
+        }
+        
+        // Initialize tags input when DOM is ready
+        let tagsInput;
+        document.addEventListener('DOMContentLoaded', () => {
+            tagsInput = new TagsInput();
+            window.tagsInput = tagsInput; // 전역 접근 가능하도록
+        });
+    </script>
 </body>
 </html>

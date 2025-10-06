@@ -15,8 +15,10 @@
     <meta property="og:description" content="구글 스프레드시트를 데이터베이스로 활용하는 블로그">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://jwbaek96.github.io/blog1/">
-    
+    <!-- Icon -->
+    <link rel="shortcut icon" href="./assets/Vector.png">
     <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,9 +33,6 @@
                     <a href="/">My Blog</a>
                 </div>
                 <nav class="nav">
-                    <a href="/" class="nav-link active">홈</a>
-                    <a href="/editor.html" class="nav-link">에디터</a>
-                    <a href="#" class="nav-link" id="darkModeToggle">🌙</a>
                 </nav>
             </div>
         </div>
@@ -42,18 +41,8 @@
     <!-- Main Content -->
     <main class="main">
         <div class="container">
-            <!-- Hero Section -->
-            <section class="hero">
-                <h1>Google Sheets 기반 블로그</h1>
-                <p>서버 없이 구글 스프레드시트를 데이터베이스로 활용하는 현대적인 블로그</p>
-            </section>
-
             <!-- Filter Section -->
             <section class="filters">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="포스트 검색...">
-                    <button id="searchBtn">🔍</button>
-                </div>
                 <div class="tag-filters" id="tagFilters">
                     <!-- 태그 필터들이 동적으로 추가됩니다 -->
                 </div>
@@ -87,6 +76,13 @@
             <p>Powered by Google Sheets & Vanilla JavaScript</p>
         </div>
     </footer>
+
+    <!-- Floating Editor Button -->
+    <a href="editor.html" class="floating-editor-btn" title="새 포스트 작성">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </a>
 
     <!-- Scripts -->
     <script src="js/config.js"></script>

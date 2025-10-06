@@ -5,6 +5,8 @@ class RichTextEditor {
         this.editor = document.getElementById(editorId);
         this.toolbar = document.querySelector('.editor-toolbar');
         this.isInitialized = false;
+        this.isCodeView = false;
+        this.originalContent = '';
         
         if (this.editor) {
             this.init();
@@ -35,13 +37,20 @@ class RichTextEditor {
         this.editor.contentEditable = true;
         
         // Set initial content if empty
-        if (!this.editor.innerHTML.trim() || this.editor.innerHTML === '<p>여기에 내용을 작성하세요...</p>') {
+        if (!this.editor.innerHTML.trim() || this.editor.innerHTML === '<p>여기에 내용을 작성하세요...</p>' || this.editor.innerHTML === '<p>여기에 텍스트를 입력하세요...</p>') {
             this.editor.innerHTML = '<p><br></p>';
         }
 
         // Focus event
         this.editor.addEventListener('focus', () => {
-            if (this.editor.innerHTML === '<p>여기에 내용을 작성하세요...</p>') {
+            if (this.editor.innerHTML === '<p>여기에 내용을 작성하세요...</p>' || this.editor.innerHTML === '<p>여기에 텍스트를 입력하세요...</p>') {
+                this.editor.innerHTML = '<p><br></p>';
+            }
+        });
+
+        // Blur event - handle empty editor
+        this.editor.addEventListener('blur', () => {
+            if (this.editor.innerHTML.trim() === '') {
                 this.editor.innerHTML = '<p><br></p>';
             }
         });
@@ -63,6 +72,37 @@ class RichTextEditor {
         document.addEventListener('selectionchange', () => {
             this.updateToolbarState();
         });
+
+        // Initial focus with delay
+        setTimeout(() => {
+            if (this.editor) {
+                this.editor.focus();
+            }
+        }, 100);
+
+        // Initialize color inputs
+        this.initializeColorInputs();
+    }
+
+    /**
+     * Initialize color input elements
+     */
+    initializeColorInputs() {
+        const textColorInput = document.getElementById('textColor');
+        const bgColorInput = document.getElementById('bgColor');
+        const textColorBar = document.getElementById('textColorBar');
+
+        if (textColorInput) {
+            textColorInput.value = '#000000';
+        }
+        
+        if (bgColorInput) {
+            bgColorInput.value = '#ffff00';
+        }
+        
+        if (textColorBar) {
+            textColorBar.style.backgroundColor = '#000000';
+        }
     }
 
     /**
@@ -302,6 +342,131 @@ class RichTextEditor {
     }
 
     /**
+     * Format command wrapper (for backward compatibility)
+     * @param {string} cmd - Command name
+     * @param {string} value - Command value
+     */
+    format(cmd, value = null) {
+        this.executeCommand(cmd, value);
+        this.editor.focus();
+    }
+
+    /**
+     * Change text color
+     * @param {string} color - Color value
+     */
+    changeTextColor(color) {
+        this.format('foreColor', color);
+        const textColorBar = document.getElementById('textColorBar');
+        if (textColorBar) {
+            textColorBar.style.backgroundColor = color;
+        }
+    }
+
+    /**
+     * Change background color
+     * @param {string} color - Color value
+     */
+    changeBgColor(color) {
+        this.format('hiliteColor', color);
+        // bgColorBar는 제거되었으므로 더 이상 업데이트하지 않음
+    }
+
+    /**
+     * Toggle HTML code view
+     */
+    toggleCodeView() {
+        const codeButton = document.getElementById('codeViewToggle');
+        const toolbar = document.querySelector('.simple-toolbar');
+        
+        if (!this.isCodeView) {
+            // 텍스트 모드에서 HTML 코드 모드로 전환
+            this.originalContent = this.editor.innerHTML;
+            const htmlCode = this.formatHTML(this.originalContent);
+            this.editor.innerHTML = `<pre style="margin: 0; padding: 20px; background: #f8f9fa; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5;">${this.escapeHtml(htmlCode)}</pre>`;
+            this.editor.contentEditable = false;
+            
+            // 버튼 상태 변경
+            if (codeButton) {
+                codeButton.style.backgroundColor = '#007bff';
+                codeButton.style.color = 'white';
+                codeButton.title = '텍스트 모드로 돌아가기';
+            }
+            
+            // 다른 버튼들 비활성화
+            if (toolbar) {
+                const buttons = toolbar.querySelectorAll('button:not(#codeViewToggle), select');
+                buttons.forEach(btn => btn.disabled = true);
+            }
+            
+            this.isCodeView = true;
+        } else {
+            // HTML 코드 모드에서 텍스트 모드로 전환
+            this.editor.innerHTML = this.originalContent;
+            this.editor.contentEditable = true;
+            this.editor.focus();
+            
+            // 버튼 상태 원래대로
+            if (codeButton) {
+                codeButton.style.backgroundColor = '';
+                codeButton.style.color = '';
+                codeButton.title = 'HTML 코드 보기';
+            }
+            
+            // 다른 버튼들 활성화
+            if (toolbar) {
+                const buttons = toolbar.querySelectorAll('button:not(#codeViewToggle), select');
+                buttons.forEach(btn => btn.disabled = false);
+            }
+            
+            this.isCodeView = false;
+        }
+    }
+
+    /**
+     * Format HTML with proper indentation
+     * @param {string} html - HTML content
+     * @returns {string} Formatted HTML
+     */
+    formatHTML(html) {
+        let formatted = html
+            .replace(/></g, '>\n<')
+            .replace(/\n\s*\n/g, '\n');
+        
+        let indent = 0;
+        const lines = formatted.split('\n');
+        const indentedLines = lines.map(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return '';
+            
+            if (trimmed.startsWith('</')) {
+                indent--;
+            }
+            
+            const indentedLine = '  '.repeat(Math.max(0, indent)) + trimmed;
+            
+            if (trimmed.startsWith('<') && !trimmed.startsWith('</') && !trimmed.endsWith('/>')) {
+                indent++;
+            }
+            
+            return indentedLine;
+        });
+        
+        return indentedLines.join('\n');
+    }
+
+    /**
+     * Escape HTML entities
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped HTML
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
      * Update toolbar button states
      */
     updateToolbarState() {
@@ -495,7 +660,7 @@ class RichTextEditor {
             const metadata = {
                 title: document.getElementById('postTitle')?.value || '',
                 author: document.getElementById('postAuthor')?.value || '',
-                tags: document.getElementById('postTags')?.value || '',
+                tags: window.tagsInput ? window.tagsInput.getTags() : [],
                 content: content,
                 timestamp: Date.now()
             };
@@ -535,9 +700,8 @@ class RichTextEditor {
                         if (authorInput) authorInput.value = metadata.author;
                     }
                     
-                    if (metadata.tags) {
-                        const tagsInput = document.getElementById('postTags');
-                        if (tagsInput) tagsInput.value = metadata.tags;
+                    if (metadata.tags && window.tagsInput) {
+                        window.tagsInput.setTags(metadata.tags);
                     }
                     
                     showToast('초안이 복원되었습니다', 'success');
@@ -566,19 +730,52 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Setup additional buttons
         setupEditorButtons();
+        
+        // Setup global functions for HTML compatibility
+        setupGlobalFunctions();
     }
 });
+
+/**
+ * Setup global functions for HTML inline script compatibility
+ */
+function setupGlobalFunctions() {
+    // Make editor methods globally accessible for inline HTML scripts
+    window.format = (cmd, value = null) => {
+        if (editor) {
+            editor.format(cmd, value);
+        }
+    };
+    
+    window.insertLink = () => {
+        if (editor) {
+            editor.insertLink();
+        }
+    };
+    
+    window.changeTextColor = (color) => {
+        if (editor) {
+            editor.changeTextColor(color);
+        }
+    };
+    
+    window.changeBgColor = (color) => {
+        if (editor) {
+            editor.changeBgColor(color);
+        }
+    };
+    
+    window.toggleCodeView = () => {
+        if (editor) {
+            editor.toggleCodeView();
+        }
+    };
+}
 
 /**
  * Setup additional editor buttons
  */
 function setupEditorButtons() {
-    // Preview button
-    const previewBtn = document.getElementById('previewBtn');
-    if (previewBtn) {
-        previewBtn.addEventListener('click', showPreview);
-    }
-
     // Export HTML button
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) {
@@ -605,49 +802,159 @@ function setupEditorButtons() {
         });
     }
 
-    // Save to Google Sheets button (placeholder)
+    /**
+     * Convert HTML content to plain text for storage
+     */
+    function htmlToText(html) {
+        // Create a temporary div to parse HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        // Get text content and clean up
+        let text = tempDiv.textContent || tempDiv.innerText || '';
+        
+        // Remove extra whitespace and line breaks
+        text = text.replace(/\s+/g, ' ').trim();
+        
+        return text;
+    }
+    
+    /**
+     * Create excerpt from HTML content
+     */
+    function createExcerpt(html, maxLength = 150) {
+        const text = htmlToText(html);
+        if (text.length <= maxLength) {
+            return text;
+        }
+        
+        // Find the last complete word within the limit
+        const truncated = text.substring(0, maxLength);
+        const lastSpace = truncated.lastIndexOf(' ');
+        
+        return lastSpace > 0 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
+    }
+    
+    /**
+     * Save post to Google Sheets
+     */
+    async function savePostToSheets() {
+        if (!editor) {
+            showToast('에디터가 초기화되지 않았습니다', 'error');
+            return;
+        }
+        
+        // Get form data
+        const title = document.getElementById('postTitle')?.value?.trim();
+        const tags = window.tagsInput ? window.tagsInput.getTagsString() : '';
+        const content = editor.getHTML();
+        
+        // Validate required fields
+        if (!title) {
+            showToast('제목을 입력해주세요', 'error');
+            document.getElementById('postTitle')?.focus();
+            return;
+        }
+        
+        if (!content || content === '<p></p>') {
+            showToast('내용을 입력해주세요', 'error');
+            return;
+        }
+        
+        // Show loading state
+        const saveBtn = document.getElementById('saveBtn');
+        const originalText = saveBtn?.textContent;
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
+        }
+        
+        try {
+            // Prepare post data
+            const postData = {
+                action: 'savePost',
+                postData: {
+                    title: title,
+                    author: CONFIG.BLOG_AUTHOR || 'Admin',
+                    excerpt: createExcerpt(content),
+                    content: content, // Store full HTML
+                    tags: tags,
+                    readTime: Math.max(1, Math.ceil(htmlToText(content).split(' ').length / 200)), // Estimate reading time
+                    thumbnail: '' // Could be enhanced to extract first image
+                }
+            };
+            
+            console.log('💾 Saving post to Google Sheets...', postData);
+            console.log('🔗 Using API URL:', CONFIG.UPLOAD_API_URL);
+            
+            // Check if API URL is configured
+            if (!CONFIG.UPLOAD_API_URL || CONFIG.UPLOAD_API_URL.includes('YOUR_')) {
+                throw new Error('Google Apps Script URL이 설정되지 않았습니다. config.js를 확인해주세요.');
+            }
+            
+            // Send to Google Apps Script
+            const response = await fetch(CONFIG.UPLOAD_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(postData)
+            });
+            
+            console.log('📡 Response status:', response.status);
+            console.log('📡 Response headers:', response.headers);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Response error:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast(`포스트가 성공적으로 저장되었습니다! (ID: ${result.postId})`, 'success', 5000);
+                
+                // Clear form after successful save
+                if (confirm('저장이 완료되었습니다. 에디터를 초기화하시겠습니까?')) {
+                    document.getElementById('postTitle').value = '';
+                    if (window.tagsInput) {
+                        window.tagsInput.setTags([]);
+                    }
+                    editor.clear();
+                    
+                    // Clear saved draft
+                    editor.clearDraft();
+                }
+                
+            } else {
+                throw new Error(result.error || '저장에 실패했습니다');
+            }
+            
+        } catch (error) {
+            console.error('❌ Save error:', error);
+            showToast(`저장 실패: ${error.message}`, 'error', 5000);
+        } finally {
+            // Reset button state
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
+        }
+    }
+
+    // Save to Google Sheets button
     const saveBtn = document.getElementById('saveBtn');
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
-            showToast('Google Sheets 저장 기능은 수동으로 진행해주세요', 'info', 5000);
-            if (editor) {
-                editor.exportHTML();
-            }
+            savePostToSheets();
         });
     }
 
-    // Close preview modal
-    const closePreview = document.getElementById('closePreview');
-    if (closePreview) {
-        closePreview.addEventListener('click', hidePreview);
-    }
+
 }
 
-/**
- * Show preview modal
- */
-function showPreview() {
-    if (!editor) return;
 
-    const previewModal = document.getElementById('previewModal');
-    const previewContent = document.getElementById('previewContent');
-    
-    if (previewModal && previewContent) {
-        const html = editor.getHTML();
-        previewContent.innerHTML = html;
-        previewModal.style.display = 'flex';
-    }
-}
-
-/**
- * Hide preview modal
- */
-function hidePreview() {
-    const previewModal = document.getElementById('previewModal');
-    if (previewModal) {
-        previewModal.style.display = 'none';
-    }
-}
 
 // Export for global use
 if (typeof window !== 'undefined') {
