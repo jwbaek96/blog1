@@ -3,8 +3,6 @@
 /* Simple Editor Styles */
 .simple-editor-wrapper {
     background: white;
-    border-radius: 8px;
-    /* box-shadow: 0 2px 10px rgba(0,0,0,0.1); */
     overflow: hidden;
     margin: 20px 0;
     position: relative;
@@ -46,7 +44,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    padding: 12px;
+    padding: 12px 6px;
     background: white;
     min-height: 50px;
     align-items: center;
@@ -315,8 +313,6 @@
 .post-metadata {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-xl);
 }
 
 .title-input,
@@ -341,6 +337,7 @@
     font-size: var(--font-size-xxl);
     font-weight: var(--font-weight-semibold);
     border: none;
+    border-bottom: 2px solid var(--border-color);
 }
 .tags-input {
     border: 2px solid var(--border-color);
