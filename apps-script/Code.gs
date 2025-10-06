@@ -1,4 +1,4 @@
-/**
+/** 1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb
  * Google Apps Script for Blog File Upload
  * 
  * This script handles file uploads to Google Drive and returns public URLs
@@ -14,10 +14,68 @@
  */
 
 // Configuration
-const BLOG_FOLDER_ID = 'YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE'; // Replace with your actual folder ID
+const BLOG_FOLDER_ID = '1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb'; // Replace with your actual folder ID
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov'];
+
+/**
+ * Debug function to check configuration
+ */
+function debugConfig() {
+  console.log('🔧 Debug Configuration:');
+  console.log('BLOG_FOLDER_ID:', BLOG_FOLDER_ID);
+  console.log('BLOG_FOLDER_ID length:', BLOG_FOLDER_ID.length);
+  console.log('BLOG_FOLDER_ID type:', typeof BLOG_FOLDER_ID);
+  console.log('Is default?', BLOG_FOLDER_ID === 'YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE');
+  console.log('Is empty?', !BLOG_FOLDER_ID);
+  
+  if (BLOG_FOLDER_ID && BLOG_FOLDER_ID !== 'YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE') {
+    console.log('✅ Configuration looks good!');
+    try {
+      const folder = DriveApp.getFolderById(BLOG_FOLDER_ID);
+      console.log('✅ Folder found:', folder.getName());
+    } catch (error) {
+      console.error('❌ Folder error:', error.toString());
+    }
+  } else {
+    console.log('❌ Configuration problem detected');
+  }
+}
+
+/**
+ * Check if Drive API is available and authorized
+ */
+function checkDrivePermissions() {
+  try {
+    console.log('🔍 Checking Drive API permissions...');
+    console.log('🔧 Current BLOG_FOLDER_ID:', BLOG_FOLDER_ID);
+    
+    // Try to access Drive API
+    const folders = DriveApp.getFolders();
+    console.log('✅ Drive API access successful!');
+    
+    // Try to get specific folder if ID is set
+    if (BLOG_FOLDER_ID && BLOG_FOLDER_ID !== 'YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE') {
+      const folder = DriveApp.getFolderById(BLOG_FOLDER_ID);
+      console.log('✅ Blog folder access successful!');
+      console.log('📁 Folder name:', folder.getName());
+      return true;
+    } else {
+      console.log('⚠️ BLOG_FOLDER_ID not configured');
+      console.log('🔧 Current value:', BLOG_FOLDER_ID);
+      return false;
+    }
+    
+  } catch (error) {
+    console.error('❌ Drive API error:', error.toString());
+    console.log('💡 You may need to:');
+    console.log('   1. Enable Drive API in Apps Script');
+    console.log('   2. Run the script manually to grant permissions');
+    console.log('   3. Check if the folder ID is correct');
+    return false;
+  }
+}
 
 /**
  * Handle POST requests (file uploads)
@@ -164,13 +222,13 @@ function generateUniqueFileName(originalName) {
  * Create JSON response with proper headers
  */
 function createJsonResponse(data) {
-  return ContentService
+  const output = ContentService
     .createTextOutput(JSON.stringify(data, null, 2))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader('Access-Control-Allow-Origin', '*')
-    .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .setHeader('Access-Control-Allow-Headers', 'Content-Type')
-    .setHeader('Access-Control-Max-Age', '86400');
+    .setMimeType(ContentService.MimeType.JSON);
+  
+  // Note: setHeader is not available in all Apps Script versions
+  // CORS is handled by Apps Script automatically for web apps
+  return output;
 }
 
 /**
@@ -265,42 +323,136 @@ function getFolderStats() {
  */
 function testUpload() {
   try {
-    // Create a test file
-    const testBlob = Utilities.newBlob('Test file content', 'text/plain', 'test.txt');
-    const base64Data = Utilities.base64Encode(testBlob.getBytes());
+    console.log('🧪 Starting test upload...');
+    
+    // Create a test image file (PNG format)
+    const testImageData = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77yQAAAABJRU5ErkJggg==';
     
     const testRequest = {
       postData: {
         contents: JSON.stringify({
           file: {
-            data: base64Data,
-            mimeType: 'text/plain',
-            name: 'test.txt'
+            data: testImageData,
+            mimeType: 'image/png',
+            name: 'test-image.png'
           }
         })
       }
     };
     
+    console.log('📤 Sending test request...');
     const response = doPost(testRequest);
     const result = JSON.parse(response.getContent());
     
     if (result.success) {
       console.log('✅ Test upload successful!');
-      console.log('📄 Response:', JSON.stringify(result, null, 2));
+      console.log('📄 File URL:', result.url);
+      console.log('📄 File ID:', result.fileId);
       
       // Clean up test file
-      const testFile = DriveApp.getFileById(result.fileId);
-      testFile.setTrashed(true);
-      console.log('🗑️ Test file cleaned up');
+      try {
+        const testFile = DriveApp.getFileById(result.fileId);
+        testFile.setTrashed(true);
+        console.log('🗑️ Test file cleaned up');
+      } catch (cleanupError) {
+        console.log('⚠️ Could not clean up test file:', cleanupError.toString());
+      }
       
     } else {
       console.error('❌ Test upload failed:', result.error);
     }
     
+    console.log('🔧 Full response:', JSON.stringify(result, null, 2));
     return result;
     
   } catch (error) {
     console.error('❌ Test error:', error.toString());
+    
+    // Additional debugging info
+    try {
+      const folder = getBlogFolder();
+      console.log('📁 Blog folder found:', folder.getName());
+    } catch (folderError) {
+      console.error('📁 Blog folder error:', folderError.toString());
+    }
+    
     throw error;
   }
+}
+
+/**
+ * Simple test to verify folder access
+ */
+function testFolderAccess() {
+  try {
+    console.log('📁 Testing folder access...');
+    
+    // First check Drive API permissions
+    const hasPermissions = checkDrivePermissions();
+    if (!hasPermissions) {
+      return false;
+    }
+    
+    if (!BLOG_FOLDER_ID || BLOG_FOLDER_ID === 'YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE') {
+      console.error('❌ BLOG_FOLDER_ID not configured');
+      console.log('💡 Please set BLOG_FOLDER_ID in the script');
+      return false;
+    }
+    
+    const folder = DriveApp.getFolderById(BLOG_FOLDER_ID);
+    console.log('✅ Folder access successful!');
+    console.log('📁 Folder name:', folder.getName());
+    console.log('📁 Folder ID:', folder.getId());
+    
+    // Test creating a simple text file
+    const testBlob = Utilities.newBlob('Test content', 'text/plain', 'folder-test.txt');
+    const testFile = folder.createFile(testBlob);
+    console.log('✅ File creation successful!');
+    
+    // Clean up
+    testFile.setTrashed(true);
+    console.log('🗑️ Test file cleaned up');
+    
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Folder access error:', error.toString());
+    console.log('💡 Make sure:');
+    console.log('   1. The folder ID is correct');
+    console.log('   2. The folder exists and is accessible');
+    console.log('   3. You have permission to write to the folder');
+    return false;
+  }
+}
+
+/**
+ * Step-by-step setup guide
+ */
+function setupGuide() {
+  console.log('🚀 Google Apps Script Setup Guide');
+  console.log('================================');
+  console.log('');
+  console.log('Step 1: Create Google Drive Folder');
+  console.log('- Go to https://drive.google.com');
+  console.log('- Create a new folder named "Blog Media"');
+  console.log('- Copy the folder ID from the URL');
+  console.log('');
+  console.log('Step 2: Configure Script');
+  console.log('- Replace BLOG_FOLDER_ID with your folder ID');
+  console.log('- Current value:', BLOG_FOLDER_ID);
+  console.log('');
+  console.log('Step 3: Enable APIs');
+  console.log('- In Apps Script, go to "Services" in the left sidebar');
+  console.log('- Add "Google Drive API" if not already added');
+  console.log('');
+  console.log('Step 4: Test Setup');
+  console.log('- Run checkDrivePermissions() first');
+  console.log('- Then run testFolderAccess()');
+  console.log('- Finally run testUpload()');
+  console.log('');
+  console.log('Step 5: Deploy as Web App');
+  console.log('- Click "Deploy" > "New Deployment"');
+  console.log('- Choose "Web app" type');
+  console.log('- Set execute as "Me" and access to "Anyone"');
+  console.log('- Copy the deployment URL to your config.js');
 }

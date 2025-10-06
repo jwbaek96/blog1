@@ -2,11 +2,11 @@
 
 const CONFIG = {
     // Google Apps Script
-    APPS_SCRIPT_URL: 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE',
+    APPS_SCRIPT_URL: 'AKfycbwRlgbQblWQM_wWDB2J0LwVxlDv_VhbcoTN4TxgYp8rIBfDxLv-AHAk0jcphladrR9H',
     
     // Google Sheets
-    GOOGLE_SHEET_ID: 'YOUR_GOOGLE_SHEET_ID_HERE',
-    GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID_HERE/export?format=csv',
+    GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY',
+    GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXRuG3cRUqGABTludaX-ddVgqUCsfJ0EV37n3IifaAbREUxSqa4rJYp64evCH15v9hC8O-YSNMtPMc/pub?output=csv',
     
     // Blog Settings
     BLOG_TITLE: 'My Google Sheets Blog',
@@ -14,11 +14,15 @@ const CONFIG = {
     BLOG_AUTHOR: 'Your Name',
     BLOG_URL: 'https://jwbaek96.github.io/blog1/',
     
+    // Development Settings
+    DEV_MODE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
+    DEV_PORT: 5500, // 로컬 개발 서버 포트
+    
     // Pagination
     POSTS_PER_PAGE: 6,
     
     // Cache Settings
-    CACHE_DURATION: 5 * 60 * 1000, // 5분 (milliseconds)
+    CACHE_DURATION: 1 * 60 * 1000, // 5분 (milliseconds)
     CACHE_KEY: 'blog_posts_cache',
     
     // Upload Settings
@@ -95,7 +99,7 @@ if (typeof window !== 'undefined') {
             banner.innerHTML = '⚠️ 블로그 설정이 완료되지 않았습니다. js/config.js 파일을 확인해주세요.';
             document.body.prepend(banner);
             
-            setTimeout(() => banner.remove(), 10000);
+            setTimeout(() => banner.remove(), 1000);
         }
     });
 }

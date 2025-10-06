@@ -26,9 +26,10 @@
 ### 1-3. 폴더 ID 추출
 
 URL 예시: `https://drive.google.com/drive/folders/1ABC123xyz_FOLDER_ID_HERE`
-
+-> https://drive.google.com/drive/folders/1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb?usp=sharing
 **FOLDER_ID**만 따로 복사해두세요. (예: `1ABC123xyz_FOLDER_ID_HERE`)
-
+-> 1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb
+                                                                            
 ---
 
 ## 📊 Step 2: Google Sheets 설정
@@ -61,8 +62,8 @@ A1 셀부터 다음 헤더를 입력:
 2. 게시할 대상: **전체 문서**
 3. 형식: **쉼표로 구분된 값(.csv)**
 4. "게시" 버튼 클릭
-5. 생성된 URL 복사 (나중에 사용)
-
+5. 생성된 URL 복사 (나중에 사용) -> https://docs.google.com/spreadsheets/d/e/2PACX-1vRXRuG3cRUqGABTludaX-ddVgqUCsfJ0EV37n3IifaAbREUxSqa4rJYp64evCH15v9hC8O-YSNMtPMc/pub?output=csv
+https://docs.google.com/spreadsheets/d/1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY/edit?gid=0#gid=0
 ---
 
 ## ⚙️ Step 3: Google Apps Script 설정
@@ -138,6 +139,7 @@ URL 형태: `https://script.google.com/macros/s/[DEPLOYMENT_ID]/exec`
 const CONFIG = {
     // Step 3에서 복사한 Apps Script URL
     APPS_SCRIPT_URL: 'https://script.google.com/macros/s/[DEPLOYMENT_ID]/exec',
+    
     
     // Step 2에서 생성한 Google Sheet ID (URL에서 추출)
     GOOGLE_SHEET_ID: 'YOUR_SHEET_ID_HERE',
