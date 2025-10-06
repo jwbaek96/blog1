@@ -38,20 +38,20 @@ class RichTextEditor {
         
         // Set initial content if empty
         if (!this.editor.innerHTML.trim() || this.editor.innerHTML === '<p>여기에 내용을 작성하세요...</p>' || this.editor.innerHTML === '<p>여기에 텍스트를 입력하세요...</p>') {
-            this.editor.innerHTML = '<p><br></p>';
+            this.editor.innerHTML = '<div><br></div>';
         }
 
         // Focus event
         this.editor.addEventListener('focus', () => {
             if (this.editor.innerHTML === '<p>여기에 내용을 작성하세요...</p>' || this.editor.innerHTML === '<p>여기에 텍스트를 입력하세요...</p>') {
-                this.editor.innerHTML = '<p><br></p>';
+                this.editor.innerHTML = '<div><br></div>';
             }
         });
 
         // Blur event - handle empty editor
         this.editor.addEventListener('blur', () => {
             if (this.editor.innerHTML.trim() === '') {
-                this.editor.innerHTML = '<p><br></p>';
+                this.editor.innerHTML = '<div><br></div>';
             }
         });
 
@@ -278,19 +278,28 @@ class RichTextEditor {
                 }
             }
 
-            // Enter key - ensure proper paragraph structure
+            // Enter key - create new div instead of paragraph
             if (e.key === 'Enter' && !e.shiftKey) {
-                const selection = window.getSelection();
-                const range = selection.getRangeAt(0);
-                const currentElement = range.commonAncestorContainer;
+                e.preventDefault();
                 
-                // If we're not in a paragraph, create one
-                if (currentElement.nodeType === Node.TEXT_NODE) {
-                    const parent = currentElement.parentElement;
-                    if (parent && parent.tagName !== 'P') {
-                        e.preventDefault();
-                        this.executeCommand('formatBlock', '<p>');
-                    }
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    
+                    // 새로운 div 요소 생성
+                    const newDiv = document.createElement('div');
+                    newDiv.innerHTML = '<br>'; // 빈 줄을 위한 br 태그
+                    
+                    // 현재 위치에 새 div 삽입
+                    range.deleteContents();
+                    range.insertNode(newDiv);
+                    
+                    // 커서를 새 div의 시작 부분으로 이동
+                    const newRange = document.createRange();
+                    newRange.setStart(newDiv, 0);
+                    newRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
                 }
             }
         });
@@ -347,8 +356,16 @@ class RichTextEditor {
      * @param {string} value - Command value
      */
     format(cmd, value = null) {
-        this.executeCommand(cmd, value);
+        // 에디터에 포커스 보장
         this.editor.focus();
+        
+        // 서식 명령 실행 - execCommand는 기본적으로 현재 커서 위치의 서식을 변경함
+        this.executeCommand(cmd, value);
+        
+        // 포커스 유지 (툴바 클릭으로 인한 포커스 손실 방지)
+        setTimeout(() => {
+            this.editor.focus();
+        }, 10);
     }
 
     /**
@@ -361,6 +378,11 @@ class RichTextEditor {
         if (textColorBar) {
             textColorBar.style.backgroundColor = color;
         }
+        // 에디터에 포커스를 다시 맞춤
+        setTimeout(() => {
+            this.editor.focus();
+            this.moveCaretToEnd();
+        }, 10);
     }
 
     /**
@@ -370,6 +392,12 @@ class RichTextEditor {
     changeBgColor(color) {
         this.format('hiliteColor', color);
         // bgColorBar는 제거되었으므로 더 이상 업데이트하지 않음
+        
+        // 에디터에 포커스를 다시 맞춤
+        setTimeout(() => {
+            this.editor.focus();
+            this.moveCaretToEnd();
+        }, 10);
     }
 
     /**
@@ -464,6 +492,47 @@ class RichTextEditor {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    /**
+     * Move caret to the end of the editor content
+     */
+    moveCaretToEnd() {
+        try {
+            const range = document.createRange();
+            const sel = window.getSelection();
+            
+            // 에디터의 마지막 텍스트 노드를 찾기
+            const walker = document.createTreeWalker(
+                this.editor,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            let lastTextNode = null;
+            let node;
+            while (node = walker.nextNode()) {
+                lastTextNode = node;
+            }
+            
+            if (lastTextNode) {
+                range.setStart(lastTextNode, lastTextNode.textContent.length);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else {
+                // 텍스트 노드가 없으면 에디터 끝에 포커스
+                range.selectNodeContents(this.editor);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        } catch (error) {
+            console.error('Caret positioning error:', error);
+            // 폴백으로 단순 포커스
+            this.editor.focus();
+        }
     }
 
     /**
@@ -629,7 +698,7 @@ class RichTextEditor {
      * Clear editor content
      */
     clear() {
-        this.editor.innerHTML = '<p><br></p>';
+        this.editor.innerHTML = '<div><br></div>';
         this.editor.focus();
     }
 

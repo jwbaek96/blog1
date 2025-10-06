@@ -50,7 +50,7 @@
 
                     <div class="simple-toolbar">
                         
-                        <select onchange="format('formatBlock', this.value); this.value=''">
+                        <select onchange="format('formatBlock', this.value); this.value=''; setTimeout(() => { if(window.editor) { window.editor.editor.focus(); window.editor.moveCaretToEnd(); } }, 10);">
                             <option value="">단락 스타일</option>
                             <option value="h1">제목 1</option>
                             <option value="h2">제목 2</option>
@@ -58,7 +58,7 @@
                             <option value="p">본문</option>
                         </select>
                         
-                        <select onchange="format('fontSize', this.value); this.value=''">
+                        <select onchange="format('fontSize', this.value); this.value=''; setTimeout(() => { if(window.editor) { window.editor.editor.focus(); window.editor.moveCaretToEnd(); } }, 10);">
                             <option value="">글자 크기</option>
                             <option value="1">매우 작게</option>
                             <option value="3">작게</option>
@@ -68,10 +68,10 @@
                         </select>
                         
                         <div class="separator"></div>
-                        <button onclick="format('bold')" title="굵게 (Ctrl+B)"><b>B</b></button>
-                        <button onclick="format('italic')" title="기울임 (Ctrl+I)"><i>I</i></button>
-                        <button onclick="format('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
-                        <button onclick="format('strikeThrough')" title="취소선"><s>S</s></button>
+                        <button onclick="format('bold'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="굵게 (Ctrl+B)"><b>B</b></button>
+                        <button onclick="format('italic'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="기울임 (Ctrl+I)"><i>I</i></button>
+                        <button onclick="format('underline'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="밑줄 (Ctrl+U)"><u>U</u></button>
+                        <button onclick="format('strikeThrough'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="취소선"><s>S</s></button>
                         <div class="separator"></div>
                         <div class="color-button-wrapper">
                             <button class="color-button text-color-btn" onclick="document.getElementById('textColor').click()" title="글자 색">
@@ -81,40 +81,40 @@
                             </button>
                         </div>
                         <div class="color-picker">
-                            <input type="color" id="bgColor" onchange="format('hiliteColor', this.value)" title="배경 색">
+                            <input type="color" id="bgColor" onchange="changeBgColor(this.value)" title="배경 색">
                         </div>                        
                         
                         <div class="separator"></div>
                         
-                        <button onclick="format('insertUnorderedList')" title="글머리 기호">• 목록</button>
-                        <button onclick="format('insertOrderedList')" title="번호 매기기">1. 목록</button>
+                        <button onclick="format('insertUnorderedList'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="글머리 기호">• 목록</button>
+                        <button onclick="format('insertOrderedList'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="번호 매기기">1. 목록</button>
                         
                         <div class="separator"></div>
                         
-                        <button onclick="format('justifyLeft')" title="왼쪽 정렬">좌측</button>
-                        <button onclick="format('justifyCenter')" title="가운데 정렬">중앙</button>
-                        <button onclick="format('justifyRight')" title="오른쪽 정렬">우측</button>
-                        <button onclick="format('justifyFull')" title="양쪽 정렬">≡</button>
+                        <button onclick="format('justifyLeft'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="왼쪽 정렬">좌측</button>
+                        <button onclick="format('justifyCenter'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="가운데 정렬">중앙</button>
+                        <button onclick="format('justifyRight'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="오른쪽 정렬">우측</button>
+                        <button onclick="format('justifyFull'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="양쪽 정렬">≡</button>
                         
                         
                         
                         <div class="separator"></div>
                         
-                        <button onclick="insertLink()" title="링크 삽입">🔗</button>
-                        <button onclick="format('unlink')" title="링크 제거">🔗✕</button>
+                        <button onclick="insertLink(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="링크 삽입">🔗</button>
+                        <button onclick="format('unlink'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="링크 제거">🔗✕</button>
                         
                         <div class="separator"></div>
                         
-                        <button onclick="format('undo')" title="실행 취소">↶</button>
-                        <button onclick="format('redo')" title="다시 실행">↷</button>
+                        <button onclick="format('undo'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="실행 취소">↶</button>
+                        <button onclick="format('redo'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="다시 실행">↷</button>
                         
                         <div class="separator"></div>
                         
-                        <button id="codeViewToggle" onclick="toggleCodeView()" title="HTML 코드 보기">HTML</button>
+                        <button id="codeViewToggle" onclick="toggleCodeView(); setTimeout(() => { if(window.editor && !window.editor.isCodeView) { window.editor.editor.focus(); } }, 10);" title="HTML 코드 보기">HTML</button>
                     </div>
                     
                     <div class="simple-editor" contenteditable="true" id="editor">
-                        <p>✍️ 여기에 텍스트를 입력하세요.</p>
+                        <div>✍️ 여기에 텍스트를 입력하세요.</div>
                     </div>
 
 
