@@ -313,6 +313,7 @@
         max-width: none;
         padding: 8px;
         gap: 3px;
+        flex-wrap: nowrap;
     }
     
     .simple-toolbar button {
