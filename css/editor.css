@@ -1,31 +1,89 @@
 /* Editor Specific Styles */
-
+.main{
+    padding-top: 0;
+}
 /* Simple Editor Styles */
 .simple-editor-wrapper {
     background: white;
+    border-radius: 8px;
     overflow: hidden;
     margin: 20px 0;
     position: relative;
-    padding-bottom: 80px; /* 플로팅 툴바를 위한 여유 공간 */
+}
+
+/* Header Styles */
+.header {
+    background: #fff;
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header .container {
+    max-width: 100%;
+}
+
+.header-actions {
+    padding: 10px 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.homeBtn {
+    color: #000;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.homeBtn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+}
+
+.homeBtn {
+    color: #000;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* Toolbar Section Styles */
+.toolbar-section {
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.toolbar-section .container {
+    max-width: 100%;
+}
+
+.header-toolbar {
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
 }
 
 .simple-toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    width: fit-content;
+    gap: 8px;
     padding: 12px;
-    background: rgba(248, 249, 250, 0.95);
-    backdrop-filter: blur(10px);
+    background: #f8f9fa;
     border: 1px solid #dee2e6;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    max-width: 1000px;
-    width: 100%;
+    border-radius: 8px;
     overflow-x: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE */
@@ -37,7 +95,7 @@
 
 /* Tags Input Styles */
 .tags-container {
-    margin-top: 15px;
+    margin: 15px 0;
 }
 
 .tags-wrapper {
@@ -334,12 +392,104 @@
     border-bottom: 2px solid var(--border-color);
 }
 .title-input {
-    font-size: var(--font-size-xxl);
+    font-size: 2.5rem;
     font-weight: var(--font-weight-semibold);
     border: none;
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
 }
 .tags-input {
     border: 2px solid var(--border-color);
     border: none;
+}
+
+/* Footer Styles */
+.footer {
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    position: fixed;
+    margin-top: auto;
+    padding: 0;
+    width: 100%;
+    bottom: 0;
+    z-index: 1000;
+}
+
+.footer .container {
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.footer-actions {
+    padding: 15px 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Button Styles */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: #010101;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #ff6600;
+    transform: translateY(-1px);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-actions {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 0;
+    }
+    
+    .footer-right {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        font-size: 16px;
+    }
 }

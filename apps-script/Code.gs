@@ -1,7 +1,37 @@
 /** 1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb
  * Google Apps Script for Blog File Upload
- * 
- * This script handles file uploads to Google Drive and returns public URLs
+function doPost(e) {
+  try {
+    console.log('📥 POST request received');
+    console.log('📋 Request parameters:', e.parameters);
+    console.log('📋 Post data type:', e.postData ? e.postData.type : 'no postData');
+    
+    let requestData;
+    
+    // Handle FormData (from form submission)
+    if (e.parameters && e.parameters.data) {
+      console.log('📝 Processing FormData request');
+      requestData = JSON.parse(e.parameters.data[0]); // FormData values are arrays
+    }
+    // Handle direct JSON (fallback)
+    else if (e.postData && e.postData.contents) {
+      console.log('📝 Processing JSON request');
+      requestData = JSON.parse(e.postData.contents);
+    }
+    else {
+      throw new Error('No valid request data found');
+    }
+    
+    console.log('📋 Parsed request data:', requestData);
+    
+    // Check request type
+    if (requestData.action === 'savePost') {
+      return handlePostSave(requestData);
+    } else if (requestData.file) {
+      return handleFileUpload(requestData);
+    } else {
+      throw new Error('Invalid request: no action specified or file data missing');
+    }ript handles file uploads to Google Drive and returns public URLs
  * for use in the blog editor.
  * 
  * Deployment Instructions:
@@ -15,7 +45,7 @@
 
 // Configuration
 const BLOG_FOLDER_ID = '1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb'; // Replace with your actual folder ID
-const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE'; // Replace with your Google Sheets ID
+const SPREADSHEET_ID = '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY'; // Google Sheets ID from config.js
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov'];
@@ -255,21 +285,49 @@ function handlePostSave(requestData) {
 }
 
 /**
- * Handle GET requests (health check)
+ * Handle GET requests (health check and post saving)
  */
 function doGet(e) {
-  const response = {
-    success: true,
-    message: 'Blog Upload API is running',
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
-    endpoints: {
-      upload: 'POST /',
-      health: 'GET /'
+  try {
+    console.log('📥 GET request received');
+    console.log('📋 Parameters:', e.parameters);
+    
+    // Check if this is a post save request
+    if (e.parameters && e.parameters.action && e.parameters.action[0] === 'savePost') {
+      console.log('📝 Processing GET post save request');
+      const requestData = {
+        action: 'savePost',
+        postData: JSON.parse(e.parameters.data[0])
+      };
+      return handlePostSave(requestData);
     }
-  };
-  
-  return createJsonResponse(response);
+    
+    // Default health check response
+    const response = {
+      success: true,
+      message: 'Blog Upload API is running',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      endpoints: {
+        upload: 'POST /',
+        health: 'GET /',
+        savePost: 'GET /?action=savePost&data=...'
+      }
+    };
+    
+    return createJsonResponse(response);
+    
+  } catch (error) {
+    console.error('❌ GET request error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
 }
 
 /**

@@ -16,15 +16,84 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <a href="/">My Blog</a>
+            <div class="header-actions">
+                <div class="header-left">
+                    <a href="/" class="homeBtn">홈</a>
                 </div>
-                <nav class="nav">
-                </nav>
             </div>
         </div>
     </header>
+
+    <!-- Toolbar Section -->
+    <div class="toolbar-section">
+        <div class="container">
+            <div class="header-toolbar">
+                <div class="simple-toolbar">
+                    
+                    <select onchange="format('formatBlock', this.value); this.value=''; setTimeout(() => { if(window.editor) { window.editor.editor.focus(); window.editor.moveCaretToEnd(); } }, 10);">
+                        <option value="">단락 스타일</option>
+                        <option value="h1">제목 1</option>
+                        <option value="h2">제목 2</option>
+                        <option value="h3">제목 3</option>
+                        <option value="p">본문</option>
+                    </select>
+                    
+                    <select onchange="format('fontSize', this.value); this.value=''; setTimeout(() => { if(window.editor) { window.editor.editor.focus(); window.editor.moveCaretToEnd(); } }, 10);">
+                        <option value="">글자 크기</option>
+                        <option value="1">매우 작게</option>
+                        <option value="3">작게</option>
+                        <option value="5">보통</option>
+                        <option value="6">크게</option>
+                        <option value="7">매우 크게</option>
+                    </select>
+                    
+                    <div class="separator"></div>
+                    <button onclick="format('bold'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="굵게 (Ctrl+B)"><b>B</b></button>
+                    <button onclick="format('italic'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="기울임 (Ctrl+I)"><i>I</i></button>
+                    <button onclick="format('underline'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="밑줄 (Ctrl+U)"><u>U</u></button>
+                    <button onclick="format('strikeThrough'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="취소선"><s>S</s></button>
+                    <div class="separator"></div>
+                    <div class="color-button-wrapper">
+                        <button class="color-button text-color-btn" onclick="document.getElementById('textColor').click()" title="글자 색">
+                            <span class="color-letter">A</span>
+                            <span class="color-bar" id="textColorBar"></span>
+                            <input type="color" id="textColor" onchange="changeTextColor(this.value)" style="display: none;">
+                        </button>
+                    </div>
+                    <div class="color-picker">
+                        <input type="color" id="bgColor" onchange="changeBgColor(this.value)" title="배경 색">
+                    </div>                        
+                    
+                    <div class="separator"></div>
+                    
+                    <button onclick="format('insertUnorderedList'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="글머리 기호">•</button>
+                    <button onclick="format('insertOrderedList'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="번호 매기기">1.</button>
+                    
+                    <div class="separator"></div>
+                    
+                    <button onclick="format('justifyLeft'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="왼쪽 정렬">L</button>
+                    <button onclick="format('justifyCenter'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="가운데 정렬">C</button>
+                    <button onclick="format('justifyRight'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="오른쪽 정렬">R</button>
+                    <button onclick="format('justifyFull'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="양쪽 정렬">≡</button>
+                    
+                    
+                    
+                    <div class="separator"></div>
+                    
+                    <button id="linkToggleBtn" onclick="toggleLink(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="링크">🔗</button>
+                    
+                    <div class="separator"></div>
+                    
+                    <button onclick="format('undo'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="실행 취소">↶</button>
+                    <button onclick="format('redo'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="다시 실행">↷</button>
+                    
+                    <div class="separator"></div>
+                    
+                    <button id="codeViewToggle" onclick="toggleCodeView(); setTimeout(() => { if(window.editor && !window.editor.isCodeView) { window.editor.editor.focus(); } }, 10);" title="HTML 코드 보기">HTML</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="main">
@@ -37,89 +106,21 @@
                 <!-- Post Metadata -->
                 <div class="post-metadata">
                     <input type="text" id="postTitle" placeholder="Untitled..." class="title-input">
-                    <div class="tags-container">
-                        <div class="tags-wrapper" id="tagsWrapper">
-                            <!-- 태그들이 여기에 동적으로 추가됩니다 -->
-                            <input type="text" id="tagInput" class="tag-input" placeholder="태그 입력 후 쉼표나 엔터">
-                        </div>
-                    </div>
                 </div>
-
+                
                 <!-- Simple Editor Container -->
                 <div class="simple-editor-wrapper">
-
-                    <div class="simple-toolbar">
-                        
-                        <select onchange="format('formatBlock', this.value); this.value=''; setTimeout(() => { if(window.editor) { window.editor.editor.focus(); window.editor.moveCaretToEnd(); } }, 10);">
-                            <option value="">단락 스타일</option>
-                            <option value="h1">제목 1</option>
-                            <option value="h2">제목 2</option>
-                            <option value="h3">제목 3</option>
-                            <option value="p">본문</option>
-                        </select>
-                        
-                        <select onchange="format('fontSize', this.value); this.value=''; setTimeout(() => { if(window.editor) { window.editor.editor.focus(); window.editor.moveCaretToEnd(); } }, 10);">
-                            <option value="">글자 크기</option>
-                            <option value="1">매우 작게</option>
-                            <option value="3">작게</option>
-                            <option value="5">보통</option>
-                            <option value="6">크게</option>
-                            <option value="7">매우 크게</option>
-                        </select>
-                        
-                        <div class="separator"></div>
-                        <button onclick="format('bold'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="굵게 (Ctrl+B)"><b>B</b></button>
-                        <button onclick="format('italic'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="기울임 (Ctrl+I)"><i>I</i></button>
-                        <button onclick="format('underline'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="밑줄 (Ctrl+U)"><u>U</u></button>
-                        <button onclick="format('strikeThrough'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="취소선"><s>S</s></button>
-                        <div class="separator"></div>
-                        <div class="color-button-wrapper">
-                            <button class="color-button text-color-btn" onclick="document.getElementById('textColor').click()" title="글자 색">
-                                <span class="color-letter">A</span>
-                                <span class="color-bar" id="textColorBar"></span>
-                                <input type="color" id="textColor" onchange="changeTextColor(this.value)" style="display: none;">
-                            </button>
-                        </div>
-                        <div class="color-picker">
-                            <input type="color" id="bgColor" onchange="changeBgColor(this.value)" title="배경 색">
-                        </div>                        
-                        
-                        <div class="separator"></div>
-                        
-                        <button onclick="format('insertUnorderedList'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="글머리 기호">• 목록</button>
-                        <button onclick="format('insertOrderedList'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="번호 매기기">1. 목록</button>
-                        
-                        <div class="separator"></div>
-                        
-                        <button onclick="format('justifyLeft'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="왼쪽 정렬">좌측</button>
-                        <button onclick="format('justifyCenter'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="가운데 정렬">중앙</button>
-                        <button onclick="format('justifyRight'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="오른쪽 정렬">우측</button>
-                        <button onclick="format('justifyFull'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="양쪽 정렬">≡</button>
-                        
-                        
-                        
-                        <div class="separator"></div>
-                        
-                        <button onclick="insertLink(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="링크 삽입">🔗</button>
-                        <button onclick="format('unlink'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="링크 제거">🔗✕</button>
-                        
-                        <div class="separator"></div>
-                        
-                        <button onclick="format('undo'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="실행 취소">↶</button>
-                        <button onclick="format('redo'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="다시 실행">↷</button>
-                        
-                        <div class="separator"></div>
-                        
-                        <button id="codeViewToggle" onclick="toggleCodeView(); setTimeout(() => { if(window.editor && !window.editor.isCodeView) { window.editor.editor.focus(); } }, 10);" title="HTML 코드 보기">HTML</button>
-                    </div>
-                    
                     <div class="simple-editor" contenteditable="true" id="editor">
                         <div>✍️ 여기에 텍스트를 입력하세요.</div>
                     </div>
-
-
                 </div>
-
+                <div class="tags-container">
+                    <div class="tags-wrapper" id="tagsWrapper">
+                        <!-- 태그들이 여기에 동적으로 추가됩니다 -->
+                        <input type="text" id="tagInput" class="tag-input" placeholder="#태그입력">
+                    </div>
+                </div>
+                
                 <!-- Upload Progress -->
                 <div id="uploadProgress" class="upload-progress" style="display: none;">
                     <div class="progress-bar">
@@ -127,27 +128,27 @@
                     </div>
                     <span id="progressText">업로드 중...</span>
                 </div>
-
+                
                 <!-- Editor Actions -->
-                <div class="editor-actions">
-                    <button type="button" class="btn btn-success" id="saveBtn">Google Sheets에 저장</button>
-                </div>
             </div>
         </div>
     </main>
-
+    
     <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-container">
         <!-- 토스트 메시지들이 동적으로 추가됩니다 -->
     </div>
-
+    
     <!-- Footer -->
-    <!-- <footer class="footer">
+    <footer class="footer">
         <div class="container">
-            <p>&copy; 2024 My Blog. All rights reserved.</p>
-            <p>Powered by Google Sheets & Vanilla JavaScript</p>
+            <div class="footer-actions">
+                <div class="footer-right">
+                    <button type="button" class="btn btn-success" id="saveBtn">저장</button>
+                </div>
+            </div>
         </div>
-    </footer> -->
+    </footer>
 
     <!-- Scripts -->
     <script src="js/config.js"></script>
@@ -238,6 +239,104 @@
             }
         }
         
+        // 스마트 링크 토글 함수
+        function toggleLink() {
+            const selection = window.getSelection();
+            const linkBtn = document.getElementById('linkToggleBtn');
+            
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                let parentElement = range.commonAncestorContainer;
+                
+                // 텍스트 노드인 경우 부모 요소 찾기
+                if (parentElement.nodeType === Node.TEXT_NODE) {
+                    parentElement = parentElement.parentElement;
+                }
+                
+                // 현재 선택 영역이 링크 안에 있는지 확인
+                let linkElement = null;
+                let currentElement = parentElement;
+                
+                // 부모를 거슬러 올라가며 링크 요소 찾기
+                while (currentElement && currentElement !== document.body) {
+                    if (currentElement.tagName === 'A') {
+                        linkElement = currentElement;
+                        break;
+                    }
+                    currentElement = currentElement.parentElement;
+                }
+                
+                if (linkElement) {
+                    // 링크가 있으면 제거
+                    format('unlink');
+                    linkBtn.textContent = '🔗';
+                    linkBtn.title = '링크 삽입';
+                    linkBtn.style.color = '';
+                } else {
+                    // 링크가 없으면 삽입
+                    if (selection.toString().trim()) {
+                        // 텍스트가 선택된 경우
+                        insertLink();
+                        linkBtn.textContent = '🔗';
+                        linkBtn.title = '링크 제거';
+                        linkBtn.style.color = '#007bff';
+                    } else {
+                        // 텍스트가 선택되지 않은 경우
+                        alert('링크를 추가할 텍스트를 먼저 선택해주세요.');
+                    }
+                }
+            } else {
+                alert('링크를 추가할 텍스트를 먼저 선택해주세요.');
+            }
+            
+            // 버튼 상태 업데이트
+            updateLinkButtonState();
+        }
+        
+        // 링크 버튼 상태 업데이트
+        function updateLinkButtonState() {
+            const linkBtn = document.getElementById('linkToggleBtn');
+            const selection = window.getSelection();
+            
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                let parentElement = range.commonAncestorContainer;
+                
+                if (parentElement.nodeType === Node.TEXT_NODE) {
+                    parentElement = parentElement.parentElement;
+                }
+                
+                // 링크 요소 찾기
+                let currentElement = parentElement;
+                let hasLink = false;
+                
+                while (currentElement && currentElement !== document.body) {
+                    if (currentElement.tagName === 'A') {
+                        hasLink = true;
+                        break;
+                    }
+                    currentElement = currentElement.parentElement;
+                }
+                
+                if (hasLink) {
+                    linkBtn.style.backgroundColor = '#007bff';
+                    linkBtn.style.color = 'white';
+                    linkBtn.title = '링크 제거';
+                } else {
+                    linkBtn.style.backgroundColor = '';
+                    linkBtn.style.color = '';
+                    linkBtn.title = '링크 삽입';
+                }
+            }
+        }
+        
+        // 에디터에서 선택 변경 시 링크 버튼 상태 업데이트
+        document.addEventListener('selectionchange', () => {
+            if (document.getElementById('linkToggleBtn')) {
+                updateLinkButtonState();
+            }
+        });
+
         // Initialize tags input when DOM is ready
         let tagsInput;
         document.addEventListener('DOMContentLoaded', () => {

@@ -322,8 +322,7 @@ class RichTextEditor {
      * Setup auto-save to localStorage
      */
     setupAutoSave() {
-        // Load saved content
-        this.loadFromLocalStorage();
+        // 자동 저장만 설정 (초안 복원 기능 제거)
         
         // Save every 30 seconds
         setInterval(() => {
@@ -741,44 +740,12 @@ class RichTextEditor {
     }
 
     /**
-     * Load content from localStorage
+     * Load content from localStorage (disabled - no auto restore)
      */
     loadFromLocalStorage() {
-        try {
-            const saved = localStorage.getItem('editor_draft');
-            if (!saved) return;
-
-            const metadata = JSON.parse(saved);
-            
-            // Only load if content exists and is relatively recent (< 7 days)
-            const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-            if (metadata.timestamp > sevenDaysAgo && metadata.content.trim()) {
-                
-                // Ask user if they want to restore
-                if (confirm('저장된 초안이 있습니다. 복원하시겠습니까?')) {
-                    this.setHTML(metadata.content);
-                    
-                    // Restore metadata
-                    if (metadata.title) {
-                        const titleInput = document.getElementById('postTitle');
-                        if (titleInput) titleInput.value = metadata.title;
-                    }
-                    
-                    if (metadata.author) {
-                        const authorInput = document.getElementById('postAuthor');
-                        if (authorInput) authorInput.value = metadata.author;
-                    }
-                    
-                    if (metadata.tags && window.tagsInput) {
-                        window.tagsInput.setTags(metadata.tags);
-                    }
-                    
-                    showToast('초안이 복원되었습니다', 'success');
-                }
-            }
-        } catch (error) {
-            console.error('Draft restore error:', error);
-        }
+        // 초안 복원 기능 비활성화
+        // 자동 저장은 계속 작동하지만 자동 복원은 하지 않음
+        return;
     }
 
     /**
@@ -953,7 +920,8 @@ function setupEditorButtons() {
                 }
             };
             
-            console.log('💾 Saving post to Google Sheets...', postData);
+            console.log('💾 Saving post to Google Sheets...');
+            console.log('📝 Post data:', postData);
             console.log('🔗 Using API URL:', CONFIG.UPLOAD_API_URL);
             
             // Check if API URL is configured
@@ -962,24 +930,32 @@ function setupEditorButtons() {
             }
             
             // Send to Google Apps Script
-            const response = await fetch(CONFIG.UPLOAD_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(postData)
+            console.log('🚀 Sending request to Google Apps Script...');
+            
+            // URL 파라미터로 데이터 전송 (CORS 문제 회피)
+            const params = new URLSearchParams();
+            params.append('action', 'savePost');
+            params.append('data', JSON.stringify(postData));
+            
+            const response = await fetch(`${CONFIG.UPLOAD_API_URL}?${params.toString()}`, {
+                method: 'GET'
             });
             
+            console.log('📡 Response received!');
             console.log('📡 Response status:', response.status);
-            console.log('📡 Response headers:', response.headers);
+            console.log('📡 Response statusText:', response.statusText);
+            console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
             
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('❌ Response error:', errorText);
-                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                console.error('❌ Response not OK - Status:', response.status);
+                console.error('❌ Response error text:', errorText);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}\n응답: ${errorText}`);
             }
             
+            console.log('✅ Response OK, parsing JSON...');
             const result = await response.json();
+            console.log('📋 Parsed result:', result);
             
             if (result.success) {
                 showToast(`포스트가 성공적으로 저장되었습니다! (ID: ${result.postId})`, 'success', 5000);
@@ -1001,8 +977,24 @@ function setupEditorButtons() {
             }
             
         } catch (error) {
-            console.error('❌ Save error:', error);
-            showToast(`저장 실패: ${error.message}`, 'error', 5000);
+            console.error('❌ Save error details:');
+            console.error('- Error type:', error.constructor.name);
+            console.error('- Error message:', error.message);
+            console.error('- Error stack:', error.stack);
+            
+            let errorMessage = '저장에 실패했습니다';
+            
+            if (error.message.includes('Failed to fetch')) {
+                errorMessage = '네트워크 연결을 확인해주세요. Google Apps Script에 접근할 수 없습니다.';
+            } else if (error.message.includes('HTTP')) {
+                errorMessage = `서버 오류: ${error.message}`;
+            } else if (error.message.includes('Google Apps Script URL')) {
+                errorMessage = 'Google Apps Script URL이 설정되지 않았습니다.';
+            } else {
+                errorMessage = `저장 실패: ${error.message}`;
+            }
+            
+            showToast(errorMessage, 'error', 8000);
         } finally {
             // Reset button state
             if (saveBtn) {
