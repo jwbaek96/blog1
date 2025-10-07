@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets 기반 블로그</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="구글 스프레드시트를 데이터베이스로 활용하는 블로그">
+    <meta name="keywords" content="블로그, Google Sheets, 바닐라 JavaScript">
+    <meta name="author" content="Your Name">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Google Sheets 기반 블로그">
+    <meta property="og:description" content="구글 스프레드시트를 데이터베이스로 활용하는 블로그">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://jwbaek96.github.io/blog1/">
+    <!-- Icon -->
+    <link rel="shortcut icon" href="./assets/Vector.png">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="/">My Blog</a>
+                </div>
+                <nav class="nav">
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Filter Section -->
+            <section class="filters">
+                <div class="tag-filters" id="tagFilters">
+                    <!-- 태그 필터들이 동적으로 추가됩니다 -->
+                </div>
+            </section>
+
+            <!-- Posts Section -->
+            <section class="posts">
+                <div id="postsContainer" class="posts-grid">
+                    <!-- 포스트들이 동적으로 로드됩니다 -->
+                </div>
+                <div id="loadingSpinner" class="loading">
+                    <div class="spinner"></div>
+                    <p>포스트를 불러오는 중...</p>
+                </div>
+                <div id="errorMessage" class="error-message" style="display: none;">
+                    <p>포스트를 불러오는데 실패했습니다. 나중에 다시 시도해주세요.</p>
+                </div>
+            </section>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination">
+                <!-- 페이지네이션이 동적으로 추가됩니다 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 My Blog. All rights reserved.</p>
+            <p>Powered by Google Sheets & Vanilla JavaScript</p>
+        </div>
+    </footer>
+
+    <!-- Floating Editor Button -->
+    <a href="editor.html" class="floating-editor-btn" title="새 포스트 작성">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </a>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/sheets.js"></script>
+    <script src="js/blog.js"></script>
+</body>
+</html>

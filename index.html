@@ -3,26 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets 기반 블로그</title>
+    <title>JW.BAEK   - Web Designer & Art Director</title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="구글 스프레드시트를 데이터베이스로 활용하는 블로그">
-    <meta name="keywords" content="블로그, Google Sheets, 바닐라 JavaScript">
-    <meta name="author" content="Your Name">
+    <meta name="description" content="Web Designer & Art Director - 창의적이고 혁신적인 디자인 솔루션을 제공합니다">
+    <meta name="keywords" content="웹디자인, 아트디렉터, UI/UX, 그래픽디자인, 브랜딩">
+    <meta name="author" content="JW.BAEk">
     
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Google Sheets 기반 블로그">
-    <meta property="og:description" content="구글 스프레드시트를 데이터베이스로 활용하는 블로그">
+    <meta property="og:title" content="JW.BAEK   - Web Designer & Art Director">
+    <meta property="og:description" content="창의적이고 혁신적인 디자인 솔루션을 제공합니다">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://jwbaek96.github.io/blog1/">
+    
     <!-- Icon -->
     <link rel="shortcut icon" href="./assets/Vector.png">
+    
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/main.css">
+    <!-- <link rel="stylesheet" href="css/main.css"> -->
+    <link rel="stylesheet" href="css/index.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Landing Page Specific Styles */
+        .hero-landing {
+            background-image: url('assets/freepik__expand.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-landing::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 100%;
+            /* max-width: 800px; */
+            margin: 0 auto;
+            padding: var(--spacing-xl);
+        }
+        
+        .hero-landing h1 {
+            font-size:7rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-lg);
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .hero-subtitle {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-xl);
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+        
+        .hero-cta {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+        
+        .cta-button {
+            padding: var(--spacing-md) var(--spacing-xl);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .cta-primary {
+            background: white;
+            color: #667eea;
+        }
+        
+        .cta-primary:hover {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+        }
+        
+        /* About Section */
+        .about-section {
+            padding: 5rem 4rem;
+            background:#eee;
+        }
+        
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 35px;
+            /* align-items: center; */
+        }
+        
+        .about-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-lg);
+            color: var(--text-primary);
+        }
+        
+        .about-text p {
+            font-size: var(--font-size-lg);
+            line-height: 1.8;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-secondary);
+        }
+        
+        .about-image {
+            position: relative;
+        }
+        
+        .about-image img {
+            /* width: 100%; */
+            height: 650px;
+            aspect-ratio: 4/5;
+            object-fit: cover;
+            border-radius: 20px;
+            box-shadow: var(--box-shadow-lg);
+        }
+        
+        /* Mobile Header */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-landing h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: var(--font-size-lg);
+            }
+            
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+            .about-section{
+                padding: 0;
+            }
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-xl);
+                text-align: center;
+            }
+            
+            .about-grid .about-image {
+                order: -1;
+            }
+            
+            .about-image img {
+                height: 300px;
+                width: 100%;
+                border-radius: 0;
+            }
+            .about-text{
+                padding: 0 2rem 3rem;
+            }
+            .about-text h2 {
+                font-size: 2rem;
+            }
+            
+
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--bg-primary);
+                border-top: 1px solid var(--border-color);
+                flex-direction: column;
+                padding: var(--spacing-md) 0;
+            }
+            
+            .nav.active {
+                display: flex;
+            }
+            
+            .header-content {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -30,64 +248,133 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="/">My Blog</a>
+                    <a href="index.html">JW.BAEK    </a>
                 </div>
-                <nav class="nav">
+                <button class="mobile-menu-toggle" onclick="toggleMenu()">☰</button>
+                <nav class="nav" id="mainNav">
+                    <a href="#home" class="nav-link">HOME</a>
+                    <a href="#about" class="nav-link">ABOUT</a>
+                    <a href="blog.html" class="nav-link">BLOG</a>
+                    <a href="#contact" class="nav-link">CONTACT</a>
                 </nav>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="main">
+    <!-- Hero Section -->
+    <section id="home" class="hero-landing">
         <div class="container">
-            <!-- Filter Section -->
-            <section class="filters">
-                <div class="tag-filters" id="tagFilters">
-                    <!-- 태그 필터들이 동적으로 추가됩니다 -->
-                </div>
-            </section>
-
-            <!-- Posts Section -->
-            <section class="posts">
-                <div id="postsContainer" class="posts-grid">
-                    <!-- 포스트들이 동적으로 로드됩니다 -->
-                </div>
-                <div id="loadingSpinner" class="loading">
-                    <div class="spinner"></div>
-                    <p>포스트를 불러오는 중...</p>
-                </div>
-                <div id="errorMessage" class="error-message" style="display: none;">
-                    <p>포스트를 불러오는데 실패했습니다. 나중에 다시 시도해주세요.</p>
-                </div>
-            </section>
-
-            <!-- Pagination -->
-            <div class="pagination" id="pagination">
-                <!-- 페이지네이션이 동적으로 추가됩니다 -->
+            <div class="hero-content">
+                <h1>JW.BAEK     </h1>
+                <p class="hero-subtitle">Web Developer & Artist</p>
             </div>
         </div>
-    </main>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-image">
+                    <img src="assets/profile2.png" alt="JW.BAEK      Profile">
+                </div>
+                <div class="about-text">
+                    <h2>This is JW.BAEK</h2>
+                    <p>Lenticular Art | Touchdesigner | Unreal Engine | IDM | Ambient | Web Development | PPT Design</p>
+                    <br>
+                    <p>Lenticular Art부터 Touchdesigner, Unreal Engine을 활용한 몰입형 경험 디자인, 그리고 IDM, Ambient 사운드스케이프 창조, Web Development, PPT Design에 이르기까지, 다양한 영역을 넘나들며 새로운 가치를 창출합니다.</p>
+                    <br>
+                    <p>또한,  이 다채로운 도구와 언어를 통해 물리적 공간과 디지털 영역을 아우르는 독창적인 결과물을 만들어냅니다. 시각 예술, 사운드, 인터랙티브 미디어를 융합하여 독특한 경험을 디자인합니다.</p>
+                    <br>
+                    <p>다채로운 분야들을 자유롭게 넘나들며, 정적인 이미지부터 실시간 인터랙티브, 그리고 청각적 경험과 비즈니스 커뮤니케이션에 이르기까지 전방위적인 창작 활동을 펼칩니다.</p>
+                    <!-- <p>다채로운 분야들을 자유롭게 넘나들며, 정적인 이미지(Lenticular Art)부터 실시간 인터랙티브(Touchdesigner, Unreal Engine), 그리고 청각적 경험(IDM, Ambient)과 비즈니스 커뮤니케이션(Web Development, PPT Design)에 이르기까지 전방위적인 창작 활동을 펼칩니다.</p> -->
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2025 My Blog. All rights reserved.</p>
-            <p>Powered by Google Sheets & Vanilla JavaScript</p>
+    <footer id="contact">
+        <div class="footer-content">
+            <h3 class="footer-title">연락처</h3>
+            
+            <div class="footer-links">
+                <a href="mailto:jwbaek96@gmail.com">
+                    <span>📧</span>
+                    jwbaek96@gmail.com
+                </a>
+                <a href="#" target="_blank" rel="noopener">
+                    <span>�</span>
+                    LinkedIn
+                </a>
+                <a href="#" target="_blank" rel="noopener">
+                    <span>�</span>
+                    Instagram
+                </a>
+                <a href="blog.html">
+                    <span>📝</span>
+                    Blog
+                </a>
+            </div>
+            
+            <!-- <div class="footer-divider"></div> -->
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 JW.BAEK. All rights reserved.</p>
+                <p>Creative Portfolio & Digital Experience</p>
+            </div>
         </div>
     </footer>
 
-    <!-- Floating Editor Button -->
-    <a href="editor.html" class="floating-editor-btn" title="새 포스트 작성">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-    </a>
-
     <!-- Scripts -->
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/sheets.js"></script>
-    <script src="js/blog.js"></script>
+    <script>
+        // 모바일 메뉴 토글
+        function toggleMenu() {
+            const nav = document.getElementById('mainNav');
+            nav.classList.toggle('active');
+        }
+        
+        // 스무스 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+                
+                // 모바일 메뉴 닫기
+                const nav = document.getElementById('mainNav');
+                nav.classList.remove('active');
+            });
+        });
+        
+        // 네비게이션 활성화 (스크롤 시)
+        window.addEventListener('scroll', () => {
+            const sections = ['home', 'about', 'contact'];
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let currentSection = '';
+            sections.forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    const rect = section.getBoundingClientRect();
+                    if (rect.top <= 100 && rect.bottom >= 100) {
+                        currentSection = sectionId;
+                    }
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

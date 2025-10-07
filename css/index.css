@@ -1,0 +1,151 @@
+html{
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+header{
+    position: fixed;
+    top: 0;
+    background-color: #ffffff00;
+    width: 100%;
+    color: white;
+    z-index: 1000;
+}
+header a{
+    color: white;
+    text-decoration: none;
+}
+.header-content{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+}
+
+/* Footer Styles */
+footer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 1px solid #dee2e6;
+    padding: 4rem 0 2rem;
+    margin-top: 5rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.footer-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 2rem;
+    letter-spacing: -0.02em;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: #636e72;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-links a:hover {
+    color: #2d3436;
+    background-color: rgba(116, 125, 140, 0.1);
+    transform: translateY(-2px);
+}
+
+.footer-divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #b2bec3 50%, transparent 100%);
+    margin: 2rem auto;
+}
+
+.footer-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    /* border-top: 1px solid rgba(178, 190, 195, 0.3);  */
+}
+
+.footer-bottom p {
+    color: #636e72;
+    font-size: 0.85rem;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.footer-bottom p:first-child {
+    font-weight: 600;
+    color: #2d3436;
+}
+
+/* Mobile Footer Styles */
+@media (max-width: 768px) {
+    footer {
+        padding: 3rem 0 1.5rem;
+        margin-top: 3rem;
+    }
+    
+    .footer-content {
+        padding: 0 1.5rem;
+    }
+    
+    .footer-title {
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .footer-links {
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .footer-links a {
+        padding: 0.75rem 1.5rem;
+        background-color: rgba(248, 249, 250, 0.8);
+        border: 1px solid rgba(222, 226, 230, 0.5);
+        border-radius: 12px;
+        width: 100%;
+        max-width: 280px;
+        justify-content: center;
+    }
+    
+    .footer-bottom {
+        gap: 0.75rem;
+        padding-top: 1rem;
+    }
+    
+    .footer-bottom p {
+        font-size: 0.8rem;
+        text-align: center;
+    }
+}
