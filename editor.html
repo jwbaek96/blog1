@@ -111,7 +111,7 @@
                 <!-- Simple Editor Container -->
                 <div class="simple-editor-wrapper">
                     <div class="simple-editor" contenteditable="true" id="editor">
-                        <div>✍️ 여기에 텍스트를 입력하세요.</div>
+                        <div>여기에 텍스트를 입력하세요.</div>
                     </div>
                 </div>
                 <div class="tags-container">
@@ -143,6 +143,16 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-actions">
+                <div class="footer-left">
+                    <select id="statusSelect" class="status-select">
+                        <option value="draft">초안</option>
+                        <option value="published">발행됨</option>
+                        <option value="private">비공개</option>
+                    </select>
+                </div>
+                <div class="footer-center">
+                    <div class="datetime-display" id="realtimeClock"></div>
+                </div>
                 <div class="footer-right">
                     <button type="button" class="btn btn-success" id="saveBtn">저장</button>
                 </div>
@@ -155,6 +165,28 @@
     <script src="js/utils.js"></script>
     <script src="js/upload.js"></script>
     <script src="js/editor.js"></script>
+    
+    <script>
+        // 실시간 시계 기능
+        function updateClock() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const timeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            document.getElementById('realtimeClock').textContent = timeString;
+        }
+        
+        // 페이지 로드 시 시계 시작
+        document.addEventListener('DOMContentLoaded', function() {
+            updateClock(); // 즉시 표시
+            setInterval(updateClock, 1000); // 매초 업데이트
+        });
+    </script>
     
     <!-- Tags Input Script -->
     <script>
