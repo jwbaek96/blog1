@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JW.BAEK   - Web Designer & Art Director</title>
+    <link rel="shortcut icon" href="./assets/Vector.png">
+    <link rel="icon" href="./assets/Vector.png" sizes="96x96" type="image/png">
     
     <!-- SEO Meta Tags -->
     <meta name="description" content="Web Designer & Art Director - 창의적이고 혁신적인 디자인 솔루션을 제공합니다">
@@ -17,8 +19,6 @@
     <meta property="og:url" content="https://jwbaek96.github.io/blog1/">
     
     <!-- Icon -->
-    <link rel="shortcut icon" href="./assets/Vector.png">
-    <link rel="icon" href="./assets/Vector.png" sizes="96x96" type="image/png">
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
@@ -258,6 +258,7 @@
                 <nav class="nav" id="mainNav">
                     <a href="#home" class="nav-link">HOME</a>
                     <a href="#about" class="nav-link">ABOUT</a>
+                    <a href="#exhibition" class="nav-link">EXHIBITION</a>
                     <a href="blog.html" class="nav-link">BLOG</a>
                     <a href="#contact" class="nav-link">CONTACT</a>
                 </nav>
@@ -295,6 +296,66 @@
                     <br>
                         <p>_작가 백종훈</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="exhibition" class="gallery-section">
+        <div class="container">
+            <div class="gallery-header">
+                <h2 class="gallery-title">Recent Works</h2>
+                <p class="gallery-subtitle">Selected projects across different mediums</p>
+            </div>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item" data-category="lenticular">
+                    <div class="item-image">
+                        <div class="image-placeholder">Lenticular Art #1</div>
+                    </div>
+                    <div class="item-info">
+                        <h3>2025 강서청년예술인전<br>《구류;예술인의 흐름》</h3>
+                        <p>Lenticular Art × Interactive Media</p>
+                        <span class="date">2025.9.13 (토) - 2025.9.20 (토)</span>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="interactive">
+                    <div class="item-image">
+                        <div class="image-placeholder">Interactive Media</div>
+                    </div>
+                    <div class="item-info">
+                        <h3>Dummy Item</h3>
+                        <p>Touchdesigner</p>
+                        <span class="date">2024</span>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="sound">
+                    <div class="item-image">
+                        <div class="image-placeholder">Sound Design</div>
+                    </div>
+                    <div class="item-info">
+                        <h3>Dummy Item</h3>
+                        <p>IDM / Ambient</p>
+                        <span class="date">2024</span>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" data-category="web">
+                    <div class="item-image">
+                        <div class="image-placeholder">Web Project</div>
+                    </div>
+                    <div class="item-info">
+                        <h3>Dummy Item</h3>
+                        <p>Web Development</p>
+                        <span class="date">2024</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gallery-footer">
+                <a href="blog.html" class="view-more-btn">View All Projects →</a>
             </div>
         </div>
     </section>
@@ -353,7 +414,7 @@
         
         // 네비게이션 활성화 및 헤더 색상 변경 (스크롤 시)
         window.addEventListener('scroll', () => {
-            const sections = ['home', 'about', 'contact'];
+            const sections = ['home', 'about', 'exhibition', 'contact'];
             const navLinks = document.querySelectorAll('.nav-link');
             const header = document.querySelector('header');
             
