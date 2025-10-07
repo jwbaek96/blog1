@@ -361,7 +361,7 @@ class BlogApp {
                     </div>
                     
                     <div class="post-detail-content">
-                        <p>${post.excerpt}</p>
+                        ${post.content || post.excerpt}
                     </div>
                 </article>
             `;

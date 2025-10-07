@@ -143,7 +143,7 @@ class SheetsAPI {
                 title: (row.title || '').trim() || 'Untitled',
                 date: this.parseDate(row.date),
                 author: (row.author || '').trim() || CONFIG.BLOG_AUTHOR,
-                content: (row.content || '').trim() || '',
+                content: this.cleanContent(row.content || ''),
                 excerpt: createExcerpt(row.content || '', 150),
                 thumbnail: this.processImageUrl(row.thumbnail || ''),
                 tags: this.processTags(row.tags || ''),
@@ -277,6 +277,29 @@ class SheetsAPI {
             .replace(/[^\w\s-]/g, '') // Remove special characters
             .replace(/\s+/g, '-') // Replace spaces with hyphens
             .trim();
+    }
+
+    /**
+     * Clean HTML content by removing excessive whitespace
+     * @param {string} content - Raw HTML content
+     * @returns {string} Cleaned HTML content
+     */
+    cleanContent(content) {
+        if (!content) return '';
+        
+        let cleaned = content.trim();
+        
+        // Remove excessive whitespace between and within tags
+        cleaned = cleaned.replace(/\s+/g, ' '); // Multiple spaces to single space
+        cleaned = cleaned.replace(/>\s+</g, '><'); // Remove spaces between tags
+        cleaned = cleaned.replace(/\s+>/g, '>'); // Remove trailing spaces before closing tags
+        cleaned = cleaned.replace(/<\s+/g, '<'); // Remove leading spaces after opening tags
+        
+        // Clean up empty elements
+        cleaned = cleaned.replace(/<(p|div|span)>\s*<\/(p|div|span)>/gi, '');
+        cleaned = cleaned.replace(/<(p|div|span)>\s*<br\s*\/?>\s*<\/(p|div|span)>/gi, '');
+        
+        return cleaned;
     }
 
     /**

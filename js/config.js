@@ -2,8 +2,8 @@
 
 const CONFIG = {
     // Google Apps Script
-    APPS_SCRIPT_URL: 'AKfycbxOtkI2x179YalaKaFTVn_QRi2T2abmwRGBjfzNLu3UxcHnQ1R2Tn8iUCvVLVXNa_JW', // Apps Script Web App URL (GET/POST 요청용)
-    UPLOAD_API_URL: 'https://script.google.com/macros/s/AKfycbxOtkI2x179YalaKaFTVn_QRi2T2abmwRGBjfzNLu3UxcHnQ1R2Tn8iUCvVLVXNa_JW/exec', // 실제 Apps Script 배포 URL
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbymxh5fEG3A1M9Ty0vaCoEUEgIUq0AXYE-WtPVwXQcwnR65AvrvATIiSuh2h0GLGCvC/exec', // Apps Script Web App URL (GET/POST 요청용)
+    UPLOAD_API_URL: 'https://script.google.com/macros/s/AKfycbymxh5fEG3A1M9Ty0vaCoEUEgIUq0AXYE-WtPVwXQcwnR65AvrvATIiSuh2h0GLGCvC/exec', // 실제 Apps Script 배포 URL
     
     // Google Sheets
     GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 실제 Google 스프레드시트 ID

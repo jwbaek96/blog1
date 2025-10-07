@@ -674,7 +674,25 @@ class RichTextEditor {
      * @returns {string} HTML content
      */
     getHTML() {
-        return this.editor.innerHTML;
+        // Get HTML and clean up formatting
+        let html = this.editor.innerHTML;
+        
+        // Remove excessive whitespace and line breaks
+        html = html.replace(/\s+/g, ' ').trim();
+        
+        // Clean up common formatting issues
+        html = html.replace(/>\s+</g, '><'); // Remove spaces between tags
+        html = html.replace(/\s+>/g, '>'); // Remove trailing spaces before closing tags
+        html = html.replace(/<\s+/g, '<'); // Remove leading spaces after opening tags
+        
+        // Replace multiple consecutive spaces with single space
+        html = html.replace(/\s{2,}/g, ' ');
+        
+        // Clean up empty paragraphs and divs
+        html = html.replace(/<(p|div)>\s*<\/(p|div)>/gi, '');
+        html = html.replace(/<(p|div)>\s*<br\s*\/?>\s*<\/(p|div)>/gi, '');
+        
+        return html;
     }
 
     /**

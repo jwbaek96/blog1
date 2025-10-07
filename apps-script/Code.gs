@@ -26,11 +26,20 @@ const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi'
 function doGet(e) {
   try {
     console.log('📥 GET request received');
+    console.log('📋 Parameters:', e.parameter);
     
     const action = e.parameter.action || 'getPosts';
     
     if (action === 'getPosts') {
       return handleGetPosts();
+    } else if (action === 'savePost') {
+      // Handle post save via GET request (from editor)
+      const postData = JSON.parse(e.parameter.data || '{}');
+      const requestData = {
+        action: 'savePost',
+        postData: postData
+      };
+      return handlePostSave(requestData);
     } else {
       throw new Error('Invalid action: ' + action);
     }
