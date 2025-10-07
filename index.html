@@ -18,6 +18,7 @@
     
     <!-- Icon -->
     <link rel="shortcut icon" href="./assets/Vector.png">
+    <link rel="icon" href="./assets/Vector.png" sizes="96x96" type="image/png">
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
@@ -26,7 +27,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/0470599ade.js" crossorigin="anonymous"></script>
     <style>
         /* Landing Page Specific Styles */
         .hero-landing {
@@ -35,6 +38,7 @@
             background-position: center;
             background-repeat: no-repeat;
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             color: white;
@@ -286,8 +290,10 @@
                     <br>
                     <p>또한,  이 다채로운 도구와 언어를 통해 물리적 공간과 디지털 영역을 아우르는 독창적인 결과물을 만들어냅니다. 시각 예술, 사운드, 인터랙티브 미디어를 융합하여 독특한 경험을 디자인합니다.</p>
                     <br>
-                    <p>다채로운 분야들을 자유롭게 넘나들며, 정적인 이미지부터 실시간 인터랙티브, 그리고 청각적 경험과 비즈니스 커뮤니케이션에 이르기까지 전방위적인 창작 활동을 펼칩니다.</p>
+                    <p>다채로운 분야들을 자유롭게 넘나들며, 정적인 이미지부터 실시간 인터랙티브, 그리고 청각적 경험과 비즈니스 커뮤니케이션 등 전방위적인 창작 활동을 펼칩니다.</p>
                     <!-- <p>다채로운 분야들을 자유롭게 넘나들며, 정적인 이미지(Lenticular Art)부터 실시간 인터랙티브(Touchdesigner, Unreal Engine), 그리고 청각적 경험(IDM, Ambient)과 비즈니스 커뮤니케이션(Web Development, PPT Design)에 이르기까지 전방위적인 창작 활동을 펼칩니다.</p> -->
+                    <br>
+                        <p>_작가 백종훈</p>
                 </div>
             </div>
         </div>
@@ -296,30 +302,23 @@
     <!-- Footer -->
     <footer id="contact">
         <div class="footer-content">
-            <h3 class="footer-title">연락처</h3>
-            
             <div class="footer-links">
                 <a href="mailto:jwbaek96@gmail.com">
-                    <span>📧</span>
-                    jwbaek96@gmail.com
+                    <i class="fa-regular fa-envelope"></i>
                 </a>
                 <a href="#" target="_blank" rel="noopener">
-                    <span>�</span>
-                    LinkedIn
-                </a>
-                <a href="#" target="_blank" rel="noopener">
-                    <span>�</span>
-                    Instagram
+                    <i class="fa-brands fa-instagram"></i>
                 </a>
                 <a href="blog.html">
-                    <span>📝</span>
-                    Blog
+                    <span>Blog</span>
                 </a>
             </div>
             
             <!-- <div class="footer-divider"></div> -->
             
             <div class="footer-bottom">
+                <!-- <span>jwbaek96@gmail.com</span> -->
+                <p>OA Design Studio</p>
                 <p>&copy; 2025 JW.BAEK. All rights reserved.</p>
                 <p>Creative Portfolio & Digital Experience</p>
             </div>
@@ -352,10 +351,11 @@
             });
         });
         
-        // 네비게이션 활성화 (스크롤 시)
+        // 네비게이션 활성화 및 헤더 색상 변경 (스크롤 시)
         window.addEventListener('scroll', () => {
             const sections = ['home', 'about', 'contact'];
             const navLinks = document.querySelectorAll('.nav-link');
+            const header = document.querySelector('header');
             
             let currentSection = '';
             sections.forEach(sectionId => {
@@ -367,6 +367,13 @@
                     }
                 }
             });
+            
+            // 헤더 색상 변경
+            if (currentSection === 'about') {
+                header.classList.add('header-dark');
+            } else {
+                header.classList.remove('header-dark');
+            }
             
             navLinks.forEach(link => {
                 link.classList.remove('active');
