@@ -492,7 +492,7 @@ body {
 
 /* Post Card - Base Styles */
 .post-card {
-    border-radius: var(--border-radius);
+    /* border-radius: var(--border-radius); */
     overflow: hidden;
     transition: var(--transition);
     /* box-shadow: var(--box-shadow); */
@@ -518,7 +518,7 @@ body {
 /* Post Card without Image */
 .post-card-no-image {
     background-color: var(--bg-primary);
-    border: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
     /* min-height: 200px; */
     display: flex;
     flex-direction: column;
@@ -655,7 +655,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-sm);
-    /* margin-bottom: var(--spacing-md); */
+    margin-bottom: var(--spacing-xs);
 }
 
 /* Tags for image cards */

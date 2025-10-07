@@ -884,6 +884,8 @@ function setupEditorButtons() {
         const title = document.getElementById('postTitle')?.value?.trim();
         const tags = window.tagsInput ? window.tagsInput.getTagsString() : '';
         const content = editor.getHTML();
+        const status = document.getElementById('statusSelect')?.value || 'draft';
+        const currentDateTime = new Date().toISOString().replace('T', ' ').split('.')[0]; // YYYY-MM-DD HH:MM:SS format
         
         // Validate required fields
         if (!title) {
@@ -892,7 +894,7 @@ function setupEditorButtons() {
             return;
         }
         
-        if (!content || content === '<p></p>') {
+        if (!content || content === '<p></p>' || content === '<div><br></div>') {
             showToast('내용을 입력해주세요', 'error');
             return;
         }
@@ -906,23 +908,43 @@ function setupEditorButtons() {
         }
         
         try {
-            // Prepare post data
+            // 저장할 데이터 구조 (Google Sheets 컬럼 순서에 맞춤)
+            // [id, title, date, thumbnail, content, tags, images, videos, status]
             const postData = {
-                action: 'savePost',
-                postData: {
-                    title: title,
-                    author: CONFIG.BLOG_AUTHOR || 'Admin',
-                    excerpt: createExcerpt(content),
-                    content: content, // Store full HTML
-                    tags: tags,
-                    readTime: Math.max(1, Math.ceil(htmlToText(content).split(' ').length / 200)), // Estimate reading time
-                    thumbnail: '' // Could be enhanced to extract first image
-                }
+                // id는 Apps Script에서 생성
+                title: title,
+                author: CONFIG.BLOG_AUTHOR || 'Admin',  // 작성자 (사용 안함)
+                date: currentDateTime,
+                excerpt: createExcerpt(content),  // 요약 (사용 안함)
+                content: content, 
+                tags: tags,
+                readTime: Math.max(1, Math.ceil(htmlToText(content).split(' ').length / 200)), // 읽는 시간 (사용 안함)
+                thumbnail: '', // 썸네일 (아직 미구현)
+                images: '', // 이미지 목록 (아직 미구현)
+                videos: '', // 비디오 목록 (아직 미구현)
+                status: status
             };
             
-            console.log('💾 Saving post to Google Sheets...');
-            console.log('📝 Post data:', postData);
-            console.log('🔗 Using API URL:', CONFIG.UPLOAD_API_URL);
+            // 저장할 전체 요청 데이터
+            const requestData = {
+                action: 'savePost',
+                postData: postData
+            };
+            
+            console.log('💾 ===== 저장 데이터 분석 =====');
+            console.log('📝 제목:', title);
+            console.log('📅 날짜:', currentDateTime);
+            console.log('🏷️ 태그:', tags);
+            console.log('📄 상태:', status);
+            console.log('📊 내용 길이:', content.length, '문자');
+            console.log('📖 예상 읽는 시간:', Math.max(1, Math.ceil(htmlToText(content).split(' ').length / 200)), '분');
+            console.log('🖼️ 썸네일:', postData.thumbnail || '(없음)');
+            console.log('� 이미지:', postData.images || '(없음)');
+            console.log('🎥 비디오:', postData.videos || '(없음)');
+            console.log('� 요약:', createExcerpt(content).substring(0, 100) + (createExcerpt(content).length > 100 ? '...' : ''));
+            console.log('📦 전체 요청 데이터:', requestData);
+            console.log('🔗 API URL:', CONFIG.UPLOAD_API_URL);
+            console.log('===========================');
             
             // Check if API URL is configured
             if (!CONFIG.UPLOAD_API_URL || CONFIG.UPLOAD_API_URL.includes('YOUR_')) {
@@ -959,6 +981,9 @@ function setupEditorButtons() {
             
             if (result.success) {
                 showToast(`포스트가 성공적으로 저장되었습니다! (ID: ${result.postId})`, 'success', 5000);
+                
+                // No cache to clear - posts will always be fresh on next page load
+                console.log('✅ Post saved! Next page load will show fresh data.');
                 
                 // Clear form after successful save
                 if (confirm('저장이 완료되었습니다. 에디터를 초기화하시겠습니까?')) {

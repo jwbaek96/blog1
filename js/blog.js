@@ -417,24 +417,24 @@ class BlogApp {
             return `
                 <article class="post-card post-card-no-image" data-post-id="${post.id}">
                     <div class="post-card-content">
+                        <div class="post-card-tags">
+                            ${tagsHTML}
+                        </div>
+                        
+                        <h2 class="post-card-title">
+                        ${post.title}
+                        </h2>
+                        <p class="post-card-excerpt">${post.excerpt}</p>
                         <div class="post-card-meta">
                             <span class="post-date">${formatDate(post.date)}</span>
                         </div>
                         
-                        <h2 class="post-card-title">
-                            ${post.title}
-                        </h2>
                         
-                        <p class="post-card-excerpt">${post.excerpt}</p>
-                        
-                        <div class="post-card-tags">
-                            ${tagsHTML}
-                        </div>
                     </div>
                 </article>
-            `;
+                `;
+            }
         }
-    }
 
     /**
      * Setup lazy loading for images

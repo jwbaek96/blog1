@@ -8,31 +8,79 @@ class SheetsAPI {
     }
 
     /**
-     * Fetch posts from Google Sheets
-     * @param {boolean} useCache - Whether to use cached data
+     * Fetch posts using Apps Script API (more reliable than CSV)
      * @returns {Promise<Array>} Array of posts
      */
-    async fetchPosts(useCache = true) {
+    async fetchPosts() {
         try {
-            // Try cache first
-            if (useCache) {
-                const cached = cache(this.cacheKey);
-                if (cached) {
-                    console.log('📦 Using cached posts data');
-                    return cached;
+            console.log('🌐 Fetching posts from Apps Script API...');
+            
+            // Use Apps Script Web App URL with getPosts action
+            const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}?action=getPosts&t=${Date.now()}`;
+            
+            console.log('🔗 Apps Script URL:', appsScriptUrl);
+            
+            const response = await fetch(appsScriptUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
+            });
+            
+            if (!response.ok) {
+                console.warn('⚠️ Apps Script failed, falling back to CSV method');
+                return this.fetchPostsFromCSV();
             }
+            
+            const result = await response.json();
+            
+            console.log('📄 Apps Script response:', result);
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Apps Script returned error');
+            }
+            
+            const posts = result.posts || [];
+            
+            // ID 순서로 정렬 (내림차순 - 최신 포스트 먼저)
+            posts.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+            
+            console.log(`✅ Fetched ${posts.length} posts from Apps Script API`);
+            
+            return posts;
+            
+        } catch (error) {
+            console.error('❌ Apps Script fetch failed:', error);
+            console.log('🔄 Falling back to CSV method...');
+            return this.fetchPostsFromCSV();
+        }
+    }
 
-            console.log('🌐 Fetching posts from Google Sheets...');
+    /**
+     * Fallback method: Fetch posts from Google Sheets CSV (original method)
+     * @returns {Promise<Array>} Array of posts
+     */
+    async fetchPostsFromCSV() {
+        try {
+            console.log('🌐 Fetching posts from Google Sheets CSV...');
+            
+            // Simple timestamp for cache busting
+            const timestamp = Date.now();
+            const urlWithTimestamp = `${this.sheetUrl}&t=${timestamp}`;
+            
+            console.log('🔗 CSV URL:', urlWithTimestamp);
             
             // Fetch from Google Sheets
-            const response = await fetch(this.sheetUrl);
+            const response = await fetch(urlWithTimestamp);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const csvText = await response.text();
+            
+            console.log('📄 CSV response length:', csvText.length);
+            console.log('📄 CSV first 200 chars:', csvText.substring(0, 200));
             
             if (!csvText.trim()) {
                 throw new Error('Empty response from Google Sheets');
@@ -41,27 +89,19 @@ class SheetsAPI {
             // Parse CSV data
             const rawData = parseCSV(csvText);
             
+            // Debug: Show raw CSV data structure
+            console.log('🔍 Raw CSV data sample:', rawData.slice(0, 2));
+            console.log('🔍 CSV columns:', rawData.length > 0 ? Object.keys(rawData[0]) : 'No data');
+            
             // Process and validate posts
             const posts = this.processPosts(rawData);
             
-            // Cache the processed data
-            cache(this.cacheKey, posts, this.cacheDuration);
-            
-            console.log(`✅ Fetched ${posts.length} posts from Google Sheets`);
+            console.log(`✅ Fetched ${posts.length} posts from CSV fallback`);
             return posts;
             
         } catch (error) {
-            console.error('❌ Error fetching posts:', error);
-            
-            // Try to return cached data as fallback
-            const cached = cache(this.cacheKey);
-            if (cached) {
-                console.log('📦 Using stale cached data as fallback');
-                showToast('최신 데이터를 불러오는데 실패했습니다. 캐시된 데이터를 표시합니다.', 'warning', 5000);
-                return cached;
-            }
-            
-            throw error;
+            console.error('❌ Error fetching posts from CSV:', error);
+            return [];
         }
     }
 
@@ -73,8 +113,8 @@ class SheetsAPI {
     processPosts(rawData) {
         return rawData
             .map(row => this.processPost(row))
-            .filter(post => post && post.status === 'published')
-            .sort((a, b) => new Date(b.date) - new Date(a.date));
+            .filter(post => post !== null) // null이 아닌 모든 포스트 표시
+            .sort((a, b) => parseInt(b.id) - parseInt(a.id)); // ID 순서로 정렬 (내림차순 - 최신 포스트 먼저)
     }
 
     /**
@@ -84,27 +124,40 @@ class SheetsAPI {
      */
     processPost(row) {
         try {
-            // Validate required fields
-            if (!row.title || !row.content) {
-                console.warn('⚠️ Skipping post with missing title or content:', row);
+            // Only skip completely empty rows or rows without ID
+            if (!row.id || (!row.title && !row.content)) {
+                console.warn('⚠️ Skipping empty post row:', row);
                 return null;
+            }
+
+            // Debug: Show raw row data for problematic posts
+            if (row.title === 'adfdasdf' || row.title === '모노') {
+                console.log('🐛 Debug row data for:', row.title);
+                console.log('🐛 Raw row:', row);
+                console.log('🐛 Tags field:', row.tags);
+                console.log('🐛 Content field:', row.content);
             }
 
             const post = {
                 id: parseInt(row.id) || Date.now(),
-                title: row.title.trim(),
+                title: (row.title || '').trim() || 'Untitled',
                 date: this.parseDate(row.date),
-                author: row.author?.trim() || CONFIG.BLOG_AUTHOR,
-                content: row.content.trim(),
-                excerpt: createExcerpt(row.content, 150),
-                thumbnail: this.processImageUrl(row.thumbnail),
-                tags: this.processTags(row.tags),
-                images: this.processImages(row.images),
-                videos: this.processVideos(row.videos),
-                status: row.status?.toLowerCase() || 'published',
-                slug: this.generateSlug(row.title),
-                readTime: this.calculateReadTime(row.content)
+                author: (row.author || '').trim() || CONFIG.BLOG_AUTHOR,
+                content: (row.content || '').trim() || '',
+                excerpt: createExcerpt(row.content || '', 150),
+                thumbnail: this.processImageUrl(row.thumbnail || ''),
+                tags: this.processTags(row.tags || ''),
+                images: this.processImages(row.images || ''),
+                videos: this.processVideos(row.videos || ''),
+                status: (row.status || '').toLowerCase() || 'draft',
+                slug: this.generateSlug(row.title || 'untitled'),
+                readTime: this.calculateReadTime(row.content || '')
             };
+
+            // Debug: Show processed tags
+            if (row.title === 'adfdasdf' || row.title === '모노') {
+                console.log('🐛 Processed tags:', post.tags);
+            }
 
             return post;
         } catch (error) {
@@ -334,13 +387,10 @@ class SheetsAPI {
      */
     async refreshPosts() {
         console.log('🔄 Refreshing posts data...');
-        
-        // Clear cache
-        localStorage.removeItem(this.cacheKey);
-        
-        // Fetch fresh data
-        return await this.fetchPosts(false);
+        return await this.fetchPosts();
     }
+
+
 
     /**
      * Get posts statistics  

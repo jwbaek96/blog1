@@ -1,5 +1,126 @@
-/** 1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb
- * Google Apps Script for Blog File Upload
+/**
+ * Google Apps Script for Blog File Upload and Data Management
+ * 
+ * This script handles file uploads to Google Drive and returns public URLs
+ * for use in the blog editor. It also manages blog post data in Google Sheets.
+ * 
+ * Deployment Instructions:
+ * 1. Go to https://script.google.com
+ * 2. Create a new project named "Blog API"
+ * 3. Replace Code.gs content with this file
+ * 4. Set your BLOG_FOLDER_ID and SPREADSHEET_ID below
+ * 5. Deploy as Web App with execute permissions set to "Anyone"
+ * 6. Copy the deployment URL to your config.js
+ */
+
+// Configuration
+const BLOG_FOLDER_ID = '1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb'; // Replace with your actual folder ID
+const SPREADSHEET_ID = '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY'; // Google Sheets ID from config.js
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov'];
+
+/**
+ * Handle GET requests (data retrieval)
+ */
+function doGet(e) {
+  try {
+    console.log('📥 GET request received');
+    
+    const action = e.parameter.action || 'getPosts';
+    
+    if (action === 'getPosts') {
+      return handleGetPosts();
+    } else {
+      throw new Error('Invalid action: ' + action);
+    }
+    
+  } catch (error) {
+    console.error('❌ GET request error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
+}
+
+/**
+ * Handle get posts requests
+ */
+function handleGetPosts() {
+  try {
+    console.log('📊 Getting posts data from spreadsheet');
+    
+    const spreadsheet = getSpreadsheet();
+    const sheet = spreadsheet.getActiveSheet();
+    
+    // Get all data (excluding header row)
+    const dataRange = sheet.getDataRange();
+    const values = dataRange.getValues();
+    
+    if (values.length <= 1) {
+      console.log('📋 No posts found');
+      return createJsonResponse({
+        success: true,
+        posts: [],
+        message: 'No posts found'
+      });
+    }
+    
+    // Skip header row and process data
+    const posts = [];
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      
+      // Skip empty rows
+      if (!row[1]) continue; // Skip if title is empty
+      
+      const post = {
+        id: row[0] || i,                 // A: ID
+        title: row[1] || 'Untitled',     // B: Title
+        date: row[2] || '',              // C: Date
+        thumbnail: row[3] || '',         // D: Thumbnail
+        content: row[4] || '',           // E: Content
+        tags: row[5] || '',              // F: Tags
+        images: row[6] || '',            // G: Images
+        videos: row[7] || '',            // H: Videos
+        status: row[8] || 'draft'        // I: Status
+      };
+      
+      posts.push(post);
+    }
+    
+    console.log(`✅ Found ${posts.length} posts`);
+    
+    const response = {
+      success: true,
+      posts: posts,
+      count: posts.length,
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(response);
+    
+  } catch (error) {
+    console.error('❌ Get posts error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
+}
+
+/**
+ * Handle POST requests (file uploads and post saving)
+ */
 function doPost(e) {
   try {
     console.log('📥 POST request received');
@@ -23,100 +144,6 @@ function doPost(e) {
     }
     
     console.log('📋 Parsed request data:', requestData);
-    
-    // Check request type
-    if (requestData.action === 'savePost') {
-      return handlePostSave(requestData);
-    } else if (requestData.file) {
-      return handleFileUpload(requestData);
-    } else {
-      throw new Error('Invalid request: no action specified or file data missing');
-    }ript handles file uploads to Google Drive and returns public URLs
- * for use in the blog editor.
- * 
- * Deployment Instructions:
- * 1. Go to https://script.google.com
- * 2. Create a new project named "Blog Upload API"
- * 3. Replace Code.gs content with this file
- * 4. Set your BLOG_FOLDER_ID below
- * 5. Deploy as Web App with execute permissions set to "Anyone"
- * 6. Copy the deployment URL to your config.js
- */
-
-// Configuration
-const BLOG_FOLDER_ID = '1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb'; // Replace with your actual folder ID
-const SPREADSHEET_ID = '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY'; // Google Sheets ID from config.js
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov'];
-
-/**
- * Debug function to check configuration
- */
-function debugConfig() {
-  console.log('🔧 Debug Configuration:');
-  console.log('BLOG_FOLDER_ID:', BLOG_FOLDER_ID);
-  console.log('BLOG_FOLDER_ID length:', BLOG_FOLDER_ID.length);
-  console.log('BLOG_FOLDER_ID type:', typeof BLOG_FOLDER_ID);
-  console.log('Is default?', BLOG_FOLDER_ID === 'YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE');
-  console.log('Is empty?', !BLOG_FOLDER_ID);
-  
-  if (BLOG_FOLDER_ID && BLOG_FOLDER_ID !== 'YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE') {
-    console.log('✅ Configuration looks good!');
-    try {
-      const folder = DriveApp.getFolderById(BLOG_FOLDER_ID);
-      console.log('✅ Folder found:', folder.getName());
-    } catch (error) {
-      console.error('❌ Folder error:', error.toString());
-    }
-  } else {
-    console.log('❌ Configuration problem detected');
-  }
-}
-
-/**
- * Check if Drive API is available and authorized
- */
-function checkDrivePermissions() {
-  try {
-    console.log('🔍 Checking Drive API permissions...');
-    console.log('🔧 Current BLOG_FOLDER_ID:', BLOG_FOLDER_ID);
-    
-    // Try to access Drive API
-    const folders = DriveApp.getFolders();
-    console.log('✅ Drive API access successful!');
-    
-    // Try to get specific folder if ID is set
-    if (BLOG_FOLDER_ID && BLOG_FOLDER_ID !== 'YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE') {
-      const folder = DriveApp.getFolderById(BLOG_FOLDER_ID);
-      console.log('✅ Blog folder access successful!');
-      console.log('📁 Folder name:', folder.getName());
-      return true;
-    } else {
-      console.log('⚠️ BLOG_FOLDER_ID not configured');
-      console.log('🔧 Current value:', BLOG_FOLDER_ID);
-      return false;
-    }
-    
-  } catch (error) {
-    console.error('❌ Drive API error:', error.toString());
-    console.log('💡 You may need to:');
-    console.log('   1. Enable Drive API in Apps Script');
-    console.log('   2. Run the script manually to grant permissions');
-    console.log('   3. Check if the folder ID is correct');
-    return false;
-  }
-}
-
-/**
- * Handle POST requests (file uploads and post saving)
- */
-function doPost(e) {
-  try {
-    console.log('� POST request received');
-    
-    // Parse request data
-    const requestData = JSON.parse(e.postData.contents);
     
     // Check request type
     if (requestData.action === 'savePost') {
@@ -227,10 +254,13 @@ function handleFileUpload(requestData) {
  */
 function handlePostSave(requestData) {
   try {
-    console.log('💾 Post save request received');
+    console.log('💾 ===== POST SAVE REQUEST RECEIVED =====');
+    console.log('📥 Full request data:', JSON.stringify(requestData, null, 2));
     
     // Validate post data
     const postData = requestData.postData;
+    console.log('📋 Post data received:', JSON.stringify(postData, null, 2));
+    
     if (!postData || !postData.title) {
       throw new Error('Invalid post data: title is required');
     }
@@ -239,31 +269,46 @@ function handlePostSave(requestData) {
     const spreadsheet = getSpreadsheet();
     const sheet = spreadsheet.getActiveSheet();
     
-    // Generate unique ID
-    const postId = generatePostId();
-    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    // Use ROW()-1 formula for auto-incrementing ID
+    const currentDateTime = new Date().toISOString().replace('T', ' ').split('.')[0]; // YYYY-MM-DD HH:MM:SS format
     
-    // Prepare row data (adjust column order to match your sheet structure)
+    // Prepare row data matching required structure: [id, title, date, thumbnail, content, tags, images, videos, status]
     const rowData = [
-      postId,                           // A: ID
+      '=ROW()-1',                       // A: ID (자동 증가 공식)
       postData.title || 'Untitled',    // B: Title  
-      postData.author || 'Admin',      // C: Author
-      currentDate,                     // D: Date
-      postData.excerpt || '',          // E: Excerpt
-      postData.content || '',          // F: Content
-      postData.tags || '',             // G: Tags (comma-separated)
-      postData.readTime || 5,          // H: Read Time
-      postData.thumbnail || ''         // I: Thumbnail
+      postData.date || currentDateTime, // C: Date
+      postData.thumbnail || '',        // D: Thumbnail
+      postData.content || '',          // E: Content
+      postData.tags || '',             // F: Tags
+      postData.images || '',           // G: Images
+      postData.videos || '',           // H: Videos
+      postData.status || 'draft'       // I: Status
     ];
+    
+    console.log('📊 Saving data structure:');
+    console.log('🆔 ID: =ROW()-1 (자동 증가)');
+    console.log('📝 Title:', postData.title);
+    console.log('📅 Date:', postData.date || currentDateTime);
+    console.log('🖼️ Thumbnail:', postData.thumbnail || '(empty)');
+    console.log('📄 Content length:', (postData.content || '').length);
+    console.log('🏷️ Tags:', postData.tags || '(empty)');
+    console.log('📷 Images:', postData.images || '(empty)');
+    console.log('🎥 Videos:', postData.videos || '(empty)');
+    console.log('📊 Status:', postData.status || 'draft');
+    console.log('📋 Row data array:', rowData);
     
     // Add row to sheet
     sheet.appendRow(rowData);
     
-    console.log(`✅ Post saved successfully: ${postData.title} (ID: ${postId})`);
+    // Get the row number to determine the actual ID that will be generated
+    const lastRow = sheet.getLastRow();
+    const calculatedId = lastRow - 1;
+    
+    console.log(`✅ Post saved successfully: ${postData.title} (ID will be: ${calculatedId})`);
     
     const response = {
       success: true,
-      postId: postId,
+      postId: calculatedId,
       title: postData.title,
       message: 'Post saved to Google Sheets successfully',
       timestamp: new Date().toISOString()
@@ -273,52 +318,6 @@ function handlePostSave(requestData) {
     
   } catch (error) {
     console.error('❌ Post save error:', error.toString());
-    
-    const errorResponse = {
-      success: false,
-      error: error.toString(),
-      timestamp: new Date().toISOString()
-    };
-    
-    return createJsonResponse(errorResponse);
-  }
-}
-
-/**
- * Handle GET requests (health check and post saving)
- */
-function doGet(e) {
-  try {
-    console.log('📥 GET request received');
-    console.log('📋 Parameters:', e.parameters);
-    
-    // Check if this is a post save request
-    if (e.parameters && e.parameters.action && e.parameters.action[0] === 'savePost') {
-      console.log('📝 Processing GET post save request');
-      const requestData = {
-        action: 'savePost',
-        postData: JSON.parse(e.parameters.data[0])
-      };
-      return handlePostSave(requestData);
-    }
-    
-    // Default health check response
-    const response = {
-      success: true,
-      message: 'Blog Upload API is running',
-      version: '1.0.0',
-      timestamp: new Date().toISOString(),
-      endpoints: {
-        upload: 'POST /',
-        health: 'GET /',
-        savePost: 'GET /?action=savePost&data=...'
-      }
-    };
-    
-    return createJsonResponse(response);
-    
-  } catch (error) {
-    console.error('❌ GET request error:', error.toString());
     
     const errorResponse = {
       success: false,
@@ -346,6 +345,27 @@ function getBlogFolder() {
   } catch (error) {
     if (error.toString().includes('not found')) {
       throw new Error('Blog folder not found. Please check your BLOG_FOLDER_ID.');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Get or create spreadsheet for blog posts
+ */
+function getSpreadsheet() {
+  try {
+    if (!SPREADSHEET_ID || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID_HERE') {
+      throw new Error('SPREADSHEET_ID not configured. Please update the script with your Google Sheets ID.');
+    }
+    
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    console.log(`📊 Using spreadsheet: ${spreadsheet.getName()}`);
+    return spreadsheet;
+    
+  } catch (error) {
+    if (error.toString().includes('not found')) {
+      throw new Error('Spreadsheet not found. Please check your SPREADSHEET_ID.');
     }
     throw error;
   }
@@ -393,309 +413,53 @@ function doOptions(e) {
 }
 
 /**
- * Cleanup old files (optional - run manually or set up trigger)
- * Removes files older than 30 days that haven't been accessed
+ * Debug function to check configuration
  */
-function cleanupOldFiles() {
+function debugConfig() {
+  console.log('🔧 Debug Configuration:');
+  console.log('BLOG_FOLDER_ID:', BLOG_FOLDER_ID);
+  console.log('SPREADSHEET_ID:', SPREADSHEET_ID);
+  
   try {
-    const blogFolder = getBlogFolder();
-    const files = blogFolder.getFiles();
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    let deletedCount = 0;
-    
-    while (files.hasNext()) {
-      const file = files.next();
-      const lastUpdated = file.getLastUpdated();
-      
-      if (lastUpdated < thirtyDaysAgo) {
-        console.log(`🗑️ Deleting old file: ${file.getName()}`);
-        file.setTrashed(true);
-        deletedCount++;
-      }
-    }
-    
-    console.log(`✅ Cleanup complete. Deleted ${deletedCount} old files.`);
-    return deletedCount;
-    
+    const folder = DriveApp.getFolderById(BLOG_FOLDER_ID);
+    console.log('✅ Folder found:', folder.getName());
   } catch (error) {
-    console.error('❌ Cleanup error:', error.toString());
-    throw error;
+    console.error('❌ Folder error:', error.toString());
   }
-}
-
-/**
- * Get folder statistics (for monitoring)
- */
-function getFolderStats() {
+  
   try {
-    const blogFolder = getBlogFolder();
-    const files = blogFolder.getFiles();
-    
-    let totalSize = 0;
-    let totalFiles = 0;
-    let imageCount = 0;
-    let videoCount = 0;
-    
-    while (files.hasNext()) {
-      const file = files.next();
-      totalSize += file.getSize();
-      totalFiles++;
-      
-      const mimeType = file.getBlob().getContentType();
-      if (ALLOWED_IMAGE_TYPES.includes(mimeType)) {
-        imageCount++;
-      } else if (ALLOWED_VIDEO_TYPES.includes(mimeType)) {
-        videoCount++;
-      }
-    }
-    
-    const stats = {
-      folderName: blogFolder.getName(),
-      folderId: blogFolder.getId(),
-      totalFiles: totalFiles,
-      totalSize: totalSize,
-      totalSizeMB: Math.round(totalSize / 1024 / 1024 * 100) / 100,
-      imageCount: imageCount,
-      videoCount: videoCount,
-      lastUpdated: new Date().toISOString()
-    };
-    
-    console.log('📊 Folder Stats:', JSON.stringify(stats, null, 2));
-    return stats;
-    
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    console.log('✅ Spreadsheet found:', spreadsheet.getName());
   } catch (error) {
-    console.error('❌ Stats error:', error.toString());
-    throw error;
+    console.error('❌ Spreadsheet error:', error.toString());
   }
 }
 
 /**
  * Test function to verify setup
  */
-function testUpload() {
+function testSetup() {
+  console.log('🧪 Testing setup...');
+  
   try {
-    console.log('🧪 Starting test upload...');
+    // Test folder access
+    const folder = getBlogFolder();
+    console.log('✅ Folder access: OK');
     
-    // Create a test image file (PNG format)
-    const testImageData = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77yQAAAABJRU5ErkJggg==';
-    
-    const testRequest = {
-      postData: {
-        contents: JSON.stringify({
-          file: {
-            data: testImageData,
-            mimeType: 'image/png',
-            name: 'test-image.png'
-          }
-        })
-      }
-    };
-    
-    console.log('📤 Sending test request...');
-    const response = doPost(testRequest);
-    const result = JSON.parse(response.getContent());
-    
-    if (result.success) {
-      console.log('✅ Test upload successful!');
-      console.log('📄 File URL:', result.url);
-      console.log('📄 File ID:', result.fileId);
-      
-      // Clean up test file
-      try {
-        const testFile = DriveApp.getFileById(result.fileId);
-        testFile.setTrashed(true);
-        console.log('🗑️ Test file cleaned up');
-      } catch (cleanupError) {
-        console.log('⚠️ Could not clean up test file:', cleanupError.toString());
-      }
-      
-    } else {
-      console.error('❌ Test upload failed:', result.error);
-    }
-    
-    console.log('🔧 Full response:', JSON.stringify(result, null, 2));
-    return result;
-    
-  } catch (error) {
-    console.error('❌ Test error:', error.toString());
-    
-    // Additional debugging info
-    try {
-      const folder = getBlogFolder();
-      console.log('📁 Blog folder found:', folder.getName());
-    } catch (folderError) {
-      console.error('📁 Blog folder error:', folderError.toString());
-    }
-    
-    throw error;
-  }
-}
-
-/**
- * Simple test to verify folder access
- */
-function testFolderAccess() {
-  try {
-    console.log('📁 Testing folder access...');
-    
-    // First check Drive API permissions
-    const hasPermissions = checkDrivePermissions();
-    if (!hasPermissions) {
-      return false;
-    }
-    
-    if (!BLOG_FOLDER_ID || BLOG_FOLDER_ID === 'YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE') {
-      console.error('❌ BLOG_FOLDER_ID not configured');
-      console.log('💡 Please set BLOG_FOLDER_ID in the script');
-      return false;
-    }
-    
-    const folder = DriveApp.getFolderById(BLOG_FOLDER_ID);
-    console.log('✅ Folder access successful!');
-    console.log('📁 Folder name:', folder.getName());
-    console.log('📁 Folder ID:', folder.getId());
-    
-    // Test creating a simple text file
-    const testBlob = Utilities.newBlob('Test content', 'text/plain', 'folder-test.txt');
-    const testFile = folder.createFile(testBlob);
-    console.log('✅ File creation successful!');
-    
-    // Clean up
-    testFile.setTrashed(true);
-    console.log('🗑️ Test file cleaned up');
-    
-    return true;
-    
-  } catch (error) {
-    console.error('❌ Folder access error:', error.toString());
-    console.log('💡 Make sure:');
-    console.log('   1. The folder ID is correct');
-    console.log('   2. The folder exists and is accessible');
-    console.log('   3. You have permission to write to the folder');
-    return false;
-  }
-}
-
-/**
- * Step-by-step setup guide
- */
-function setupGuide() {
-  console.log('🚀 Google Apps Script Setup Guide');
-  console.log('================================');
-  console.log('');
-  console.log('Step 1: Create Google Drive Folder');
-  console.log('- Go to https://drive.google.com');
-  console.log('- Create a new folder named "Blog Media"');
-  console.log('- Copy the folder ID from the URL');
-  console.log('');
-  console.log('Step 2: Configure Script');
-  console.log('- Replace BLOG_FOLDER_ID with your folder ID');
-  console.log('- Current value:', BLOG_FOLDER_ID);
-  console.log('');
-  console.log('Step 3: Enable APIs');
-  console.log('- In Apps Script, go to "Services" in the left sidebar');
-  console.log('- Add "Google Drive API" if not already added');
-  console.log('');
-  console.log('Step 4: Test Setup');
-  console.log('- Run checkDrivePermissions() first');
-  console.log('- Then run testFolderAccess()');
-  console.log('- Finally run testUpload()');
-  console.log('');
-  console.log('Step 5: Deploy as Web App');
-  console.log('- Click "Deploy" > "New Deployment"');
-  console.log('- Choose "Web app" type');
-  console.log('- Set execute as "Me" and access to "Anyone"');
-  console.log('- Copy the deployment URL to your config.js');
-}
-
-/**
- * Get or create spreadsheet for blog posts
- */
-function getSpreadsheet() {
-  try {
-    if (!SPREADSHEET_ID || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID_HERE') {
-      throw new Error('SPREADSHEET_ID not configured. Please update the script with your Google Sheets ID.');
-    }
-    
-    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    console.log(`📊 Using spreadsheet: ${spreadsheet.getName()}`);
-    return spreadsheet;
-    
-  } catch (error) {
-    if (error.toString().includes('not found')) {
-      throw new Error('Spreadsheet not found. Please check your SPREADSHEET_ID.');
-    }
-    throw error;
-  }
-}
-
-/**
- * Generate unique post ID
- */
-function generatePostId() {
-  return Date.now().toString();
-}
-
-/**
- * Initialize spreadsheet with headers if needed
- */
-function initializeSpreadsheet() {
-  try {
+    // Test spreadsheet access
     const spreadsheet = getSpreadsheet();
-    const sheet = spreadsheet.getActiveSheet();
+    console.log('✅ Spreadsheet access: OK');
     
-    // Check if headers exist
-    const firstRow = sheet.getRange(1, 1, 1, 9).getValues()[0];
-    const hasHeaders = firstRow[0] === 'ID' || firstRow[0] === 'id';
-    
-    if (!hasHeaders) {
-      console.log('📝 Adding headers to spreadsheet...');
-      const headers = ['ID', 'Title', 'Author', 'Date', 'Excerpt', 'Content', 'Tags', 'ReadTime', 'Thumbnail'];
-      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-      
-      // Format header row
-      const headerRange = sheet.getRange(1, 1, 1, headers.length);
-      headerRange.setFontWeight('bold');
-      headerRange.setBackground('#f0f0f0');
-      
-      console.log('✅ Headers added successfully');
-    } else {
-      console.log('✅ Headers already exist');
-    }
+    // Test get posts
+    const response = handleGetPosts();
+    const result = JSON.parse(response.getContent());
+    console.log('✅ Get posts test:', result.success ? 'OK' : 'FAILED');
+    console.log('📊 Posts found:', result.posts ? result.posts.length : 0);
     
     return true;
     
   } catch (error) {
-    console.error('❌ Spreadsheet initialization error:', error.toString());
-    return false;
-  }
-}
-
-/**
- * Test post saving functionality
- */
-function testPostSave() {
-  console.log('🧪 Testing post save functionality...');
-  
-  const testPostData = {
-    action: 'savePost',
-    postData: {
-      title: 'Test Post from Apps Script',
-      author: 'Test Author',
-      excerpt: 'This is a test post created from Google Apps Script',
-      content: '<p>This is the test content with <strong>HTML formatting</strong>.</p>',
-      tags: 'test,apps-script,google-sheets',
-      readTime: 3,
-      thumbnail: ''
-    }
-  };
-  
-  try {
-    const result = handlePostSave(testPostData);
-    console.log('✅ Test result:', result);
-    return result;
-  } catch (error) {
-    console.error('❌ Test failed:', error.toString());
+    console.error('❌ Setup test failed:', error.toString());
     return false;
   }
 }

@@ -2,8 +2,8 @@
 
 const CONFIG = {
     // Google Apps Script
-    APPS_SCRIPT_URL: 'AKfycbwi9VV7NZNszAfBEyOfoG0yWzJ2ccmbznFRbJbxSQF4uKkbSPWsjjeIYXOmRpWlo38d', // 사용하지 않음 (하위 호환성)
-    UPLOAD_API_URL: 'https://script.google.com/macros/s/AKfycbwi9VV7NZNszAfBEyOfoG0yWzJ2ccmbznFRbJbxSQF4uKkbSPWsjjeIYXOmRpWlo38d/exec', // 실제 Apps Script 배포 URL
+    APPS_SCRIPT_URL: 'AKfycbxOtkI2x179YalaKaFTVn_QRi2T2abmwRGBjfzNLu3UxcHnQ1R2Tn8iUCvVLVXNa_JW', // Apps Script Web App URL (GET/POST 요청용)
+    UPLOAD_API_URL: 'https://script.google.com/macros/s/AKfycbxOtkI2x179YalaKaFTVn_QRi2T2abmwRGBjfzNLu3UxcHnQ1R2Tn8iUCvVLVXNa_JW/exec', // 실제 Apps Script 배포 URL
     
     // Google Sheets
     GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 실제 Google 스프레드시트 ID
@@ -20,10 +20,10 @@ const CONFIG = {
     DEV_PORT: 5500, // 로컬 개발 서버 포트
     
     // Pagination
-    POSTS_PER_PAGE: 6,
+    POSTS_PER_PAGE: 10,
     
     // Cache Settings
-    CACHE_DURATION: 1 * 60 * 1000, // 5분 (milliseconds)
+    CACHE_DURATION: 1 * 60 * 1000, // 1분 (milliseconds)
     CACHE_KEY: 'blog_posts_cache',
     
     // Upload Settings
