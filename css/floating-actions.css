@@ -123,6 +123,7 @@
 }
 
 .guestbook-form {
+    position: relative;
     padding: 1rem 1.5rem;
     border-top: 1px solid #e5e5e5;
     background: #f8f9fa;
@@ -158,14 +159,16 @@
     display: flex;
     gap: 0.5rem;
     align-items: center;
+    width: 100%;
 }
 
 .name-input-container input {
+    width: 50%;
     flex: 1;
     padding: 0.75rem;
     border: 1px solid #ddd;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-family: inherit;
     transition: border-color 0.2s ease;
     background: white;
@@ -178,20 +181,30 @@
 }
 
 .guestbook-submit {
-    background: #2d2d2d;
+    position: absolute;
+    top: 0;
+    right: 14px;
+    z-index: 1;
+    transform: translate(0%, -72.5%);
+    background: #c0c0c0;
     color: white;
     border: none;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-weight: 500;
+    border-radius: 50px;
+    font-weight: bold;
     cursor: pointer;
-    transition: background 0.2s ease;
-    font-size: 0.85rem;
-    height: fit-content;
+    transition: all 0.2s ease;
+    font-size: 0.75rem;
+    height: 40px;
+    aspect-ratio: 1 / 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;    
 }
 
 .guestbook-submit:hover {
     background: #000;
+    top: -5px;
 }
 
 .guestbook-entry {
@@ -225,12 +238,25 @@
 .entry-date {
     font-size: 0.75rem;
     color: #666;
+    margin-right: auto;
+    margin-left: 5px;
 }
 
 .entry-message {
     color: #4a4a4a;
     font-size: 0.85rem;
     line-height: 1.4;
+}
+
+.entry-more-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transform: rotate(90deg);
 }
 
 .guestbook-loading {
@@ -289,5 +315,127 @@
     .sidebar-open .floating-guestbook {
         opacity: 0;
         pointer-events: none;
+    }
+}
+
+/* Guestbook Infinite Scroll */
+.guestbook-load-more {
+    text-align: center;
+    padding: 1rem;
+    border-top: 1px solid #e0e0e0;
+    background: #f9f9f9;
+    margin-top: 1rem;
+}
+
+.load-more-message {
+    font-size: 0.875rem;
+    color: #666;
+    font-style: italic;
+}
+
+.guestbook-entries {
+    max-height: 400px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #f0f0f0;
+}
+
+.guestbook-entries::-webkit-scrollbar {
+    width: 6px;
+}
+
+.guestbook-entries::-webkit-scrollbar-track {
+    background: #f0f0f0;
+}
+
+.guestbook-entries::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.guestbook-entries::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+.guestbook-error {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #666;
+}
+
+.retry-btn {
+    background: var(--primary-color, #007bff);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.retry-btn:hover {
+    background: var(--primary-color-dark, #0056b3);
+}
+
+/* Top Loading Indicator */
+.top-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.2rem 0.75rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.875rem;
+    color: #666;
+    
+    /* 부드러운 애니메이션 */
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: slideDown 0.3s ease-out forwards;
+}
+
+.top-loading .loading-spinner {
+    width: 16px;
+    height: 16px;
+}
+
+.loading-text {
+    font-size: 0.875rem;
+}
+
+/* Top Loading Container */
+.top-loading-container {
+    position: relative;
+    z-index: 10;
+    overflow: hidden; /* 애니메이션이 컨테이너 밖으로 나가지 않도록 */
+}
+
+/* 로딩 스피너 등장 애니메이션 */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 로딩 스피너 사라짐 애니메이션 */
+.top-loading.fade-out {
+    animation: slideUp 0.25s ease-in forwards;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
     }
 }

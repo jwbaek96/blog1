@@ -19,6 +19,17 @@ const FloatingActions = {
         autoInit: true
     },
 
+    // 무한 스크롤 상태
+    loadState: {
+        offset: 0,
+        limit: 10,
+        hasMore: true,
+        loading: false,
+        allEntries: [],
+        lastLoadTime: 0, // 마지막 로드 시간
+        cooldownDuration: 1000 // 1초 쿨다운
+    },
+
     // HTML 템플릿 생성
     createHTML: function(options = {}) {
         const config = { ...this.config, ...options };
@@ -66,6 +77,9 @@ const FloatingActions = {
                     </div>
                     
                     <div class="guestbook-content">
+                        <!-- 상단 로딩 전용 영역 -->
+                        <div class="top-loading-container" id="topLoadingContainer"></div>
+                        
                         <div class="guestbook-entries" id="guestbookEntries">
                             <!-- 방명록 항목들이 여기에 표시됩니다 -->
                             <div class="guestbook-loading">
@@ -75,10 +89,15 @@ const FloatingActions = {
                         </div>
                         
                         <div class="guestbook-form">
-                            <textarea placeholder="comment (기능 구현중...)" id="guestMessage" rows="2" required></textarea>
+                            <button class="guestbook-submit" onclick="FloatingActions.submitGuestbookEntry()"><i class="fa-solid fa-arrow-up"></i></button>
+                        
+                            <div class="textarea-container" style="position: relative;">
+                            <textarea placeholder="Message" id="guestMessage" rows="2" maxlength="50" required></textarea>
+                            <div class="char-counter" id="charCounter" style="position: absolute; bottom: 10px; right: 8px; font-size: 0.75em; color: #888;">0/50</div>
+                            </div>
                             <div class="name-input-container">
-                                <input type="text" placeholder="name" id="guestName" required />
-                                <button class="guestbook-submit" onclick="FloatingActions.submitGuestbookEntry()">Send</button>
+                                <input type="text" placeholder="Name" id="guestName" required />
+                                <input type="password" placeholder="****" id="guestPassword" pattern="[0-9]{4}" maxlength="4" inputmode="numeric" required />
                             </div>
                         </div>
                     </div>
@@ -109,6 +128,14 @@ const FloatingActions = {
         const messageTextarea = document.getElementById('guestMessage');
         if (messageTextarea) {
             messageTextarea.addEventListener('keypress', this.handleGuestbookKeyPress.bind(this));
+            messageTextarea.addEventListener('input', this.updateCharCounter.bind(this));
+            messageTextarea.addEventListener('input', this.validateMessageInput.bind(this));
+        }
+
+        // 이름 입력란에 실시간 검증 추가
+        const nameInput = document.getElementById('guestName');
+        if (nameInput) {
+            nameInput.addEventListener('input', this.validateNameInput.bind(this));
         }
 
         // ESC 키로 방명록 닫기
@@ -120,6 +147,249 @@ const FloatingActions = {
                 }
             }
         });
+        
+        // 방명록 스크롤 이벤트 (무한 스크롤)
+        this.setupInfiniteScroll();
+    },
+
+    // 금지어 필터링
+    validateInput: function(text, type = 'message') {
+        // 메시지 금지어 목록
+        const messageBannedWords = [
+            '섹스', 'ㅅㅅ', 'ㅗ', '시발', 'ㅅㅂ', "ㅅ ㅂ", '병신', 'ㅄ', '좆', 'ㅈ', '개새끼', '개새', '미친', '또라이',
+            '닥쳐', '닥쳐라', '꺼져', '꺼져라', '씨발놈', '씨발년', '병신년', '병신놈', '느금마', '느금애', '느금', 
+            '지랄', 'ㅈㄹ', 'ㅈ ㄹ', '존나', '존내', '좆같네', '좆같아', '좆같은', '개같네', '개같아', '개같은',
+            '씹새끼', '씹창', '씹할놈', '씹할년', '씨발',  '개새끼', '병신','좆', 'ㅈ', '미친', '또라이',
+            '닥쳐', '꺼져', '느금마', '지랄', '존나', '좆같네', '개같네', '씹창',
+            // 영어 욕설들
+            'fuck', 'shit', 'bitch', 'asshole', 'motherfucker', 'cocksucker'
+        ];
+        
+        // 이름 금지어 목록  
+        const nameBannedWords = [
+            '백종훈', '주인', 'jwbaek', 'jw.baek', 'jw baek',
+            // 추가 관리자/소유자 관련 단어들
+            'admin', 'administrator', '관리자', 'owner', 'master',
+            'root', 'system', '시스템'
+        ];
+        
+        const bannedList = type === 'name' ? nameBannedWords : messageBannedWords;
+        const lowerText = text.toLowerCase().replace(/\s+/g, ''); // 소문자 변환 및 공백 제거
+        
+        for (const word of bannedList) {
+            const lowerWord = word.toLowerCase().replace(/\s+/g, '');
+            if (lowerText.includes(lowerWord)) {
+                return {
+                    valid: false,
+                    word: word,
+                    message: type === 'name' ? 
+                        `이름에 "${word}"는 사용할 수 없습니다.` : 
+                        `메시지에 "${word}"는 사용할 수 없습니다.`
+                };
+            }
+        }
+        
+        return { valid: true };
+    },
+
+    // IP 주소 가져오기
+    getClientIP: async function() {
+        try {
+            // 여러 IP 조회 서비스를 시도 (하나가 실패하면 다음으로)
+            const ipServices = [
+                'https://api.ipify.org?format=json',
+                'https://ipapi.co/json/',
+                'https://jsonip.com'
+            ];
+            
+            for (const service of ipServices) {
+                try {
+                    const response = await fetch(service, { timeout: 3000 });
+                    const data = await response.json();
+                    
+                    // 각 서비스의 응답 형식에 맞게 IP 추출
+                    if (data.ip) return data.ip;
+                    if (data.query) return data.query;
+                    if (data.origin) return data.origin;
+                } catch (error) {
+                    console.warn(`IP 서비스 ${service} 실패:`, error);
+                    continue;
+                }
+            }
+            
+            // 모든 서비스가 실패한 경우
+            return 'unknown';
+        } catch (error) {
+            console.error('IP 주소 조회 실패:', error);
+            return 'unknown';
+        }
+    },
+
+    // 무한 스크롤 설정
+    setupInfiniteScroll: function() {
+        let scrollTimeout;
+        let isLoadingMore = false;
+        let isRestoringScroll = false; // 스크롤 복원 중 보호
+        
+        const handleScroll = (e) => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                const entriesContainer = e.target;
+                if (!entriesContainer || isLoadingMore || isRestoringScroll) return;
+                
+                const scrollTop = entriesContainer.scrollTop;
+                const scrollHeight = entriesContainer.scrollHeight;
+                const clientHeight = entriesContainer.clientHeight;
+                
+                // 새로운 공식 계산
+                const scrollFormula = scrollHeight + scrollTop - clientHeight;
+                
+                // 스크롤 정보를 콘솔에 표시
+                console.log('📊 스크롤 상태 + 새 공식 디버깅:', {
+                    'scrollTop': scrollTop,
+                    'scrollHeight': scrollHeight,
+                    'clientHeight': clientHeight,
+                    '🆕 새공식 (scrollHeight + scrollTop - clientHeight)': scrollFormula,
+                    '🔍 음수체크': scrollTop < 0 ? '🚨 비정상적 음수!' : '✅ 정상',
+                    '🔍 공식결과': scrollFormula <= 2 ? '🎯 최상단 범위 (≤2)!' : scrollFormula < 0 ? '📈 음수 (상단 영역)' : '📉 양수 (하단 영역)',
+                    '🔍 컨테이너정보': {
+                        tagName: entriesContainer.tagName,
+                        id: entriesContainer.id,
+                        className: entriesContainer.className
+                    },
+                    '🔍 CSS상태': {
+                        overflow: getComputedStyle(entriesContainer).overflow,
+                        overflowY: getComputedStyle(entriesContainer).overflowY,
+                        position: getComputedStyle(entriesContainer).position
+                    }
+                });
+                
+                // 콘텐츠가 충분하지 않거나 스크롤 가능한 상태가 아니면 로딩하지 않음
+                const hasScrollableContent = scrollHeight > clientHeight + 50;
+                
+                // 쿨다운 체크 (마지막 로드 후 1초가 지났는지)
+                const currentTime = Date.now();
+                const timeSinceLastLoad = currentTime - this.loadState.lastLoadTime;
+                const canLoad = timeSinceLastLoad >= this.loadState.cooldownDuration;
+                
+                // 새 공식: scrollHeight + scrollTop - clientHeight <= 2 (border 등 오차 고려)
+                const isAtTop = scrollFormula <= 2;
+                
+                if (isAtTop && this.loadState.hasMore && !this.loadState.loading && !isLoadingMore && canLoad && hasScrollableContent) {
+                    console.log(`🎯 새 공식으로 최상단 도달! 공식값: ${scrollFormula} (≤2), scrollTop: ${scrollTop}, 전체높이: ${scrollHeight}, 클라이언트높이: ${clientHeight}, hasMore: ${this.loadState.hasMore}, 쿨다운: ${timeSinceLastLoad}ms`);
+                    isLoadingMore = true;
+                    
+                    // 로딩 시작 시간 즉시 기록 (중복 로딩 방지)
+                    this.loadState.lastLoadTime = Date.now();
+                    
+                    // 상단에 로딩 표시
+                    this.showTopLoading();
+                    
+                    // 로드 전 값들 기록 (사용자의 상대적 위치 계산)
+                    const A = entriesContainer.scrollHeight;           // 로드 전 scrollHeight
+                    const beforeScrollTop = entriesContainer.scrollTop;
+                    const beforeClientHeight = entriesContainer.clientHeight;
+                    const B = beforeScrollTop - beforeClientHeight;    // 로드 전 scrollTop - clientHeight (상대적 위치)
+                    
+                    console.log('📏 로드 전 측정값:', {
+                        'A (로드 전 scrollHeight)': A,
+                        'beforeScrollTop': beforeScrollTop,
+                        'beforeClientHeight': beforeClientHeight,
+                        'B (상대적 위치)': B,
+                        '공식': 'B = scrollTop - clientHeight'
+                    });
+                    
+                    // 추가 데이터 로드
+                    this.loadGuestbookEntries(false).then(() => {
+                        // 로딩 표시 제거
+                        this.hideTopLoading();
+                        
+                        // 로드 완료 후 스크롤 위치 복원
+                        setTimeout(() => {
+                            isRestoringScroll = true; // 스크롤 복원 시작
+                            
+                            const C = entriesContainer.scrollHeight;          // 로드 후 scrollHeight
+                            
+                            // 🎯 간단한 해결책: 로드 전 scrollTop 그대로 유지
+                            const newScrollPosition = beforeScrollTop;
+                            
+                            console.log('🔄 스크롤 위치 복원 (간단한 방법):', {
+                                'A (로드 전 높이)': A,
+                                'beforeScrollTop': beforeScrollTop,
+                                'C (로드 후 높이)': C,
+                                '💡 새로운 전략': '로드 전 scrollTop 그대로 유지',
+                                '새 위치': newScrollPosition,
+                                '목표': '사용자가 보던 위치 그대로 유지'
+                            });
+                            
+                            // 로드 전 scrollTop 그대로 적용
+                            entriesContainer.scrollTop = newScrollPosition;
+                            
+                            // 복원된 위치 확인
+                            setTimeout(() => {
+                                const finalScrollTop = entriesContainer.scrollTop;
+                                console.log(`✅ 스크롤 복원 완료! 최종 위치: ${finalScrollTop}`);
+                                
+                                isRestoringScroll = false;
+                                isLoadingMore = false;
+                            }, 50);
+                        }, 100);
+                    }).catch(() => {
+                        this.hideTopLoading();
+                        isRestoringScroll = false;
+                        isLoadingMore = false;
+                    });
+                } else if (scrollFormula <= 2 && this.loadState.hasMore && !this.loadState.loading && !isLoadingMore && !canLoad) {
+                    // 쿨다운 중일 때
+                    const remainingCooldown = this.loadState.cooldownDuration - timeSinceLastLoad;
+                    console.log(`🕐 새 공식 감지되었지만 쿨다운 중... 공식값: ${scrollFormula} (≤2), 남은 시간: ${remainingCooldown}ms`);
+                }
+            }, 150); // 150ms 디바운스
+        };
+        
+        // 방명록이 열릴 때마다 스크롤 이벤트 리스너 설정
+        const originalToggle = this.toggleGuestbook;
+        this.toggleGuestbook = function() {
+            originalToggle.call(this);
+            
+            setTimeout(() => {
+                const entriesContainer = document.getElementById('guestbookEntries');
+                if (entriesContainer) {
+                    // 기존 리스너 제거
+                    entriesContainer.removeEventListener('scroll', handleScroll);
+                    // 새 리스너 추가 (바인드된 컨텍스트와 함께)
+                    entriesContainer.addEventListener('scroll', handleScroll.bind(this));
+                }
+            }, 100);
+        }.bind(this);
+    },
+
+    // 실시간 이름 검증
+    validateNameInput: function() {
+        const nameInput = document.getElementById('guestName');
+        const validation = this.validateInput(nameInput.value, 'name');
+        
+        if (!validation.valid && nameInput.value.trim()) {
+            nameInput.style.borderColor = '#e74c3c';
+            nameInput.title = validation.message;
+        } else {
+            nameInput.style.borderColor = '';
+            nameInput.title = '';
+        }
+    },
+
+    // 실시간 메시지 검증
+    validateMessageInput: function() {
+        const messageTextarea = document.getElementById('guestMessage');
+        const validation = this.validateInput(messageTextarea.value, 'message');
+        
+        if (!validation.valid && messageTextarea.value.trim()) {
+            messageTextarea.style.borderColor = '#e74c3c';
+            messageTextarea.title = validation.message;
+        } else {
+            messageTextarea.style.borderColor = '';
+            messageTextarea.title = '';
+        }
     },
 
     // 방명록 토글
@@ -131,53 +401,264 @@ const FloatingActions = {
             guestbook.classList.remove('active');
         } else {
             guestbook.classList.add('active');
-            this.loadGuestbookEntries();
+            this.loadGuestbookEntries(true);
         }
     },
 
     // 방명록 항목 제출
-    submitGuestbookEntry: function() {
+    submitGuestbookEntry: async function() {
         const name = document.getElementById('guestName').value.trim();
         const message = document.getElementById('guestMessage').value.trim();
+        const password = document.getElementById('guestPassword').value.trim();
         
-        if (!name || !message) {
-            alert('이름과 메시지를 모두 입력해주세요.');
+        if (!name || !message || !password) {
+            alert('이름, 메시지, 비밀번호를 모두 입력해주세요.');
             return;
         }
         
-        // TODO: 구글 시트 연동 로직 추가 예정
-        console.log('방명록 제출:', { name, message });
+        if (!/^\d{4}$/.test(password)) {
+            alert('비밀번호는 4자리 숫자여야 합니다.');
+            return;
+        }
         
-        // 임시로 폼 초기화
-        document.getElementById('guestName').value = '';
-        document.getElementById('guestMessage').value = '';
+        // 이름 금지어 검증
+        const nameValidation = this.validateInput(name, 'name');
+        if (!nameValidation.valid) {
+            alert(nameValidation.message);
+            return;
+        }
         
-        alert('방명록이 등록되었습니다!');
-        this.loadGuestbookEntries();
+        // 메시지 금지어 검증
+        const messageValidation = this.validateInput(message, 'message');
+        if (!messageValidation.valid) {
+            alert(messageValidation.message);
+            return;
+        }
+        
+        // 로딩 상태 표시
+        const submitBtn = document.querySelector('.guestbook-submit');
+        const originalHTML = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<div class="loading-spinner" style="width:16px;height:16px;"></div>';
+        submitBtn.disabled = true;
+        
+        try {
+            // config.js에서 API URL 가져오기
+            if (!window.CONFIG || !window.CONFIG.APPS_SCRIPT_URL) {
+                throw new Error('Google Apps Script URL이 설정되지 않았습니다.');
+            }
+            
+            // 클라이언트 IP 주소 가져오기
+            const clientIP = await this.getClientIP();
+            console.log('클라이언트 IP:', clientIP);
+            
+            const response = await fetch(window.CONFIG.APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    data: JSON.stringify({
+                        action: 'addGuestbook',
+                        guestData: {
+                            name: name,
+                            message: message,
+                            password: password,
+                            ip: clientIP
+                        }
+                    })
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // 성공시 폼 초기화
+                document.getElementById('guestName').value = '';
+                document.getElementById('guestMessage').value = '';
+                document.getElementById('guestPassword').value = '';
+                this.updateCharCounter();
+                
+                alert('방명록이 등록되었습니다!');
+                this.loadGuestbookEntries(true); // 처음부터 다시 로드
+            } else {
+                throw new Error(result.error || '방명록 등록에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('방명록 등록 오류:', error);
+            alert('방명록 등록 중 오류가 발생했습니다: ' + error.message);
+        } finally {
+            // 로딩 상태 복원
+            submitBtn.innerHTML = originalHTML;
+            submitBtn.disabled = false;
+        }
     },
 
-    // 방명록 항목들 로드
-    loadGuestbookEntries: function() {
+    // 방명록 항목들 로드 (무한 스크롤)
+    loadGuestbookEntries: async function(reset = false) {
+        if (this.loadState.loading) return;
+        
         const entriesContainer = document.getElementById('guestbookEntries');
         
-        // TODO: 구글 시트에서 데이터 로드 예정
-        // 임시 데이터로 UI 테스트
-        entriesContainer.innerHTML = `
-            <div class="guestbook-entry">
-                <div class="entry-header">
-                    <span class="entry-name">김철수</span>
-                    <span class="entry-date">2025-10-08</span>
+        // 초기화가 필요한 경우 (새 방명록 추가 등)
+        if (reset) {
+            this.loadState.offset = 0;
+            this.loadState.hasMore = true;
+            this.loadState.allEntries = [];
+            entriesContainer.innerHTML = `
+                <div class="guestbook-loading">
+                    <div class="loading-spinner"></div>
+                    <p>방명록을 불러오는 중...</p>
                 </div>
-                <div class="entry-message">멋진 블로그네요! 앞으로도 좋은 글 부탁드립니다.</div>
-            </div>
-            <div class="guestbook-entry">
-                <div class="entry-header">
-                    <span class="entry-name">박영희</span>
-                    <span class="entry-date">2025-10-07</span>
+            `;
+        }
+        
+        // 더 로드할 데이터가 없으면 중단
+        if (!this.loadState.hasMore) return;
+        
+        this.loadState.loading = true;
+        
+        try {
+            if (!window.CONFIG || !window.CONFIG.APPS_SCRIPT_URL) {
+                throw new Error('Google Apps Script URL이 설정되지 않았습니다.');
+            }
+            
+            const response = await fetch(`${window.CONFIG.APPS_SCRIPT_URL}?action=getGuestbook&offset=${this.loadState.offset}&limit=${this.loadState.limit}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const newEntries = result.entries || [];
+                
+                // 새 항목들을 기존 배열 앞에 추가 (상단 표시를 위해)
+                this.loadState.allEntries = [...newEntries, ...this.loadState.allEntries];
+                this.loadState.offset += newEntries.length;
+                this.loadState.hasMore = newEntries.length === this.loadState.limit;
+                
+                // UI 업데이트 - reset에 따라 렌더링 방식 결정
+                if (reset) {
+                    // 전체 렌더링 (초기 로드)
+                    this.renderGuestbookEntries();
+                } else {
+                    // 새 항목만 추가 (무한 스크롤)
+                    this.renderGuestbookEntries(true, newEntries);
+                }
+                
+            } else {
+                throw new Error(result.error || '방명록 로드에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('방명록 로드 오류:', error);
+            if (reset) {
+                entriesContainer.innerHTML = `
+                    <div class="guestbook-error">
+                        <p>방명록을 불러오는 중 오류가 발생했습니다.</p>
+                        <button onclick="FloatingActions.loadGuestbookEntries(true)" class="retry-btn">다시 시도</button>
+                    </div>
+                `;
+            }
+        } finally {
+            this.loadState.loading = false;
+        }
+    },
+
+    // 방명록 항목들 렌더링
+    renderGuestbookEntries: function(newEntriesOnly = false, newEntries = []) {
+        const entriesContainer = document.getElementById('guestbookEntries');
+        
+        if (newEntriesOnly && newEntries.length > 0) {
+            // 새 항목들만 상단에 추가 (DOM 교체 없음)
+            let newEntriesHTML = '';
+            newEntries.forEach(entry => {
+                const date = new Date(entry.date).toLocaleDateString('ko-KR');
+                newEntriesHTML += `
+                    <div class="guestbook-entry" data-entry-id="${entry.id}">
+                        <div class="entry-header">
+                            <span class="entry-name">${this.escapeHtml(entry.name)}</span>
+                            <span class="entry-date">${date}</span>
+                            <button class="entry-more-btn" onclick="FloatingActions.showDeleteConfirm(this, ${entry.id})" title="삭제">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="5" cy="12" r="2" fill="currentColor"/>
+                                    <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                                    <circle cx="19" cy="12" r="2" fill="currentColor"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="entry-message">${this.escapeHtml(entry.message)}</div>
+                    </div>
+                `;
+            });
+            
+            // 기존 컨테이너의 첫 번째 자식 앞에 삽입 (prepend)
+            entriesContainer.insertAdjacentHTML('afterbegin', newEntriesHTML);
+            console.log(`${newEntries.length}개의 새 항목을 상단에 추가했습니다.`);
+            return;
+        }
+        
+        // 전체 렌더링 (초기 로드 또는 reset=true일 때)
+        if (this.loadState.allEntries.length === 0) {
+            entriesContainer.innerHTML = `
+                <div class="guestbook-empty">
+                    <p>아직 방명록이 없습니다.<br>첫 번째 메시지를 남겨보세요!</p>
                 </div>
-                <div class="entry-message">작품이 정말 인상적이에요. 계속해서 응원하겠습니다!</div>
-            </div>
-        `;
+            `;
+            return;
+        }
+        
+        let entriesHTML = '';
+        this.loadState.allEntries.forEach(entry => {
+            const date = new Date(entry.date).toLocaleDateString('ko-KR');
+            entriesHTML += `
+                <div class="guestbook-entry" data-entry-id="${entry.id}">
+                    <div class="entry-header">
+                        <span class="entry-name">${this.escapeHtml(entry.name)}</span>
+                        <span class="entry-date">${date}</span>
+                        <button class="entry-more-btn" onclick="FloatingActions.showDeleteConfirm(this, ${entry.id})" title="삭제">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <circle cx="5" cy="12" r="2" fill="currentColor"/>
+                                <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                                <circle cx="19" cy="12" r="2" fill="currentColor"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="entry-message">${this.escapeHtml(entry.message)}</div>
+                </div>
+            `;
+        });
+        
+        entriesContainer.innerHTML = entriesHTML;
+    },
+
+    // 상단 로딩 표시 (전용 컨테이너 사용)
+    showTopLoading: function() {
+        console.log('상단 로딩 스피너 표시 시작');
+        const topLoadingContainer = document.getElementById('topLoadingContainer');
+        
+        if (topLoadingContainer && topLoadingContainer.innerHTML.trim() === '') {
+            topLoadingContainer.innerHTML = `
+                <div class="top-loading" id="topLoader">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">이전 방명록 불러오는 중...</div>
+                </div>
+            `;
+            console.log('상단 로딩 스피너 표시됨');
+        }
+    },
+
+    // 상단 로딩 제거 (부드러운 애니메이션)
+    hideTopLoading: function() {
+        console.log('상단 로딩 스피너 제거 시작');
+        const topLoadingContainer = document.getElementById('topLoadingContainer');
+        const topLoader = document.getElementById('topLoader');
+        
+        if (topLoadingContainer && topLoader) {
+            // fade-out 클래스 추가로 애니메이션 시작
+            topLoader.classList.add('fade-out');
+            
+            // 애니메이션 완료 후 제거
+            setTimeout(() => {
+                topLoadingContainer.innerHTML = '';
+                console.log('상단 로딩 스피너 제거됨');
+            }, 250); // 애니메이션 지속시간과 동일
+        }
     },
 
     // Enter 키로 방명록 제출
@@ -186,6 +667,91 @@ const FloatingActions = {
             event.preventDefault();
             this.submitGuestbookEntry();
         }
+    },
+
+    // 글자수 카운터 업데이트
+    updateCharCounter: function() {
+        const textarea = document.getElementById('guestMessage');
+        const counter = document.getElementById('charCounter');
+        if (textarea && counter) {
+            const currentLength = textarea.value.length;
+            counter.textContent = `${currentLength}/50`;
+            
+            // 글자수가 50에 가까워지면 색상 변경
+            if (currentLength >= 45) {
+                counter.style.color = '#e74c3c';
+            } else if (currentLength >= 40) {
+                counter.style.color = '#f39c12';
+            } else {
+                counter.style.color = '#888';
+            }
+        }
+    },
+
+    // 삭제 확인 알림
+    showDeleteConfirm: async function(button, entryId) {
+        if (confirm('삭제하시겠습니까?')) {
+            const password = prompt('비밀번호를 입력하세요 (4자리 숫자):');
+            
+            if (password === null) {
+                // 사용자가 취소를 누른 경우
+                return;
+            }
+            
+            if (!/^\d{4}$/.test(password)) {
+                alert('비밀번호는 4자리 숫자여야 합니다.');
+                return;
+            }
+            
+            // 버튼 로딩 상태
+            button.disabled = true;
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<div class="loading-spinner" style="width:12px;height:12px;"></div>';
+            
+            try {
+                // config.js에서 API URL 가져오기
+                if (!window.CONFIG || !window.CONFIG.APPS_SCRIPT_URL) {
+                    throw new Error('Google Apps Script URL이 설정되지 않았습니다.');
+                }
+                
+                const response = await fetch(window.CONFIG.APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        data: JSON.stringify({
+                            action: 'deleteGuestbook',
+                            entryId: entryId,
+                            password: password
+                        })
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('방명록이 삭제되었습니다.');
+                    this.loadGuestbookEntries(true); // 처음부터 다시 로드
+                } else {
+                    throw new Error(result.error || '삭제에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('방명록 삭제 오류:', error);
+                alert('삭제 중 오류가 발생했습니다: ' + error.message);
+                
+                // 버튼 상태 복원
+                button.innerHTML = originalHTML;
+                button.disabled = false;
+            }
+        }
+    },
+
+    // HTML 이스케이프 (XSS 방지)
+    escapeHtml: function(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 };
 

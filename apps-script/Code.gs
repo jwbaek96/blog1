@@ -40,6 +40,10 @@ function doGet(e) {
         postData: postData
       };
       return handlePostSave(requestData);
+    } else if (action === 'getGuestbook') {
+      const offset = parseInt(e.parameter.offset) || 0;
+      const limit = parseInt(e.parameter.limit) || 10;
+      return handleGetGuestbook(offset, limit);
     } else {
       throw new Error('Invalid action: ' + action);
     }
@@ -157,6 +161,10 @@ function doPost(e) {
     // Check request type
     if (requestData.action === 'savePost') {
       return handlePostSave(requestData);
+    } else if (requestData.action === 'addGuestbook') {
+      return handleAddGuestbook(requestData);
+    } else if (requestData.action === 'deleteGuestbook') {
+      return handleDeleteGuestbook(requestData);
     } else if (requestData.file) {
       return handleFileUpload(requestData);
     } else {
@@ -339,6 +347,293 @@ function handlePostSave(requestData) {
 }
 
 /**
+ * Handle get guestbook requests
+ */
+function handleGetGuestbook(offset = 0, limit = 10) {
+  try {
+    console.log(`📋 Getting guestbook entries from spreadsheet (Offset: ${offset}, Limit: ${limit})`);
+    
+    const spreadsheet = getSpreadsheet();
+    const guestbookSheet = getGuestbookSheet(spreadsheet);
+    
+    // Get all data (excluding header row)
+    const dataRange = guestbookSheet.getDataRange();
+    const values = dataRange.getValues();
+    
+    if (values.length <= 1) {
+      console.log('📋 No guestbook entries found');
+      return createJsonResponse({
+        success: true,
+        entries: [],
+        totalEntries: 0,
+        hasMore: false,
+        message: 'No guestbook entries found'
+      });
+    }
+    
+    // Skip header row and process data
+    const allEntries = [];
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      
+      // Skip empty rows or entries marked as deleted
+      if (!row[2] || row[6] === 'deleted') continue; // Skip if name is empty or status is deleted
+      
+      const entry = {
+        id: row[0] || i,                 // A: ID
+        date: row[1] || '',              // B: Date
+        name: row[2] || 'Anonymous',     // C: Name
+        // password: row[3] - 보안상 클라이언트로 전송하지 않음
+        message: row[4] || '',           // E: Message
+        ip: row[5] || '',                // F: IP (보안상 선택적 노출)
+        status: row[6] || 'active',      // G: Status
+        comment: row[7] || ''            // H: Comment
+      };
+      
+      allEntries.push(entry);
+    }
+    
+    // 최신순으로 정렬
+    allEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Offset/Limit 계산
+    const totalEntries = allEntries.length;
+    const endIndex = Math.min(offset + limit, totalEntries);
+    const requestedEntries = allEntries.slice(offset, endIndex);
+    const hasMore = endIndex < totalEntries;
+    
+    console.log(`✅ Found ${totalEntries} total entries, returning ${requestedEntries.length} entries from offset ${offset}`);
+    
+    const response = {
+      success: true,
+      entries: requestedEntries,
+      totalEntries: totalEntries,
+      hasMore: hasMore,
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(response);
+    
+  } catch (error) {
+    console.error('❌ Get guestbook error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
+}
+
+/**
+ * Handle add guestbook entry requests
+ */
+function handleAddGuestbook(requestData) {
+  try {
+    console.log('📝 ===== ADD GUESTBOOK REQUEST RECEIVED =====');
+    console.log('📥 Full request data:', JSON.stringify(requestData, null, 2));
+    
+    // Validate guestbook data
+    const guestData = requestData.guestData;
+    console.log('📋 Guest data received:', JSON.stringify(guestData, null, 2));
+    
+    if (!guestData || !guestData.name || !guestData.message || !guestData.password) {
+      throw new Error('Invalid guestbook data: name, message, and password are required');
+    }
+    
+    // Validate password (4-digit number)
+    if (!/^\d{4}$/.test(guestData.password)) {
+      throw new Error('Password must be exactly 4 digits');
+    }
+    
+    // Get spreadsheet and guestbook sheet
+    const spreadsheet = getSpreadsheet();
+    const guestbookSheet = getGuestbookSheet(spreadsheet);
+    
+    // Get client IP from request data (sent from frontend) or fallback to session key
+    const clientIP = guestData.ip || Session.getTemporaryActiveUserKey() || 'unknown';
+    
+    // Prepare row data matching required structure: [id, date, name, password, message, ip, status, comment]
+    const currentDateTime = new Date().toISOString().replace('T', ' ').split('.')[0]; // YYYY-MM-DD HH:MM:SS format
+    
+    const rowData = [
+      '=ROW()-1',                       // A: ID (자동 증가 공식)
+      currentDateTime,                  // B: Date
+      guestData.name,                   // C: Name
+      "'" + guestData.password,         // D: Password (텍스트로 강제 저장하여 0000 등이 0으로 변환되는 것 방지)
+      guestData.message,                // E: Message
+      clientIP,                         // F: IP
+      'active',                         // G: Status
+      ''                                // H: Comment (관리자 메모용)
+    ];
+    
+    console.log('📊 Saving guestbook data:');
+    console.log('🆔 ID: =ROW()-1 (자동 증가)');
+    console.log('📅 Date:', currentDateTime);
+    console.log('👤 Name:', guestData.name);
+    console.log('🔒 Password: [HIDDEN]');
+    console.log('💬 Message:', guestData.message);
+    console.log('🌐 IP:', clientIP, guestData.ip ? '(from client)' : '(from session)');
+    console.log('📊 Status: active');
+    
+    // Add row to sheet
+    guestbookSheet.appendRow(rowData);
+    
+    // Get the row number to determine the actual ID that will be generated
+    const lastRow = guestbookSheet.getLastRow();
+    const calculatedId = lastRow - 1;
+    
+    console.log(`✅ Guestbook entry saved successfully: ${guestData.name} (ID will be: ${calculatedId})`);
+    
+    const response = {
+      success: true,
+      entryId: calculatedId,
+      name: guestData.name,
+      message: 'Guestbook entry saved successfully',
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(response);
+    
+  } catch (error) {
+    console.error('❌ Add guestbook error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
+}
+
+/**
+ * Handle delete guestbook entry requests
+ */
+function handleDeleteGuestbook(requestData) {
+  try {
+    console.log('🗑️ ===== DELETE GUESTBOOK REQUEST RECEIVED =====');
+    console.log('📥 Full request data:', JSON.stringify(requestData, null, 2));
+    
+    const entryId = requestData.entryId;
+    const password = requestData.password;
+    
+    if (!entryId || !password) {
+      throw new Error('Entry ID and password are required for deletion');
+    }
+    
+    if (!/^\d{4}$/.test(password)) {
+      throw new Error('Password must be exactly 4 digits');
+    }
+    
+    // Get spreadsheet and guestbook sheet
+    const spreadsheet = getSpreadsheet();
+    const guestbookSheet = getGuestbookSheet(spreadsheet);
+    
+    // Find the entry by ID
+    const dataRange = guestbookSheet.getDataRange();
+    const values = dataRange.getValues();
+    
+    let targetRowIndex = -1;
+    for (let i = 1; i < values.length; i++) { // Skip header row
+      const row = values[i];
+      const rowId = row[0];
+      
+      // Check if this is the target entry
+      if (rowId == entryId) {
+        const storedPassword = row[3]; // Column D: Password
+        
+        // 저장된 비밀번호에서 텍스트 강제를 위한 앞의 작은따옴표 제거
+        const cleanStoredPassword = storedPassword.toString().startsWith("'") ? 
+          storedPassword.toString().substring(1) : storedPassword.toString();
+        
+        if (cleanStoredPassword === password) {
+          targetRowIndex = i + 1; // Convert to 1-based index for Google Sheets
+          break;
+        } else {
+          throw new Error('Incorrect password');
+        }
+      }
+    }
+    
+    if (targetRowIndex === -1) {
+      throw new Error('Guestbook entry not found');
+    }
+    
+    // Mark as deleted (soft delete) instead of actually deleting the row
+    guestbookSheet.getRange(targetRowIndex, 7).setValue('deleted'); // Column G: Status
+    guestbookSheet.getRange(targetRowIndex, 9).setValue(`Deleted on ${new Date().toISOString()}`); // Column H: Comment
+    
+    console.log(`✅ Guestbook entry marked as deleted: ID ${entryId}`);
+    
+    const response = {
+      success: true,
+      entryId: entryId,
+      message: 'Guestbook entry deleted successfully',
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(response);
+    
+  } catch (error) {
+    console.error('❌ Delete guestbook error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
+}
+
+/**
+ * Get guestbook sheet (시트2번 - gid=1835692304)
+ */
+function getGuestbookSheet(spreadsheet) {
+  try {
+    // Try to get sheet by name first
+    let sheet = spreadsheet.getSheetByName('방명록') || spreadsheet.getSheetByName('guestbook') || spreadsheet.getSheetByName('Guestbook');
+    
+    if (!sheet) {
+      // If no sheet found by name, get by index (시트2번 = index 1)
+      const sheets = spreadsheet.getSheets();
+      if (sheets.length > 1) {
+        sheet = sheets[1]; // 시트2번 (0-based index)
+      }
+    }
+    
+    if (!sheet) {
+      throw new Error('Guestbook sheet not found. Please ensure sheet 2 exists or create a sheet named "방명록"');
+    }
+    
+    console.log(`📋 Using guestbook sheet: ${sheet.getName()}`);
+    
+    // Check if headers exist, if not create them
+    const headerRange = sheet.getRange(1, 1, 1, 8);
+    const headers = headerRange.getValues()[0];
+    
+    const expectedHeaders = ['id', 'date', 'name', 'password', 'message', 'ip', 'status', 'comment'];
+    
+    // If first header is empty or doesn't match expected, set up headers
+    if (!headers[0] || headers.join('').toLowerCase() !== expectedHeaders.join('').toLowerCase()) {
+      console.log('📝 Setting up guestbook headers');
+      headerRange.setValues([expectedHeaders]);
+    }
+    
+    return sheet;
+    
+  } catch (error) {
+    console.error('❌ Guestbook sheet error:', error.toString());
+    throw error;
+  }
+}
+
+/**
  * Get or create blog folder
  */
 function getBlogFolder() {
@@ -419,56 +714,4 @@ function doOptions(e) {
     success: true,
     message: 'CORS preflight response'
   });
-}
-
-/**
- * Debug function to check configuration
- */
-function debugConfig() {
-  console.log('🔧 Debug Configuration:');
-  console.log('BLOG_FOLDER_ID:', BLOG_FOLDER_ID);
-  console.log('SPREADSHEET_ID:', SPREADSHEET_ID);
-  
-  try {
-    const folder = DriveApp.getFolderById(BLOG_FOLDER_ID);
-    console.log('✅ Folder found:', folder.getName());
-  } catch (error) {
-    console.error('❌ Folder error:', error.toString());
-  }
-  
-  try {
-    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    console.log('✅ Spreadsheet found:', spreadsheet.getName());
-  } catch (error) {
-    console.error('❌ Spreadsheet error:', error.toString());
-  }
-}
-
-/**
- * Test function to verify setup
- */
-function testSetup() {
-  console.log('🧪 Testing setup...');
-  
-  try {
-    // Test folder access
-    const folder = getBlogFolder();
-    console.log('✅ Folder access: OK');
-    
-    // Test spreadsheet access
-    const spreadsheet = getSpreadsheet();
-    console.log('✅ Spreadsheet access: OK');
-    
-    // Test get posts
-    const response = handleGetPosts();
-    const result = JSON.parse(response.getContent());
-    console.log('✅ Get posts test:', result.success ? 'OK' : 'FAILED');
-    console.log('📊 Posts found:', result.posts ? result.posts.length : 0);
-    
-    return true;
-    
-  } catch (error) {
-    console.error('❌ Setup test failed:', error.toString());
-    return false;
-  }
 }

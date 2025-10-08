@@ -2,8 +2,10 @@
 
 const CONFIG = {
     // Google Apps Script
-    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbymxh5fEG3A1M9Ty0vaCoEUEgIUq0AXYE-WtPVwXQcwnR65AvrvATIiSuh2h0GLGCvC/exec', // Apps Script Web App URL (GET/POST 요청용)
-    UPLOAD_API_URL: 'https://script.google.com/macros/s/AKfycbymxh5fEG3A1M9Ty0vaCoEUEgIUq0AXYE-WtPVwXQcwnR65AvrvATIiSuh2h0GLGCvC/exec', // 실제 Apps Script 배포 URL
+    // Apps Script Web App URL (GET/POST 요청용)
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec', 
+    UPLOAD_API_URL: 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec', 
+    // 실제 Apps Script 배포 URL
     
     // Google Sheets
     GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 실제 Google 스프레드시트 ID
@@ -103,6 +105,11 @@ if (typeof window !== 'undefined') {
             setTimeout(() => banner.remove(), 1000);
         }
     });
+}
+
+// Make CONFIG available globally
+if (typeof window !== 'undefined') {
+    window.CONFIG = CONFIG;
 }
 
 // Export for Node.js environments
