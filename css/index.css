@@ -284,9 +284,11 @@ header.header-dark .mobile-menu-toggle{
 }
 
 .gallery-grid {
+    max-width: 1440px;
     display: grid;
     grid-template-columns: repeat(4, minmax(280px, 1fr));
     gap: 2rem;
+    margin: auto;
     margin-bottom: 3rem;
     overflow-x: auto;
     overflow-y: hidden;
