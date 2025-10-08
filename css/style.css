@@ -9,7 +9,9 @@ html{
     padding: 0;
     box-sizing: border-box;
     font-family: 'Noto Sans KR', sans-serif;
-    word-break: keep-all;
+    word-break: pre-line;
+    /* word-wrap: break-word;
+    line-break: auto; */
 }
 input:-webkit-autofill,
     input:-webkit-autofill:hover,

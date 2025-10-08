@@ -30,225 +30,6 @@
 
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/0470599ade.js" crossorigin="anonymous"></script>
-    <style>
-        /* Landing Page Specific Styles */
-        .hero-landing {
-            background-image: url('assets/freepik__expand.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 100vh;
-            min-height: 100dvh;
-            display: flex;
-            align-items: center;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero-landing::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: -1;
-        }
-        
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            width: 100%;
-            /* max-width: 800px; */
-            margin: 0 auto;
-            padding: var(--spacing-xl);
-        }
-        
-        .hero-landing h1 {
-            font-size:7rem;
-            font-weight: 700;
-            margin-bottom: var(--spacing-lg);
-            animation: fadeInUp 1s ease-out;
-        }
-        
-        .hero-subtitle {
-            font-size: var(--font-size-xl);
-            margin-bottom: var(--spacing-xl);
-            opacity: 0.9;
-            animation: fadeInUp 1s ease-out 0.2s both;
-        }
-        
-        .hero-cta {
-            display: flex;
-            gap: var(--spacing-md);
-            justify-content: center;
-            flex-wrap: wrap;
-            animation: fadeInUp 1s ease-out 0.4s both;
-        }
-        
-        .cta-button {
-            padding: var(--spacing-md) var(--spacing-xl);
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .cta-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            color: white;
-            text-decoration: none;
-        }
-        
-        .cta-primary {
-            background: white;
-            color: #667eea;
-        }
-        
-        .cta-primary:hover {
-            background: rgba(255, 255, 255, 0.9);
-            color: #667eea;
-        }
-        
-        /* About Section */
-        .about-section {
-            padding: 5rem 4rem;
-            background:#eee;
-        }
-        
-        .about-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 35px;
-            /* align-items: center; */
-        }
-        .about-text{
-            padding: 3rem 0rem;
-            text-align: justify;
-        }
-        .about-text h2 {
-            font-size: 2.5rem;
-            margin-bottom: var(--spacing-lg);
-            color: var(--text-primary);
-        }
-        
-        .about-text p {
-            font-size: var(--font-size-lg);
-            line-height: 1.8;
-            margin-bottom: var(--spacing-md);
-            color: var(--text-secondary);
-        }
-        
-        .about-image {
-            position: relative;
-            text-align: center;
-        }
-        
-        .about-image img {
-            /* width: 100%; */
-            height: 650px;
-            aspect-ratio: 4/5;
-            object-fit: cover;
-            border-radius: 20px;
-            box-shadow: var(--box-shadow-lg);
-        }
-        
-        /* Mobile Header */
-        .mobile-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-primary);
-            cursor: pointer;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .hero-landing h1 {
-                font-size: 2.5rem;
-            }
-            
-            .hero-subtitle {
-                font-size: var(--font-size-lg);
-            }
-            
-            .hero-cta {
-                flex-direction: column;
-                align-items: center;
-            }
-            .about-section{
-                padding: 0;
-            }
-            .about-grid {
-                grid-template-columns: 1fr;
-                gap: var(--spacing-xl);
-                text-align: center;
-            }
-            
-            .about-grid .about-image {
-                order: -1;
-            }
-            
-            .about-image img {
-                height: 300px;
-                width: 100%;
-                border-radius: 0;
-            }
-            .about-text{
-                padding: 0 2rem 3rem;
-            }
-            .about-text h2 {
-                font-size: 2rem;
-            }
-            
-
-            
-            .mobile-menu-toggle {
-                display: block;
-            }
-            
-            .nav {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--bg-primary);
-                border-top: 1px solid var(--border-color);
-                flex-direction: column;
-                padding: var(--spacing-md) 0;
-            }
-            
-            .nav.active {
-                display: flex;
-            }
-            
-            .header-content {
-                flex-direction: row;
-                justify-content: space-between;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Header -->
@@ -258,7 +39,7 @@
                 <div class="logo">
                     <a href="index.html">JW.BAEK    </a>
                 </div>
-                <button class="mobile-menu-toggle" onclick="toggleMenu()">☰</button>
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">☰</button>
                 <nav class="nav" id="mainNav">
                     <a href="#home" class="nav-link">HOME</a>
                     <a href="#about" class="nav-link">ABOUT</a>
@@ -270,11 +51,23 @@
         </div>
     </header>
 
+    <!-- Mobile Sidebar -->
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <button class="mobile-sidebar-close" onclick="closeMobileSidebar()">✕</button>
+        <nav class="mobile-sidebar-nav">
+            <a href="#home" onclick="closeMobileSidebar()">HOME</a>
+            <a href="#about" onclick="closeMobileSidebar()">ABOUT</a>
+            <a href="#exhibition" onclick="closeMobileSidebar()">EXHIBITION</a>
+            <a href="blog.html" onclick="closeMobileSidebar()">BLOG</a>
+            <a href="#contact" onclick="closeMobileSidebar()">CONTACT</a>
+        </nav>
+    </div>
+
     <!-- Hero Section -->
     <section id="home" class="hero-landing">
         <div class="container">
             <div class="hero-content">
-                <h1>JW.BAEK     </h1>
+                <h1>JW.BAEK</h1>
                 <p class="hero-subtitle">Web Developer & Artist</p>
             </div>
         </div>
@@ -392,11 +185,30 @@
 
     <!-- Scripts -->
     <script>
-        // 모바일 메뉴 토글
-        function toggleMenu() {
-            const nav = document.getElementById('mainNav');
-            nav.classList.toggle('active');
+        // 모바일 사이드바 토글
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('mobileSidebarOverlay');
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 스크롤 방지
         }
+
+        // 모바일 사이드바 닫기
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('mobileSidebarOverlay');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = ''; // 스크롤 복원
+        }
+
+        // ESC 키로도 사이드바 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeMobileSidebar();
+            }
+        });
         
         // 스무스 스크롤
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -410,9 +222,8 @@
                     });
                 }
                 
-                // 모바일 메뉴 닫기
-                const nav = document.getElementById('mainNav');
-                nav.classList.remove('active');
+                // 모바일 사이드바 닫기
+                closeMobileSidebar();
             });
         });
         
@@ -421,6 +232,7 @@
             const sections = ['home', 'about', 'exhibition', 'contact'];
             const navLinks = document.querySelectorAll('.nav-link');
             const header = document.querySelector('header');
+            const heroSection = document.getElementById('home');
             
             let currentSection = '';
             sections.forEach(sectionId => {
@@ -433,11 +245,20 @@
                 }
             });
             
-            // 헤더 색상 변경
-            if (currentSection === 'about') {
-                header.classList.add('header-dark');
-            } else {
-                header.classList.remove('header-dark');
+            // 헤더 색상 변경 - 히어로 섹션이 끝나면 다크 모드로 변경
+            if (heroSection) {
+                const heroRect = heroSection.getBoundingClientRect();
+                const sidebar = document.getElementById('mobileSidebar');
+                
+                if (heroRect.bottom <= 0) {
+                    // 히어로 섹션이 완전히 지나갔을 때
+                    header.classList.add('header-dark');
+                    sidebar.classList.add('dark');
+                } else {
+                    // 히어로 섹션이 아직 보일 때
+                    header.classList.remove('header-dark');
+                    sidebar.classList.remove('dark');
+                }
             }
             
             navLinks.forEach(link => {
