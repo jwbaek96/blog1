@@ -19,6 +19,9 @@ header a{
     display: flex;
     gap: 20px;
 }
+.nav a:hover{
+    color: #ef782e;
+}
 /* Header color change when in about section */
 header.header-dark a{
     color: #0c0c0c;
@@ -35,7 +38,7 @@ header.header-dark .mobile-menu-toggle{
 }
 /* Landing Page Specific Styles */
 .hero-landing {
-    background-image: url('assets/BeautyPlus-image-extender.jpeg');
+    background-image: url('/assets/BeautyPlus-image-extender.jpeg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -398,7 +401,7 @@ header.header-dark .mobile-menu-toggle{
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: #dee2e6 transparent;
-    padding: 1rem 0;
+    padding: 1rem;
     position: relative;
     z-index: 1;
 }
@@ -694,8 +697,19 @@ footer {
     }
 }
 
-
 /* ========================== */
-
+@media (max-width: 480px) {
+    .skill-item {
+        padding: 1rem;
+        min-width: 0;
+    }
+    .skill-icon{
+        width: 65px;
+        height: 65px;
+    }
+    .skill-name{
+        font-size: 0.9rem;
+    }
+}
         
         
