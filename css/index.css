@@ -658,6 +658,7 @@ footer {
     .header-content {
         flex-direction: row;
         justify-content: space-between;
+        padding: 20px 26px;
     }
     
     /* Hide desktop navigation */
@@ -711,7 +712,10 @@ footer {
     .skills-section {
         padding: 3rem 1rem;
     }
-    .skills-grid {gap: 0;}
+    .skills-grid {
+        justify-content: space-around;
+        gap: 0;
+    }
     .skill-icon {
         width: 80px;
         height: 80px;

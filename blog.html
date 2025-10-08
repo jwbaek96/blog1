@@ -3,26 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets 기반 블로그</title>
+    <title>JW.BAEK - Blog</title>
+    <link rel="shortcut icon" href="./assets/Vector.png">
+    <link rel="icon" href="./assets/Vector.png" sizes="96x96" type="image/png">
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="구글 스프레드시트를 데이터베이스로 활용하는 블로그">
-    <meta name="keywords" content="블로그, Google Sheets, 바닐라 JavaScript">
-    <meta name="author" content="Your Name">
+    <meta name="description" content="JW.BAEK의 블로그 - 창작 과정과 예술적 탐구를 공유합니다">
+    <meta name="keywords" content="블로그, 아티스트, 웹개발, 인터랙티브미디어, 렌티큘러아트">
+    <meta name="author" content="JW.BAEK">
     
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Google Sheets 기반 블로그">
-    <meta property="og:description" content="구글 스프레드시트를 데이터베이스로 활용하는 블로그">
+    <meta property="og:title" content="JW.BAEK - Blog">
+    <meta property="og:description" content="창작 과정과 예술적 탐구를 공유합니다">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://jwbaek96.github.io/blog1/">
-    <!-- Icon -->
-    <link rel="shortcut icon" href="./assets/Vector.png">
+    
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/index.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/0470599ade.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <!-- Header -->
@@ -30,13 +35,33 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="/">My Blog</a>
+                    <a href="index.html">JW.BAEK</a>
                 </div>
-                <nav class="nav">
+                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">☰</button>
+                <nav class="nav" id="mainNav">
+                    <a href="index.html#home" class="nav-link">HOME</a>
+                    <a href="index.html#about" class="nav-link">ABOUT</a>
+                    <a href="index.html#skills" class="nav-link">SKILLS</a>
+                    <a href="index.html#exhibition" class="nav-link">ARTICLE</a>
+                    <a href="blog.html" class="nav-link active">BLOG</a>
+                    <a href="index.html#contact" class="nav-link">CONTACT</a>
                 </nav>
             </div>
         </div>
     </header>
+
+    <!-- Mobile Sidebar -->
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <button class="mobile-sidebar-close" onclick="closeMobileSidebar()">✕</button>
+        <nav class="mobile-sidebar-nav">
+            <a href="index.html#home" onclick="closeMobileSidebar()">HOME</a>
+            <a href="index.html#about" onclick="closeMobileSidebar()">ABOUT</a>
+            <a href="index.html#skills" onclick="closeMobileSidebar()">SKILLS</a>
+            <a href="index.html#exhibition" onclick="closeMobileSidebar()">EXHIBITION</a>
+            <a href="blog.html" onclick="closeMobileSidebar()">BLOG</a>
+            <a href="index.html#contact" onclick="closeMobileSidebar()">CONTACT</a>
+        </nav>
+    </div>
 
     <!-- Main Content -->
     <main class="main">
@@ -70,10 +95,25 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2025 My Blog. All rights reserved.</p>
-            <p>Powered by Google Sheets & Vanilla JavaScript</p>
+    <footer id="contact">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="mailto:jwbaek96@gmail.com">
+                    <i class="fa-regular fa-envelope"></i>
+                </a>
+                <a href="#" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <a href="blog.html">
+                    <span>Blog</span>
+                </a>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>OA Design Studio</p>
+                <p>&copy; 2025 JW.BAEK. All rights reserved.</p>
+                <p>Creative Portfolio & Digital Experience</p>
+            </div>
         </div>
     </footer>
 
@@ -85,6 +125,48 @@
     </a>
 
     <!-- Scripts -->
+    <script>
+        // 모바일 사이드바 토글
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('mobileSidebarOverlay');
+            sidebar.classList.add('active');
+            if (overlay) overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 스크롤 방지
+        }
+
+        // 모바일 사이드바 닫기
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('mobileSidebarOverlay');
+            sidebar.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
+            document.body.style.overflow = ''; // 스크롤 복원
+        }
+
+        // ESC 키로도 사이드바 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeMobileSidebar();
+            }
+        });
+        
+        // 헤더 색상 변경 (스크롤 시)
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            const sidebar = document.getElementById('mobileSidebar');
+            
+            if (window.scrollY > 100) {
+                // 스크롤이 내려갔을 때 - 다크 모드
+                header.classList.add('header-dark');
+                sidebar.classList.add('dark');
+            } else {
+                // 페이지 상단일 때 - 화이트 모드  
+                header.classList.remove('header-dark');
+                sidebar.classList.remove('dark');
+            }
+        });
+    </script>
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/sheets.js"></script>
