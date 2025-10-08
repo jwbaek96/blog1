@@ -38,7 +38,7 @@ header.header-dark .mobile-menu-toggle{
 }
 /* Landing Page Specific Styles */
 .hero-landing {
-    background-image: url('/assets/BeautyPlus-image-extender.jpeg');
+    background-image: url('../assets/BeautyPlus-image-extender.jpeg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
