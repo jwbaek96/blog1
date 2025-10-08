@@ -99,7 +99,7 @@ input:-webkit-autofill,
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
     font-weight: var(--font-weight-semibold);
-    line-height: 1.2;
+    /* line-height: 1.2; */
     margin-bottom: var(--spacing-md);
     /* color: var(--text-primary); */
 }

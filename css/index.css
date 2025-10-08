@@ -65,11 +65,11 @@ header.header-dark .mobile-menu-toggle{
 .hero-content {
     position: relative;
     z-index: 2;
-    text-align: center;
+    /* text-align: center; */
     width: 100%;
     /* max-width: 800px; */
     margin: 0 auto;
-    padding: var(--spacing-xl);
+    padding: var(--spacing-xs);
 }
 
 .hero-landing h1 {
