@@ -13,7 +13,10 @@ header a{
     text-decoration: none;
     transition: color 0.3s ease;
 }
-
+.nav{
+    display: flex;
+    gap: 20px;
+}
 /* Header color change when in about section */
 header.header-dark a{
     color: #0c0c0c;
