@@ -303,7 +303,7 @@
     }
     
     .floating-guestbook.active {
-        right: 1rem;
+        right: .5rem;
     }
     
     /* 모바일에서 사이드바 열렸을 때는 숨김 */
