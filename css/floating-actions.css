@@ -1,0 +1,291 @@
+/* Floating Actions CSS */
+
+/* Floating Action Stack */
+.floating-action-stack {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    z-index: 1000;
+}
+
+.floating-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    background: #2d2d2d;
+    color: white;
+}
+
+.floating-btn:hover {
+    background: #000;
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.floating-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.floating-editor-btn:hover svg {
+    transform: rotate(90deg);
+}
+
+/* 사이드바가 열렸을 때 스택 위치 조정 */
+.sidebar-open .floating-action-stack {
+    right: calc(75% + 2rem);
+}
+
+/* Floating Guestbook */
+.floating-guestbook {
+    position: fixed;
+    bottom: 2rem;
+    right: -400px;
+    width: 350px;
+    height: 80dvh;
+    max-height: 80dvh;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    transition: right 0.3s ease;
+    overflow: hidden;
+    border: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+}
+
+.floating-guestbook.active {
+    right: 2rem;
+}
+
+.guestbook-header {
+    background: #f8f9fa;
+    color: #333;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e5e5;
+    flex-shrink: 0; /* 헤더가 축소되지 않도록 */
+}
+
+.guestbook-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2d2d2d;
+}
+
+.guestbook-close {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.guestbook-close:hover {
+    color: #2d2d2d;
+}
+
+.guestbook-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0; /* flex children이 올바르게 축소되도록 */
+}
+
+.guestbook-entries {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    padding: 0;
+    min-height: 0; /* flex children이 올바르게 축소되도록 */
+}
+
+.guestbook-form {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e5e5;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-shrink: 0; /* 폼이 축소되지 않도록 */
+}
+
+.guestbook-form input {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+    background: white;
+}
+
+.guestbook-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: none;
+    transition: border-color 0.2s ease;
+    background: white;
+}
+
+.name-input-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.name-input-container input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+    background: white;
+}
+
+.guestbook-form input:focus,
+.guestbook-form textarea:focus {
+    outline: none;
+    border-color: #2d2d2d;
+}
+
+.guestbook-submit {
+    background: #2d2d2d;
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    font-size: 0.85rem;
+    height: fit-content;
+}
+
+.guestbook-submit:hover {
+    background: #000;
+}
+
+.guestbook-entry {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s ease;
+    margin-bottom: 0;
+}
+
+.guestbook-entry:hover {
+    background: #f8f9fa;
+}
+
+.guestbook-entry:first-child {
+    border-bottom: none;
+}
+
+.entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.entry-name {
+    font-weight: 600;
+    color: #2d2d2d;
+    font-size: 0.85rem;
+}
+
+.entry-date {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.entry-message {
+    color: #4a4a4a;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.guestbook-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #666;
+    height: 100%;
+}
+
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #e5e5e5;
+    border-top: 2px solid #2d2d2d;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .floating-action-stack {
+        bottom: 1.5rem;
+        right: 1.5rem;
+    }
+    
+    .floating-btn {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .floating-guestbook {
+        width: calc(100vw - 2rem);
+        right: -100vw;
+        bottom: 1rem;
+    }
+    
+    .floating-guestbook.active {
+        right: 1rem;
+    }
+    
+    /* 모바일에서 사이드바 열렸을 때는 숨김 */
+    .sidebar-open .floating-action-stack {
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .sidebar-open .floating-guestbook {
+        opacity: 0;
+        pointer-events: none;
+    }
+}

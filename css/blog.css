@@ -1,64 +1,50 @@
+/* Blog Page Specific Styles */
 
-
-
-
-
-/* Header */
-.header {
-    background-color: var(--bg-primary);
-    border-bottom: 1px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+/* Header styles for blog page */
+body.blog-page header a {
+    color: #0c0c0c;
 }
 
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-md) 0;
+body.blog-page .mobile-menu-toggle {
+    color: #0c0c0c;
 }
 
-.logo a {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--text-primary);
-    text-decoration: none;
+/* Mobile sidebar styles for blog page */
+body.blog-page .mobile-sidebar {
+    background: rgba(238, 238, 238, 0.1);
 }
 
-.nav {
-    display: flex;
-    gap: var(--spacing-lg);
-    align-items: center;
+body.blog-page .mobile-sidebar-nav a {
+    color: #333;
 }
 
-.nav-link {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--border-radius);
-    transition: var(--transition-fast);
-    font-weight: var(--font-weight-medium);
+body.blog-page .mobile-sidebar-close {
+    color: #333;
 }
 
-.nav-link:hover,
-.nav-link.active {
-    background-color: var(--bg-secondary);
-    text-decoration: none;
+/* Blog specific layout adjustments */
+body.blog-page {
+    padding-top: 80px; 
+}
+
+/* Main content area for blog */
+body.blog-page .main {
+    min-height: calc(100vh - 160px); /* Adjust for header and footer */
+}
+/* Layout */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
 }
 
 @media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        gap: var(--spacing-sm);
-        text-align: center;
-    }
-    
-    .nav {
-        gap: var(--spacing-md);
+    .container {
+        padding: 0 var(--spacing-sm);
     }
 }
-
+/* ===== MAIN CONTENT STYLES FROM MAIN.CSS ===== */
+header .container{max-width: 100%;margin: 0;}
 /* Main Content */
 .main {
     min-height: calc(100vh - 200px);
@@ -139,11 +125,6 @@
     grid-template-columns: 1fr;
     gap: var(--spacing-lg);
 }
-
-/* @media (max-width: 768px) {
-    .posts-grid {
-    }
-} */
 
 /* Sidebar Layout */
 body {
@@ -319,20 +300,20 @@ body {
 
 /* Post Card - Base Styles */
 .post-card {
-    /* border-radius: var(--border-radius); */
     overflow: hidden;
     transition: var(--transition);
-    /* box-shadow: var(--box-shadow); */
     cursor: pointer;
 }
 
 .post-card:hover {
     transform: translateY(-2px);
-    /* box-shadow: var(--box-shadow-lg); */
 }
+
 .post-card p,
-.post-card h2
-{margin-bottom: 0;}
+.post-card h2 {
+    margin-bottom: 0;
+}
+
 /* Post Card with Background Image */
 .post-card-with-image {
     position: relative;
@@ -346,7 +327,6 @@ body {
 .post-card-no-image {
     background-color: var(--bg-primary);
     border-bottom: 1px solid var(--border-color);
-    /* min-height: 200px; */
     display: flex;
     flex-direction: column;
 }
@@ -399,7 +379,6 @@ body {
 .post-card-with-image .post-card-meta {
     display: flex;
     gap: var(--spacing-md);
-    /* margin-bottom: var(--spacing-sm); */
     font-size: var(--font-size-xs);
     color: rgba(255, 255, 255, 0.8);
 }
@@ -414,7 +393,6 @@ body {
 .post-card-no-image .post-card-meta {
     display: flex;
     gap: var(--spacing-md);
-    /* margin-bottom: var(--spacing-sm); */
     font-size: var(--font-size-xs);
     color: var(--text-muted);
 }
@@ -445,14 +423,16 @@ body {
     text-decoration: none;
     transition: var(--transition-fast);
 }
+
 .post-card-with-image:hover .post-card-title a {
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.post-card-no-image:hover{
+.post-card-no-image:hover {
     background: #fafafa;
 }
+
 .post-card-no-image:hover .post-card-title {
     color: var(--primary);
 }
@@ -583,11 +563,6 @@ body {
     margin-bottom: var(--spacing-md);
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 /* Error Message */
 .error-message {
     text-align: center;
@@ -676,24 +651,6 @@ body {
     color: white;
 }
 
-/* Footer */
-.footer {
-    background-color: var(--bg-secondary);
-    border-top: 1px solid var(--border-color);
-    padding: var(--spacing-xl) 0;
-    text-align: center;
-    color: var(--text-secondary);
-}
-
-.footer p {
-    margin-bottom: var(--spacing-sm);
-    font-size: var(--font-size-sm);
-}
-
-.footer p:last-child {
-    margin-bottom: 0;
-}
-
 /* Utilities */
 .text-center { text-align: center; }
 .text-left { text-align: left; }
@@ -716,6 +673,10 @@ body {
 .p-3 { padding: var(--spacing-md); }
 .p-4 { padding: var(--spacing-lg); }
 .p-5 { padding: var(--spacing-xl); }
+
+
+
+
 
 /* Responsive Design */
 @media (max-width: 1200px) {
@@ -798,6 +759,8 @@ body {
     .post-sidebar-content {
         padding: var(--spacing-md);
     }
+    
+
 }
 
 @media (max-width: 480px) {
@@ -812,60 +775,5 @@ body {
     .btn {
         padding: var(--spacing-sm) var(--spacing-md);
         font-size: var(--font-size-sm);
-    }
-}
-
-/* Floating Editor Button */
-.floating-editor-btn {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    width: 45px;
-    height: 45px;
-    background: var(--dark);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    z-index: 1000;
-}
-
-.floating-editor-btn:hover {
-    background: #f5f5f5;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    transform: scale(1.1);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
-    color: var(--dark);
-}
-
-.floating-editor-btn svg {
-    transition: transform 0.3s ease;
-}
-
-.floating-editor-btn:hover svg {
-    transform: rotate(90deg);
-}
-
-/* 사이드바가 열렸을 때 버튼 위치 조정 */
-.sidebar-open .floating-editor-btn {
-    right: calc(75% + 2rem);
-}
-
-@media (max-width: 768px) {
-    .floating-editor-btn {
-        width: 50px;
-        height: 50px;
-        bottom: 1.5rem;
-        right: 1.5rem;
-    }
-    
-    /* 모바일에서 사이드바 열렸을 때는 숨김 */
-    .sidebar-open .floating-editor-btn {
-        opacity: 0;
-        pointer-events: none;
     }
 }
