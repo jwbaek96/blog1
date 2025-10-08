@@ -207,18 +207,23 @@ header.header-dark .mobile-menu-toggle{
 .mobile-sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: .2rem;
     text-align: center;
 }
 
 .mobile-sidebar-nav a {
     color: #ffffff;
     text-decoration: none;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 500;
     padding: 1rem 2rem;
     border-radius: 8px;
     transition: all 0.3s ease;
+}
+.mobile-sidebar-nav a:hover {
+    transform: translateY(-2px);
+    color: #ff0000;
+    text-decoration: none;
 }
 
 .mobile-sidebar-close {
@@ -291,11 +296,21 @@ header.header-dark .mobile-menu-toggle{
     transition: all 0.3s ease;
     cursor: pointer;
     min-width: 120px;
+    animation: skillHover 10.5s infinite;
 }
+
+.skill-item:nth-child(1) { animation-delay: 0s; }
+.skill-item:nth-child(2) { animation-delay: 1.5s; }
+.skill-item:nth-child(3) { animation-delay: 3s; }
+.skill-item:nth-child(4) { animation-delay: 4.5s; }
+.skill-item:nth-child(5) { animation-delay: 6s; }
+.skill-item:nth-child(6) { animation-delay: 7.5s; }
+.skill-item:nth-child(7) { animation-delay: 9s; }
 
 .skill-item:hover {
     transform: translateY(-8px);
     /* box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); */
+    animation-play-state: paused;
 }
 
 .skill-icon {
@@ -306,7 +321,9 @@ header.header-dark .mobile-menu-toggle{
     align-items: center;
     justify-content: center;
     border-radius: 12px;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease-in;
+    animation: skillIconScale 10.5s infinite;
+    animation-delay: inherit;
 }
 
 .skill-icon img {
@@ -314,13 +331,46 @@ header.header-dark .mobile-menu-toggle{
     height: 100%;
     object-fit: contain;
     filter: saturate(0);
+    transition: filter 0.3s ease-in;
+    animation: skillIconFilter 10.5s infinite;
+    animation-delay: inherit;
 }
 
 .skill-item:hover .skill-icon {
     transform: scale(1.08);
+    animation-play-state: paused;
 }
 .skill-item:hover .skill-icon img {
     filter: none;
+    animation-play-state: paused;
+}
+
+/* Skill Hover Animation Keyframes */
+@keyframes skillHover {
+    0%, 25.7% {
+        transform: translateY(0);
+    }
+    7.1%, 14.3% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes skillIconScale {
+    0%, 25.7% {
+        transform: scale(1);
+    }
+    7.1%, 14.3% {
+        transform: scale(1.08);
+    }
+}
+
+@keyframes skillIconFilter {
+    0%, 25.7% {
+        filter: saturate(0);
+    }
+    7.1%, 14.3% {
+        filter: none;
+    }
 }
 
 .skill-name {
@@ -401,7 +451,7 @@ header.header-dark .mobile-menu-toggle{
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: #dee2e6 transparent;
-    padding: 1rem;
+    padding: 1rem 2rem;
     position: relative;
     z-index: 1;
 }
@@ -426,12 +476,11 @@ header.header-dark .mobile-menu-toggle{
 }
 
 .gallery-item {
-    background: white;
     border-radius: 12px;
     overflow: hidden;
     transition: all 0.3s ease;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 15px rgba(87, 87, 87, 0.08);
 }
 
 .gallery-item:hover {
@@ -448,7 +497,7 @@ header.header-dark .mobile-menu-toggle{
 .image-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #f1f3f4, #e8eaed);
+    /* background: linear-gradient(135deg, #f1f3f4a4, #e8eaed92); */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -457,13 +506,19 @@ header.header-dark .mobile-menu-toggle{
     font-weight: 500;
     transition: all 0.3s ease;
 }
-
+.image-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
 .gallery-item:hover .image-placeholder {
     background: linear-gradient(135deg, #e8f0fe, #d2e3fc);
     color: #1a73e8;
 }
 
 .item-info {
+    background: white;
     padding: 1.5rem;
 }
 
