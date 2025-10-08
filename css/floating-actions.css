@@ -23,7 +23,9 @@
     cursor: pointer;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
+    /* background: linear-gradient(135deg, #181818e7 0%, #181818b6 100%); */
     background: #2d2d2d;
+    backdrop-filter: blur(10px);
     color: white;
 }
 
@@ -259,8 +261,8 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .floating-action-stack {
-        bottom: 1.5rem;
-        right: 1.5rem;
+        bottom: 1rem;
+        right: 1rem;
     }
     
     .floating-btn {

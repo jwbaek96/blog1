@@ -177,48 +177,6 @@ const FloatingActions = {
                 </div>
                 <div class="entry-message">작품이 정말 인상적이에요. 계속해서 응원하겠습니다!</div>
             </div>
-            <div class="guestbook-entry">
-                <div class="entry-header">
-                    <span class="entry-name">이민호</span>
-                    <span class="entry-date">2025-10-06</span>
-                </div>
-                <div class="entry-message">새로운 작품 기대하고 있어요!</div>
-            </div>
-            <div class="guestbook-entry">
-                <div class="entry-header">
-                    <span class="entry-name">정수진</span>
-                    <span class="entry-date">2025-10-05</span>
-                </div>
-                <div class="entry-message">항상 창의적인 작업 감사합니다. 응원하고 있어요!</div>
-            </div>
-            <div class="guestbook-entry">
-                <div class="entry-header">
-                    <span class="entry-name">최민우</span>
-                    <span class="entry-date">2025-10-04</span>
-                </div>
-                <div class="entry-message">렌티큘러 아트 작품이 정말 인상깊었어요.</div>
-            </div>
-            <div class="guestbook-entry">
-                <div class="entry-header">
-                    <span class="entry-name">김영수</span>
-                    <span class="entry-date">2025-10-03</span>
-                </div>
-                <div class="entry-message">터치디자이너 작업 과정이 궁금해요. 다음 작품도 기대할게요!</div>
-            </div>
-            <div class="guestbook-entry">
-                <div class="entry-header">
-                    <span class="entry-name">이하늘</span>
-                    <span class="entry-date">2025-10-02</span>
-                </div>
-                <div class="entry-message">웹사이트 디자인도 정말 깔끔하네요. 좋은 영감을 받았습니다.</div>
-            </div>
-            <div class="guestbook-entry">
-                <div class="entry-header">
-                    <span class="entry-name">박지현</span>
-                    <span class="entry-date">2025-10-01</span>
-                </div>
-                <div class="entry-message">인터랙티브 미디어 작업들이 정말 혁신적이에요!</div>
-            </div>
         `;
     },
 

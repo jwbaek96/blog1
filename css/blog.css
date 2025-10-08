@@ -43,8 +43,8 @@ body.blog-page .main {
         padding: 0 var(--spacing-sm);
     }
 }
-/* ===== MAIN CONTENT STYLES FROM MAIN.CSS ===== */
 header .container{max-width: 100%;margin: 0;}
+/* ===== MAIN CONTENT STYLES FROM MAIN.CSS ===== */
 /* Main Content */
 .main {
     min-height: calc(100vh - 200px);

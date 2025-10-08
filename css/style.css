@@ -75,7 +75,7 @@ html{
 body {
     font-family: var(--font-family);
     font-size: var(--font-size-base);
-    line-height: 1.6;
+    /* line-height: 1.6; */
     color: var(--text-primary);
     background-color: var(--bg-primary);
     transition: var(--transition);
@@ -97,12 +97,12 @@ input:-webkit-autofill,
     	 -webkit-box-shadow: 0 0 0px 1000px white inset !important;
    }
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+/* h1, h2, h3, h4, h5, h6 {
     font-weight: var(--font-weight-semibold);
-    /* line-height: 1.2; */
+    line-height: 1.2;
     margin-bottom: var(--spacing-md);
-    /* color: var(--text-primary); */
-}
+    color: var(--text-primary);
+} */
 
 h1 { font-size: 2.5rem; }
 h2 { font-size: 2rem; }
@@ -111,12 +111,12 @@ h4 { font-size: var(--font-size-xl); }
 h5 { font-size: var(--font-size-lg); }
 h6 { font-size: var(--font-size-base); }
 
-p {
-    /* margin-bottom: var(--spacing-xs); */
-    /* color: var(--text-secondary); */
-}
+/* p {
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-secondary);
+} */
 
-a {
+/* a {
     color: var(--primary);
     text-decoration: none;
     transition: var(--transition-fast);
@@ -125,7 +125,7 @@ a {
 a:hover {
     color: var(--primary-dark);
     text-decoration: underline;
-}
+} */
 
 /* Lists */
 ul, ol {
@@ -168,11 +168,11 @@ ul ul ul {
     list-style-type: square;
 }
 
-img {
+/* img {
     max-width: 100%;
     height: auto;
     border-radius: var(--border-radius);
-}
+} */
 
 /* Layout */
 /* .container {
