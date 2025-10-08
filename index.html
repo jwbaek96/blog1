@@ -102,15 +102,11 @@
     <!-- Skills & Tools Section -->
     <section id="skills" class="skills-section">
         <div class="container">
-            <div class="skills-header">
-                <h2 class="skills-title">Tools & Technologies</h2>
-                <p class="skills-subtitle">Creative software and technologies I work with</p>
-            </div>
             
             <div class="skills-grid">
                 <div class="skill-item">
                     <div class="skill-icon">
-                        <img src="assets/icons/touchdesigner.png" alt="TouchDesigner" />
+                        <img src="assets/icons/touchdesigner.jpg" alt="TouchDesigner" />
                     </div>
                     <span class="skill-name">TouchDesigner</span>
                 </div>
@@ -124,58 +120,37 @@
                 
                 <div class="skill-item">
                     <div class="skill-icon">
-                        <img src="assets/icons/photoshop.png" alt="Photoshop" />
+                        <img src="assets/icons/Cavalry.jpg" alt="Cavalry" />
                     </div>
-                    <span class="skill-name">Photoshop</span>
+                    <span class="skill-name">Cavalry</span>
                 </div>
                 
                 <div class="skill-item">
                     <div class="skill-icon">
-                        <img src="assets/icons/illustrator.png" alt="Illustrator" />
+                        <img src="assets/icons/cubase.webp" alt="Cubase" />
                     </div>
-                    <span class="skill-name">Illustrator</span>
+                    <span class="skill-name">Cubase</span>
                 </div>
                 
                 <div class="skill-item">
                     <div class="skill-icon">
-                        <img src="assets/icons/aftereffects.png" alt="After Effects" />
-                    </div>
-                    <span class="skill-name">After Effects</span>
-                </div>
-                
-                <div class="skill-item">
-                    <div class="skill-icon">
-                        <img src="assets/icons/blender.png" alt="Blender" />
-                    </div>
-                    <span class="skill-name">Blender</span>
-                </div>
-                
-                <div class="skill-item">
-                    <div class="skill-icon">
-                        <img src="assets/icons/ableton.png" alt="Ableton Live" />
-                    </div>
-                    <span class="skill-name">Ableton Live</span>
-                </div>
-                
-                <div class="skill-item">
-                    <div class="skill-icon">
-                        <img src="assets/icons/vscode.png" alt="VS Code" />
+                        <img src="assets/icons/vscode.svg" alt="VS Code" />
                     </div>
                     <span class="skill-name">VS Code</span>
                 </div>
                 
                 <div class="skill-item">
                     <div class="skill-icon">
-                        <img src="assets/icons/figma.png" alt="Figma" />
+                        <img src="assets/icons/figma.svg" alt="Figma" />
                     </div>
                     <span class="skill-name">Figma</span>
                 </div>
                 
                 <div class="skill-item">
                     <div class="skill-icon">
-                        <img src="assets/icons/unity.png" alt="Unity" />
+                        <img src="assets/icons/powerpoint.svg" alt="PowerPoint" />
                     </div>
-                    <span class="skill-name">Unity</span>
+                    <span class="skill-name">PowerPoint</span>
                 </div>
             </div>
         </div>
@@ -236,7 +211,7 @@
             </div>
             
             <div class="gallery-footer">
-                <a href="blog.html" class="view-more-btn">View All Projects →</a>
+                <a href="blog.html" class="view-more-btn">View All Projects <span>→</span></a>
             </div>
         </div>
     </section>
@@ -313,7 +288,7 @@
         
         // 네비게이션 활성화 및 헤더 색상 변경 (스크롤 시)
         window.addEventListener('scroll', () => {
-            const sections = ['home', 'about', 'exhibition', 'contact'];
+            const sections = ['home', 'about', 'skills', 'exhibition', 'contact'];
             const navLinks = document.querySelectorAll('.nav-link');
             const header = document.querySelector('header');
             const heroSection = document.getElementById('home');
@@ -329,17 +304,29 @@
                 }
             });
             
-            // 헤더 색상 변경 - 히어로 섹션이 끝나면 다크 모드로 변경
+            // 헤더 색상 변경 - 섹션별로 다른 모드 적용
             if (heroSection) {
                 const heroRect = heroSection.getBoundingClientRect();
                 const sidebar = document.getElementById('mobileSidebar');
                 
+                // 갤러리 섹션에서는 화이트 모드 적용
+                const exhibitionSection = document.getElementById('exhibition');
+                if (exhibitionSection) {
+                    const exhibitionRect = exhibitionSection.getBoundingClientRect();
+                    if (exhibitionRect.top <= 100 && exhibitionRect.bottom >= 100) {
+                        // 갤러리 섹션이 현재 뷰포트에 있을 때 - 화이트 모드
+                        header.classList.remove('header-dark');
+                        sidebar.classList.remove('dark');
+                        return;
+                    }
+                }
+                
                 if (heroRect.bottom <= 0) {
-                    // 히어로 섹션이 완전히 지나갔을 때
+                    // 히어로 섹션이 완전히 지나갔을 때 - 다크 모드
                     header.classList.add('header-dark');
                     sidebar.classList.add('dark');
                 } else {
-                    // 히어로 섹션이 아직 보일 때
+                    // 히어로 섹션이 아직 보일 때 - 화이트 모드
                     header.classList.remove('header-dark');
                     sidebar.classList.remove('dark');
                 }
