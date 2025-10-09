@@ -3,7 +3,7 @@
   "short_name": "JW.BAEK",
   "description": "JW.BAEK의 포트폴리오와 블로그 - 미디어아트, 인터랙티브 디자인, 그리고 창작 이야기",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#0a0a0a",
   "theme_color": "#ffffff",
   "orientation": "portrait-primary",
@@ -27,9 +27,9 @@
   ],
   "shortcuts": [
     {
-      "name": "포트폴리오",
-      "short_name": "Portfolio",
-      "description": "JW.BAEK의 작품과 프로젝트를 확인하세요",
+      "name": "소개",
+      "short_name": "About",
+      "description": "JW.BAEK 작가 소개",
       "url": "/#about",
       "icons": [
         {
@@ -51,10 +51,10 @@
       ]
     },
     {
-      "name": "전시 정보",
-      "short_name": "Exhibition",
-      "description": "진행 중인 전시와 이벤트 정보",
-      "url": "/exhibition.html",
+      "name": "아티클",
+      "short_name": "Article",
+      "description": "최신 아티클과 소식을 확인하세요",
+      "url": "/article.html",
       "icons": [
         {
           "src": "./assets/Vector.png",

@@ -60,6 +60,13 @@ const FloatingActions = {
                             <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
                     </a>
+                    
+                    <!-- Scroll to Top Button -->
+                    <button class="floating-btn floating-scroll-top-btn" onclick="FloatingActions.scrollToTop()" title="맨 위로">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 15l-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
                 `;
             }
             
@@ -118,8 +125,6 @@ const FloatingActions = {
         
         // 이벤트 리스너 설정
         this.setupEventListeners();
-        
-        console.log('Floating Actions 컴포넌트가 초기화되었습니다.');
     },
 
     // 이벤트 리스너 설정
@@ -147,9 +152,36 @@ const FloatingActions = {
                 }
             }
         });
+
+        // 스크롤 위치에 따른 scroll to top 버튼 표시/숨김
+        this.setupScrollToTopVisibility();
         
         // 방명록 스크롤 이벤트 (무한 스크롤)
         this.setupInfiniteScroll();
+    },
+
+    // 스크롤 위치에 따른 scroll to top 버튼 표시/숨김 설정
+    setupScrollToTopVisibility: function() {
+        let scrollTimeout;
+        
+        const handleWindowScroll = () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                const scrollTopBtn = document.querySelector('.floating-scroll-top-btn');
+                if (!scrollTopBtn) return;
+
+                // 페이지 상단에서 300px 이상 스크롤했을 때 버튼 표시
+                if (window.scrollY > 300) {
+                    scrollTopBtn.classList.add('visible');
+                } else {
+                    scrollTopBtn.classList.remove('visible');
+                }
+            }, 100);
+        };
+
+        window.addEventListener('scroll', handleWindowScroll);
+        // 초기 상태 설정
+        handleWindowScroll();
     },
 
     // 금지어 필터링
@@ -244,25 +276,7 @@ const FloatingActions = {
                 // 새로운 공식 계산
                 const scrollFormula = scrollHeight + scrollTop - clientHeight;
                 
-                // 스크롤 정보를 콘솔에 표시
-                console.log('📊 스크롤 상태 + 새 공식 디버깅:', {
-                    'scrollTop': scrollTop,
-                    'scrollHeight': scrollHeight,
-                    'clientHeight': clientHeight,
-                    '🆕 새공식 (scrollHeight + scrollTop - clientHeight)': scrollFormula,
-                    '🔍 음수체크': scrollTop < 0 ? '🚨 비정상적 음수!' : '✅ 정상',
-                    '🔍 공식결과': scrollFormula <= 2 ? '🎯 최상단 범위 (≤2)!' : scrollFormula < 0 ? '📈 음수 (상단 영역)' : '📉 양수 (하단 영역)',
-                    '🔍 컨테이너정보': {
-                        tagName: entriesContainer.tagName,
-                        id: entriesContainer.id,
-                        className: entriesContainer.className
-                    },
-                    '🔍 CSS상태': {
-                        overflow: getComputedStyle(entriesContainer).overflow,
-                        overflowY: getComputedStyle(entriesContainer).overflowY,
-                        position: getComputedStyle(entriesContainer).position
-                    }
-                });
+
                 
                 // 콘텐츠가 충분하지 않거나 스크롤 가능한 상태가 아니면 로딩하지 않음
                 const hasScrollableContent = scrollHeight > clientHeight + 50;
@@ -276,7 +290,6 @@ const FloatingActions = {
                 const isAtTop = scrollFormula <= 2;
                 
                 if (isAtTop && this.loadState.hasMore && !this.loadState.loading && !isLoadingMore && canLoad && hasScrollableContent) {
-                    console.log(`🎯 새 공식으로 최상단 도달! 공식값: ${scrollFormula} (≤2), scrollTop: ${scrollTop}, 전체높이: ${scrollHeight}, 클라이언트높이: ${clientHeight}, hasMore: ${this.loadState.hasMore}, 쿨다운: ${timeSinceLastLoad}ms`);
                     isLoadingMore = true;
                     
                     // 로딩 시작 시간 즉시 기록 (중복 로딩 방지)
@@ -291,13 +304,7 @@ const FloatingActions = {
                     const beforeClientHeight = entriesContainer.clientHeight;
                     const B = beforeScrollTop - beforeClientHeight;    // 로드 전 scrollTop - clientHeight (상대적 위치)
                     
-                    console.log('📏 로드 전 측정값:', {
-                        'A (로드 전 scrollHeight)': A,
-                        'beforeScrollTop': beforeScrollTop,
-                        'beforeClientHeight': beforeClientHeight,
-                        'B (상대적 위치)': B,
-                        '공식': 'B = scrollTop - clientHeight'
-                    });
+
                     
                     // 추가 데이터 로드
                     this.loadGuestbookEntries(false).then(() => {
@@ -313,23 +320,13 @@ const FloatingActions = {
                             // 🎯 간단한 해결책: 로드 전 scrollTop 그대로 유지
                             const newScrollPosition = beforeScrollTop;
                             
-                            console.log('🔄 스크롤 위치 복원 (간단한 방법):', {
-                                'A (로드 전 높이)': A,
-                                'beforeScrollTop': beforeScrollTop,
-                                'C (로드 후 높이)': C,
-                                '💡 새로운 전략': '로드 전 scrollTop 그대로 유지',
-                                '새 위치': newScrollPosition,
-                                '목표': '사용자가 보던 위치 그대로 유지'
-                            });
+
                             
                             // 로드 전 scrollTop 그대로 적용
                             entriesContainer.scrollTop = newScrollPosition;
                             
                             // 복원된 위치 확인
                             setTimeout(() => {
-                                const finalScrollTop = entriesContainer.scrollTop;
-                                console.log(`✅ 스크롤 복원 완료! 최종 위치: ${finalScrollTop}`);
-                                
                                 isRestoringScroll = false;
                                 isLoadingMore = false;
                             }, 50);
@@ -339,10 +336,6 @@ const FloatingActions = {
                         isRestoringScroll = false;
                         isLoadingMore = false;
                     });
-                } else if (scrollFormula <= 2 && this.loadState.hasMore && !this.loadState.loading && !isLoadingMore && !canLoad) {
-                    // 쿨다운 중일 때
-                    const remainingCooldown = this.loadState.cooldownDuration - timeSinceLastLoad;
-                    console.log(`🕐 새 공식 감지되었지만 쿨다운 중... 공식값: ${scrollFormula} (≤2), 남은 시간: ${remainingCooldown}ms`);
                 }
             }, 150); // 150ms 디바운스
         };
@@ -449,7 +442,6 @@ const FloatingActions = {
             
             // 클라이언트 IP 주소 가져오기
             const clientIP = await this.getClientIP();
-            console.log('클라이언트 IP:', clientIP);
             
             const response = await fetch(window.CONFIG.APPS_SCRIPT_URL, {
                 method: 'POST',
@@ -589,7 +581,6 @@ const FloatingActions = {
             
             // 기존 컨테이너의 첫 번째 자식 앞에 삽입 (prepend)
             entriesContainer.insertAdjacentHTML('afterbegin', newEntriesHTML);
-            console.log(`${newEntries.length}개의 새 항목을 상단에 추가했습니다.`);
             return;
         }
         
@@ -629,7 +620,6 @@ const FloatingActions = {
 
     // 상단 로딩 표시 (전용 컨테이너 사용)
     showTopLoading: function() {
-        console.log('상단 로딩 스피너 표시 시작');
         const topLoadingContainer = document.getElementById('topLoadingContainer');
         
         if (topLoadingContainer && topLoadingContainer.innerHTML.trim() === '') {
@@ -639,13 +629,11 @@ const FloatingActions = {
                     <div class="loading-text">이전 방명록 불러오는 중...</div>
                 </div>
             `;
-            console.log('상단 로딩 스피너 표시됨');
         }
     },
 
     // 상단 로딩 제거 (부드러운 애니메이션)
     hideTopLoading: function() {
-        console.log('상단 로딩 스피너 제거 시작');
         const topLoadingContainer = document.getElementById('topLoadingContainer');
         const topLoader = document.getElementById('topLoader');
         
@@ -656,7 +644,6 @@ const FloatingActions = {
             // 애니메이션 완료 후 제거
             setTimeout(() => {
                 topLoadingContainer.innerHTML = '';
-                console.log('상단 로딩 스피너 제거됨');
             }, 250); // 애니메이션 지속시간과 동일
         }
     },
@@ -745,6 +732,14 @@ const FloatingActions = {
                 button.disabled = false;
             }
         }
+    },
+
+    // 맨 위로 스크롤
+    scrollToTop: function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
     },
 
     // HTML 이스케이프 (XSS 방지)

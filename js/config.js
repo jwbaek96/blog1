@@ -1,11 +1,10 @@
 // Configuration file for Google Sheets Blog
 
 const CONFIG = {
-    // Google Apps Script
-    // Apps Script Web App URL (GET/POST 요청용)
-    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec', 
-    UPLOAD_API_URL: 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec', 
-    // 실제 Apps Script 배포 URL
+    // Vercel API Routes (Proxy to Google Apps Script)
+    APPS_SCRIPT_URL: '/api/sheets',
+    UPLOAD_API_URL: '/api/sheets',
+    // 실제 Google Apps Script URL은 서버 환경변수에서 처리
     
     // Google Sheets
     GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 실제 Google 스프레드시트 ID
