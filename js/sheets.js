@@ -188,13 +188,18 @@ class SheetsAPI {
      * @returns {Array} Array of tags
      */
     processTags(tagsStr) {
-        if (!tagsStr) return [];
+        if (!tagsStr || typeof tagsStr !== 'string') return [];
         
-        return tagsStr
-            .split(',')
-            .map(tag => tag.trim())
-            .filter(tag => tag.length > 0)
-            .map(tag => tag.toLowerCase());
+        try {
+            return tagsStr
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag.length > 0)
+                .map(tag => tag.toLowerCase());
+        } catch (error) {
+            console.error('❌ Error processing tags:', error, 'Input:', tagsStr);
+            return [];
+        }
     }
 
     /**
@@ -334,7 +339,10 @@ class SheetsAPI {
         const tagSet = new Set();
         
         posts.forEach(post => {
-            post.tags.forEach(tag => tagSet.add(tag));
+            // post.tags가 배열인지 확인
+            if (Array.isArray(post.tags)) {
+                post.tags.forEach(tag => tagSet.add(tag));
+            }
         });
         
         return Array.from(tagSet).sort();
@@ -350,7 +358,7 @@ class SheetsAPI {
         if (!tag) return posts;
         
         return posts.filter(post => 
-            post.tags.includes(tag.toLowerCase())
+            Array.isArray(post.tags) && post.tags.includes(tag.toLowerCase())
         );
     }
 

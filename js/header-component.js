@@ -14,7 +14,7 @@ class HeaderComponent {
             { href: '#skills', text: 'SKILLS', type: 'anchor' },
             { href: 'article.html', text: 'ARTICLE', type: 'link' },
             { href: 'blog.html', text: 'BLOG', type: 'link' },
-            { href: '#contact', text: 'CONTACT', type: 'anchor' }
+            { href: '/index.html#contact', text: 'CONTACT', type: 'anchor' }
         ];
         
         // 현재 페이지에 따라 active 상태 설정 (Home 제외, Article과 Blog만)

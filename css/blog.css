@@ -180,8 +180,8 @@ body.blog-page .main {
 }
 
 @media (max-width: 768px) {
-    .container {
-        padding: 0 var(--spacing-sm);
+    .main .container {
+        padding: 0 var(--spacing-lg);
     }
     
     .blog-content {
@@ -225,39 +225,6 @@ header .container{max-width: 100%;margin: 0;}
 .main {
     min-height: calc(100vh - 200px);
     padding: var(--spacing-xl) 0;
-}
-
-/* Hero Section */
-.hero {
-    text-align: center;
-    margin-bottom: var(--spacing-xxl);
-    padding: var(--spacing-xxl) 0;
-}
-
-.hero h1 {
-    font-size: 3rem;
-    margin-bottom: var(--spacing-md);
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.hero p {
-    font-size: var(--font-size-lg);
-    color: var(--text-secondary);
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-    .hero h1 {
-        font-size: 2rem;
-    }
-    
-    .hero p {
-        font-size: var(--font-size-base);
-    }
 }
 
 /* Sidebar Tag Filters */
@@ -783,8 +750,8 @@ body {
 }
 
 @media (max-width: 480px) {
-    .hero h1 {
-        font-size: 1.75rem;
+    .main .container {
+        /* padding: 0 var(--spacing-md); */
     }
     
     .post-card-title {

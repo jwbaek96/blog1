@@ -154,9 +154,12 @@ class BlogApp {
         const counts = {};
         
         this.allPosts.forEach(post => {
-            post.tags.forEach(tag => {
-                counts[tag] = (counts[tag] || 0) + 1;
-            });
+            // post.tags가 배열인지 확인
+            if (Array.isArray(post.tags)) {
+                post.tags.forEach(tag => {
+                    counts[tag] = (counts[tag] || 0) + 1;
+                });
+            }
         });
 
         return counts;
@@ -238,7 +241,9 @@ class BlogApp {
     renderPostCard(post) {
         const hasThumbnail = post.thumbnail && post.thumbnail.trim() !== '';
         
-        const tagsHTML = post.tags.map(tag => 
+        // post.tags가 배열인지 확인하고 안전하게 처리
+        const tags = Array.isArray(post.tags) ? post.tags : [];
+        const tagsHTML = tags.map(tag => 
             `<a href="?tag=${encodeURIComponent(tag)}" class="post-tag" onclick="event.stopPropagation()">${tag}</a>`
         ).join('');
 
