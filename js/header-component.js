@@ -201,6 +201,8 @@ class HeaderComponent {
         this.navigationItems = newItems;
         this.render();
     }
+
+
 }
 
 // DOM이 로드되면 헤더 컴포넌트 초기화

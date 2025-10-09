@@ -17,8 +17,17 @@
 
     <!-- Icon meta js -->
     <script src="js/head-meta.js"></script>
+    <!-- Auth js -->
+    <script src="js/auth.js"></script>
 </head>
 <body>
+    <!-- 인증 확인 스크립트 -->
+    <script>
+        // 페이지 로드시 인증 확인
+        if (!Auth.isLoggedIn()) {
+            Auth.redirectToLogin();
+        }
+    </script>
     <!-- Header -->
     <header class="header">
         <div class="container">

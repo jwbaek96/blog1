@@ -52,7 +52,8 @@ const FloatingActions = {
                 `;
             }
             
-            if (config.showEditor) {
+            // 에디터 버튼은 로그인된 경우에만 표시
+            if (config.showEditor && this.isLoggedIn()) {
                 actionsHTML += `
                     <!-- Write Button -->
                     <a href="editor.html" class="floating-btn floating-editor-btn" title="새 포스트 작성">
@@ -60,15 +61,18 @@ const FloatingActions = {
                             <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
                     </a>
-                    
-                    <!-- Scroll to Top Button -->
-                    <button class="floating-btn floating-scroll-top-btn" onclick="FloatingActions.scrollToTop()" title="맨 위로">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 15l-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </button>
                 `;
             }
+            
+            // Scroll to Top 버튼은 항상 표시
+            actionsHTML += `
+                <!-- Scroll to Top Button -->
+                <button class="floating-btn floating-scroll-top-btn" onclick="FloatingActions.scrollToTop()" title="맨 위로">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 15l-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            `;
             
             actionsHTML += '</div>';
         }
@@ -790,6 +794,34 @@ const FloatingActions = {
                 button.disabled = false;
             }
         }
+    },
+
+    // 로그인 상태 확인
+    isLoggedIn: function() {
+        const token = localStorage.getItem('admin_token');
+        const expires = localStorage.getItem('admin_expires');
+        
+        if (!token || !expires) return false;
+        
+        // 토큰 만료 확인
+        if (Date.now() > parseInt(expires)) {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_expires');
+            return false;
+        }
+        
+        return true;
+    },
+
+    // 플로팅 액션 다시 렌더링 (로그인 상태 변경시 사용)
+    refresh: function() {
+        const existingStack = document.getElementById('floatingActionStack');
+        const existingGuestbook = document.getElementById('floatingGuestbook');
+        
+        if (existingStack) existingStack.remove();
+        if (existingGuestbook) existingGuestbook.remove();
+        
+        this.init();
     },
 
     // 맨 위로 스크롤

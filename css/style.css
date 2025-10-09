@@ -89,7 +89,7 @@ body {
     box-sizing: border-box;
     font-family: 'Noto Sans KR', sans-serif;
     word-break: keep-all;
-    vertical-align: middle;
+    /* vertical-align: middle; */
 }
 input:-webkit-autofill,
     input:-webkit-autofill:hover,
@@ -119,13 +119,13 @@ h6 { font-size: var(--font-size-base); }
     color: var(--text-secondary);
 } */
 
-/* a {
-    color: var(--primary);
+a {
+    /* color: var(--primary); */
     text-decoration: none;
-    transition: var(--transition-fast);
+    /* transition: var(--transition-fast); */
 }
 
-a:hover {
+/* a:hover {
     color: var(--primary-dark);
     text-decoration: underline;
 } */
