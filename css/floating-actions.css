@@ -56,8 +56,8 @@
     bottom: 2rem;
     right: -400px;
     width: 350px;
-    height: 80dvh;
-    max-height: 80dvh;
+    height: 80vh;
+    max-height: 80vh;
     background: white;
     border-radius: 12px;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
