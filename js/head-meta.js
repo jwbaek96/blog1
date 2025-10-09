@@ -26,7 +26,7 @@
     // 기본 메타태그 설정
     const defaultMetaTags = [
         { charset: 'UTF-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1.0' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' },
         { 'http-equiv': 'X-UA-Compatible', content: 'IE=edge' },
         { name: 'theme-color', content: '#ffffff' },
         { name: 'msapplication-TileColor', content: '#ffffff' },
