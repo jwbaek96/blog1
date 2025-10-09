@@ -6,6 +6,14 @@
     <title>JW.BAEK - Blog</title>
     <link rel="shortcut icon" href="./assets/Vector.png">
     <link rel="icon" href="./assets/Vector.png" sizes="96x96" type="image/png">
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="JW.BAEK Blog">
+    <link rel="apple-touch-icon" href="./assets/Vector.png">
     
     <!-- SEO Meta Tags -->
     <meta name="description" content="JW.BAEK의 블로그 - 창작 과정과 예술적 탐구를 공유합니다">
@@ -35,38 +43,11 @@
     <script src="js/head-meta.js"></script>
 </head>
 <body class="blog-page">
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <a href="index.html">JW.BAEK</a>
-                </div>
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">☰</button>
-                <nav class="nav" id="mainNav">
-                    <a href="index.html#home" class="nav-link">HOME</a>
-                    <a href="index.html#about" class="nav-link">ABOUT</a>
-                    <a href="index.html#skills" class="nav-link">SKILLS</a>
-                    <a href="index.html#exhibition" class="nav-link">ARTICLE</a>
-                    <a href="blog.html" class="nav-link active">BLOG</a>
-                    <a href="index.html#contact" class="nav-link">CONTACT</a>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <!-- Mobile Sidebar -->
-    <div class="mobile-sidebar" id="mobileSidebar">
-        <button class="mobile-sidebar-close" onclick="closeMobileSidebar()">✕</button>
-        <nav class="mobile-sidebar-nav">
-            <a href="index.html#home" onclick="closeMobileSidebar()">HOME</a>
-            <a href="index.html#about" onclick="closeMobileSidebar()">ABOUT</a>
-            <a href="index.html#skills" onclick="closeMobileSidebar()">SKILLS</a>
-            <a href="index.html#exhibition" onclick="closeMobileSidebar()">EXHIBITION</a>
-            <a href="blog.html" onclick="closeMobileSidebar()">BLOG</a>
-            <a href="index.html#contact" onclick="closeMobileSidebar()">CONTACT</a>
-        </nav>
-    </div>
+    <!-- Header will be inserted by header-component.js -->
+    <div id="header-placeholder"></div>
+    
+    <!-- Mobile Sidebar will be inserted by header-component.js -->
+    <div id="sidebar-placeholder"></div>
 
     <!-- Main Content -->
     <main class="main">
@@ -134,48 +115,9 @@
     <!-- Floating Actions are automatically loaded by floating-actions.js -->
 
     <!-- Scripts -->
-    <script>
-        // 모바일 사이드바 토글
-        function toggleMobileSidebar() {
-            const sidebar = document.getElementById('mobileSidebar');
-            const overlay = document.getElementById('mobileSidebarOverlay');
-            sidebar.classList.add('active');
-            if (overlay) overlay.classList.add('active');
-            document.body.style.overflow = 'hidden'; // 스크롤 방지
-        }
-
-        // 모바일 사이드바 닫기
-        function closeMobileSidebar() {
-            const sidebar = document.getElementById('mobileSidebar');
-            const overlay = document.getElementById('mobileSidebarOverlay');
-            sidebar.classList.remove('active');
-            if (overlay) overlay.classList.remove('active');
-            document.body.style.overflow = ''; // 스크롤 복원
-        }
-
-        // ESC 키로도 사이드바 닫기
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeMobileSidebar();
-            }
-        });
-        
-        // 헤더 색상 변경 (스크롤 시)
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            const sidebar = document.getElementById('mobileSidebar');
-            
-            if (window.scrollY > 100) {
-                // 스크롤이 내려갔을 때 - 다크 모드
-                header.classList.add('header-dark');
-                sidebar.classList.add('dark');
-            } else {
-                // 페이지 상단일 때 - 화이트 모드  
-                header.classList.remove('header-dark');
-                sidebar.classList.remove('dark');
-            }
-        });
-    </script>
+    
+    <!-- Header Component -->
+    <script src="js/header-component.js"></script>
     <script src="js/config.js"></script>
     <script src="js/floating-actions.js"></script>
     <script src="js/utils.js"></script>

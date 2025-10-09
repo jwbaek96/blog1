@@ -1,0 +1,77 @@
+{
+  "name": "JW.BAEK Portfolio & Blog",
+  "short_name": "JW.BAEK",
+  "description": "JW.BAEK의 포트폴리오와 블로그 - 미디어아트, 인터랙티브 디자인, 그리고 창작 이야기",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ko",
+  "dir": "ltr",
+  "categories": ["portfolio", "blog", "art", "design"],
+  "icons": [
+    {
+      "src": "./assets/Vector.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/LOGO.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "포트폴리오",
+      "short_name": "Portfolio",
+      "description": "JW.BAEK의 작품과 프로젝트를 확인하세요",
+      "url": "/#about",
+      "icons": [
+        {
+          "src": "./assets/Vector.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "블로그",
+      "short_name": "Blog",
+      "description": "최신 포스트와 창작 이야기를 읽어보세요",
+      "url": "/blog.html",
+      "icons": [
+        {
+          "src": "./assets/Vector.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "전시 정보",
+      "short_name": "Exhibition",
+      "description": "진행 중인 전시와 이벤트 정보",
+      "url": "/exhibition.html",
+      "icons": [
+        {
+          "src": "./assets/Vector.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+jwbaek",
+      "url": "/?action=%s"
+    }
+  ]
+}
