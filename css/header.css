@@ -4,12 +4,12 @@ header{
     top: 0;
     background-color: #ffffff00;
     backdrop-filter: blur(10px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) inset;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1) inset;
     width: 100%;
     z-index: 1000;
 }
-header .container{
-}
+/* header .container{
+} */
 header a{
     color: white;
     text-decoration: none;
@@ -108,7 +108,7 @@ header.header-dark .mobile-menu-toggle{
 
 .mobile-sidebar-close {
     position: absolute;
-    top: 1.5rem;
+    top: 1.2rem;
     right: 2rem;
     background: none;
     border: none;
@@ -150,4 +150,13 @@ header.header-dark .mobile-menu-toggle{
     .mobile-menu-toggle {
         display: block;
     }
+}
+@media (max-width: 480px) {
+    .header-content {
+        padding: 15px 8px;
+    }
     
+    .mobile-menu-toggle {
+        font-size: 1.3rem;
+    }
+}
