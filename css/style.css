@@ -2,8 +2,10 @@
 /* CSS Reset & Variables */
 :root {
     /* Colors */
-    --primary: #007bff;
-    --primary-dark: #0963c7;
+    /* --primary: #007bff; */
+    --primary: #ff5100;
+    /* --primary-dark: #0963c7; */
+    --primary-dark: #ca4300;
     --secondary: #6c757d;
     /* --success: #28a745; */
     --success: #0e0e0e;
@@ -87,6 +89,7 @@ body {
     box-sizing: border-box;
     font-family: 'Noto Sans KR', sans-serif;
     word-break: keep-all;
+    vertical-align: middle;
 }
 input:-webkit-autofill,
     input:-webkit-autofill:hover,

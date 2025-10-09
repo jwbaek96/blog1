@@ -4,6 +4,8 @@
 /* Scroll Snap Configuration */
 html {
     scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    scroll-padding: 70px 0 0 0;
 }
 
 .hero-landing {
@@ -48,7 +50,7 @@ html {
     opacity: 0.9;
     animation: fadeInUp 1s ease-out 0.2s both;
     /* 텍스트 자체에 블러 효과 */
-    color: rgba(255, 255, 255, 0.85);
+    color: rgb(255, 255, 255);
     filter: blur(0.3px);
     -webkit-filter: blur(0.3px);
     text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
@@ -511,27 +513,6 @@ footer {
 }
 /* Mobile Footer Styles */
 @media (max-width: 840px) {
-    /* Disable scroll snap on mobile for better touch scrolling */
-    html {
-        /* scroll-snap-type: none; */
-    }
-    
-    .header-content {
-        flex-direction: row;
-        justify-content: space-between;
-        padding: 20px 26px;
-    }
-    
-    /* Hide desktop navigation */
-    .nav {
-        display: none !important;
-    }
-    
-    /* Show mobile menu toggle */
-    .mobile-menu-toggle {
-        display: block;
-    }
-    
     /* ======= Hero Section ======= */
     .hero-landing h1 {
         font-size: 2.5rem;
@@ -614,6 +595,10 @@ footer {
     }
 }
 
+@media (max-width: 768px) {
+    /* Disable scroll snap on mobile for better touch scrolling */
+    html {scroll-snap-type: none;}
+}
 /* ========================== */
 @media (max-width: 480px) {
     .about-text p {font-size: .95rem;}
@@ -660,15 +645,12 @@ footer {
 
 .contact-item {
     margin-bottom: 2rem;
+    display: flex;
 }
 
+
 .contact-item h4 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #636e72;
     margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .contact-item p {
@@ -676,6 +658,13 @@ footer {
     color: #2d3436;
     line-height: 1.6;
     margin: 0;
+}
+.contact-item p span{
+    font-size: 1rem;
+    font-weight: 600;
+    color: #636e72;
+    text-transform: uppercase;
+    letter-spacing: 01.5px;
 }
 
 .contact-social {
@@ -770,7 +759,7 @@ footer {
 .submit-btn {
     width: 100%;
     padding: 1rem 2rem;
-    background: #2d3436;
+    background: #0b0d0e;
     color: white;
     border: none;
     border-radius: 8px;
@@ -797,20 +786,26 @@ footer {
     .contact-grid {
         grid-template-columns: 1fr;
         gap: 3rem;
-        padding: 0 1rem;
+        padding: 0;
     }
+    .contact-item{display: flex;margin: 0;}
     
-    .contact-info h2 {
-        font-size: 2.5rem;
-    }
+    .contact-info {padding: .5rem 1rem;}
+    .contact-info h2 {font-size: 2.5rem;}
     
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
     }
     
+    .contact-social{margin-top: 2rem;}
     .social-links {
         justify-content: flex-start;
+    }
+    
+    .contact-form{
+        background: #fff;
+        padding: 1.5rem 1rem;
     }
 }
 
@@ -818,7 +813,8 @@ footer {
     .contact-info h2 {
         font-size: 2rem;
     }
-    .contact-item{display: flex;}
+    .contact-social h4{display: none;}
+
     .form-group input,
     .form-group textarea {
         padding: 0.875rem 1rem;

@@ -2,26 +2,30 @@
 
 class HeaderComponent {
     constructor(pageType = 'main') {
-        // 페이지 타입에 따라 다른 네비게이션 설정
-        // if (pageType === 'blog') {
-        //     this.navigationItems = [
-        //         { href: 'index.html#home', text: 'HOME', type: 'link' },
-        //         { href: 'index.html#about', text: 'ABOUT', type: 'link' },
-        //         { href: 'index.html#skills', text: 'SKILLS', type: 'link' },
-        //         { href: 'index.html#exhibition', text: 'ARTICLE', type: 'link' },
-        //         { href: 'blog.html', text: 'BLOG', type: 'link', active: true },
-        //         { href: 'index.html#contact', text: 'CONTACT', type: 'link' }
-        //     ];
-        // } else {
-            this.navigationItems = [
-                { href: '#home', text: 'HOME', type: 'anchor' },
-                { href: '#about', text: 'ABOUT', type: 'anchor' },
-                { href: '#skills', text: 'SKILLS', type: 'anchor' },
-                { href: 'article.html', text: 'ARTICLE', type: 'link' },
-                { href: 'blog.html', text: 'BLOG', type: 'link' },
-                { href: '#contact', text: 'CONTACT', type: 'anchor' }
-            ];
-        // }
+        // 현재 페이지 감지
+        const currentPath = window.location.pathname;
+        const currentPage = currentPath.split('/').pop() || 'index.html';
+        console.log('Current page detected:', currentPage); // 디버그용
+        
+        // 기본 네비게이션 아이템 설정
+        this.navigationItems = [
+            { href: '#home', text: 'HOME', type: 'anchor' },
+            { href: '#about', text: 'ABOUT', type: 'anchor' },
+            { href: '#skills', text: 'SKILLS', type: 'anchor' },
+            { href: 'article.html', text: 'ARTICLE', type: 'link' },
+            { href: 'blog.html', text: 'BLOG', type: 'link' },
+            { href: '#contact', text: 'CONTACT', type: 'anchor' }
+        ];
+        
+        // 현재 페이지에 따라 active 상태 설정 (Home 제외, Article과 Blog만)
+        this.navigationItems.forEach(item => {
+            if (item.text === 'ARTICLE' && (currentPage === 'article.html' || currentPage.includes('article'))) {
+                item.active = true;
+            } else if (item.text === 'BLOG' && (currentPage === 'blog.html' || currentPage.includes('blog'))) {
+                item.active = true;
+            }
+        });
+        
         this.pageType = pageType;
     }
 
@@ -51,9 +55,11 @@ class HeaderComponent {
 
     // 모바일 사이드바 HTML 생성
     generateMobileSidebarHTML() {
-        const sidebarLinks = this.navigationItems.map(item => 
-            `<a href="${item.href}" onclick="HeaderComponent.closeMobileSidebar()">${item.text}</a>`
-        ).join('');
+        const sidebarLinks = this.navigationItems.map(item => {
+            const activeClass = item.active ? ' active' : '';
+            const classAttr = activeClass ? ` class="${activeClass.trim()}"` : '';
+            return `<a href="${item.href}"${classAttr} onclick="HeaderComponent.closeMobileSidebar()">${item.text}</a>`;
+        }).join('');
 
         return `
             <div class="mobile-sidebar" id="mobileSidebar">
@@ -62,7 +68,6 @@ class HeaderComponent {
                     ${sidebarLinks}
                 </nav>
             </div>
-            <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay" onclick="HeaderComponent.closeMobileSidebar()"></div>
         `;
     }
 
@@ -142,28 +147,15 @@ class HeaderComponent {
                 }
             });
         } else {
-            // 메인 페이지용 섹션 기반 스크롤 리스너
+            // 메인 페이지용 스크롤 리스너 (헤더 색상 변경만)
             window.addEventListener('scroll', () => {
-                const sections = ['home', 'about', 'skills', 'exhibition', 'contact'];
-                const navLinks = document.querySelectorAll('.nav-link');
                 const header = document.querySelector('header');
                 const heroSection = document.getElementById('home');
-                
-                let currentSection = '';
-                sections.forEach(sectionId => {
-                    const section = document.getElementById(sectionId);
-                    if (section) {
-                        const rect = section.getBoundingClientRect();
-                        if (rect.top <= 100 && rect.bottom >= 100) {
-                            currentSection = sectionId;
-                        }
-                    }
-                });
+                const sidebar = document.getElementById('mobileSidebar');
                 
                 // 헤더 색상 변경 - 섹션별로 다른 모드 적용
                 if (heroSection) {
                     const heroRect = heroSection.getBoundingClientRect();
-                    const sidebar = document.getElementById('mobileSidebar');
                     
                     // 갤러리 섹션에서는 화이트 모드 적용
                     const exhibitionSection = document.getElementById('exhibition');
@@ -187,13 +179,6 @@ class HeaderComponent {
                         sidebar.classList.remove('dark');
                     }
                 }
-                
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${currentSection}`) {
-                        link.classList.add('active');
-                    }
-                });
             });
         }
     }
@@ -201,17 +186,13 @@ class HeaderComponent {
     // 정적 메서드들 (전역에서 사용 가능)
     static toggleMobileSidebar() {
         const sidebar = document.getElementById('mobileSidebar');
-        const overlay = document.getElementById('mobileSidebarOverlay');
         sidebar.classList.add('active');
-        overlay.classList.add('active');
         document.body.style.overflow = 'hidden'; // 스크롤 방지
     }
 
     static closeMobileSidebar() {
         const sidebar = document.getElementById('mobileSidebar');
-        const overlay = document.getElementById('mobileSidebarOverlay');
         sidebar.classList.remove('active');
-        overlay.classList.remove('active');
         document.body.style.overflow = ''; // 스크롤 복원
     }
 

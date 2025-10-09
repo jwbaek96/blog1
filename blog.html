@@ -53,9 +53,17 @@
     <main class="main">
         <div class="container">
             <div class="blog-layout">
-                <!-- Left Column: Posts -->
-                <div class="blog-posts-column">
-                    <h3 class="blog-posts-title" style="margin-bottom: .75rem;">Posts</h3>
+                <!-- Single Column Layout -->
+                <div class="blog-content">
+                    <!-- <h3 class="blog-posts-title">Posts</h3> -->
+                    
+                    <!-- Tags Section - Horizontal Scroll -->
+                    <div class="tags-horizontal-section">
+                        <div class="tag-filters-horizontal" id="tagFilters">
+                            <!-- 태그 필터들이 동적으로 추가됩니다 -->
+                        </div>
+                    </div>
+                    
                     <!-- Posts Section -->
                     <section class="posts">
                         <div id="postsContainer" class="posts-grid">
@@ -73,16 +81,6 @@
                     <!-- Pagination -->
                     <div class="pagination" id="pagination">
                         <!-- 페이지네이션이 동적으로 추가됩니다 -->
-                    </div>
-                </div>
-
-                <!-- Right Column: Tags -->
-                <div class="blog-sidebar-column">
-                    <h3 class="sidebar-title">Tags</h3>
-                    <div class="sidebar-content">
-                        <div class="tag-filters-sidebar" id="tagFilters">
-                            <!-- 태그 필터들이 동적으로 추가됩니다 -->
-                        </div>
                     </div>
                 </div>
             </div>

@@ -58,26 +58,95 @@ body.blog-page .main {
     min-height: calc(100vh - 160px); /* Adjust for header and footer */
 }
 
-/* 2-Column Blog Layout */
+/* Single Column Blog Layout */
 .blog-layout {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 3rem;
     margin-top: 2rem;
 }
 
-.blog-posts-column {
-    min-height: 100%;
+.blog-content {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.blog-sidebar-column {
-    position: relative;
+.blog-posts-title {
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
 }
 
+/* Horizontal Tags Section */
+.tags-horizontal-section {
+    margin: 1.5rem 0;
+    padding: 0.5rem 0;
+}
+
+.tag-filters-horizontal {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: #dee2e6 transparent;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.tag-filters-horizontal::-webkit-scrollbar {
+    height: 6px;
+}
+
+.tag-filters-horizontal::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.tag-filters-horizontal::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.tag-filters-horizontal::-webkit-scrollbar-thumb:hover {
+    background: #adb5bd;
+}
+
+/* Tag Filter Buttons - Horizontal Layout */
+.tag-filters-horizontal .tag-filter {
+    flex-shrink: 0;
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.tag-filters-horizontal .tag-filter:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+    transform: translateY(-1px);
+}
+
+.tag-filters-horizontal .tag-filter.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+/* Legacy sidebar styles - kept for backward compatibility but not used in new layout */
 .sidebar-content {
     position: sticky;
-    top: 120px; /* 헤더 높이 + 여백 */
-    /* background: var(--bg-secondary); */
+    top: 120px;
     border-radius: 12px;
 }
 
@@ -105,12 +174,8 @@ body.blog-page .main {
 }
 
 @media (max-width: 1024px) {
-    .blog-layout {
-        gap: 2rem;
-    }
-    
-    .sidebar-content {
-        top: 100px;
+    .blog-content {
+        padding: 0 1rem;
     }
 }
 
@@ -119,24 +184,22 @@ body.blog-page .main {
         padding: 0 var(--spacing-sm);
     }
     
-    .blog-layout {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        display: flex;
-        flex-direction: column;
+    .blog-content {
+        padding: 0;
     }
     
-    .blog-posts-column {
-        order: 2; /* 포스트를 아래로 */
+    .tags-horizontal-section {
+        margin: 1rem 0;
     }
     
-    .blog-sidebar-column {
-        order: 1; /* 태그 사이드바를 위로 */
+    .tag-filters-horizontal {
+        gap: 0.5rem;
+        padding: 0.25rem 0;
     }
     
-    .sidebar-content {
-        position: static;
-        padding: 1.5rem;
+    .tag-filters-horizontal .tag-filter {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
         margin-bottom: 1rem;
     }
     
@@ -202,7 +265,7 @@ header .container{max-width: 100%;margin: 0;}
     display: inline-block;
     padding: 0.5rem 1rem;
     background-color: var(--bg-primary);
-    border: 2px solid var(--border-color);
+    border: 1px solid var(--border-color);
     border-radius: 25px;
     font-size: 0.85rem;
     font-weight: 500;
@@ -803,7 +866,7 @@ body {
 }
 
 .btn-primary:hover {
-    background: #0056b3;
+    background: var(--primary-dark);
     transform: translateY(-1px);
     color: white;
 }

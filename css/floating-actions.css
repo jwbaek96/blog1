@@ -56,7 +56,7 @@
     bottom: 2rem;
     right: -400px;
     width: 350px;
-    height: 80vh;
+    height: 70vh;
     max-height: 80vh;
     background: white;
     border-radius: 12px;
@@ -334,7 +334,7 @@
 }
 
 .guestbook-entries {
-    max-height: 400px;
+    /* max-height: 400px; */
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #ccc #f0f0f0;
@@ -438,4 +438,13 @@
         opacity: 0;
         transform: translateY(-20px);
     }
+}
+
+
+/* =========================== */
+.guestbook-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin: auto;
+    color: #666;
 }
