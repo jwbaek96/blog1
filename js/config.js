@@ -14,7 +14,7 @@ const CONFIG = {
     BLOG_TITLE: 'My Google Sheets Blog',
     BLOG_DESCRIPTION: '구글 스프레드시트를 데이터베이스로 활용하는 블로그',
     BLOG_AUTHOR: 'Your Name',
-    BLOG_URL: 'https://jwbaek96.github.io/blog1/',
+    BLOG_URL: 'https://blog1-mu-two.vercel.app/',
     
     // Development Settings
     DEV_MODE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',

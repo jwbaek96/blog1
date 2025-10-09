@@ -4,7 +4,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://jwbaek96.github.io/blog1/sitemap.xml
+Sitemap: https://blog1-mu-two.vercel.app/sitemap.xml
 
 # Disallow caching and config directories
 Disallow: /js/config.js
