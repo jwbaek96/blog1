@@ -1,6 +1,6 @@
-// Blog main page functionality
+// Article page functionality - filters posts with 'article' tag
 
-class BlogApp {
+class ArticleApp {
     constructor() {
         this.posts = [];
         this.allPosts = [];
@@ -9,14 +9,17 @@ class BlogApp {
         this.currentTag = getUrlParameter('tag') || '';
         this.isLoading = false;
         
+        // Article-specific filter
+        this.articleFilter = 'article';
+        
         this.init();
     }
 
     /**
-     * Initialize the blog app
+     * Initialize the article app
      */
     async init() {
-        console.log('🚀 Initializing Blog App...');
+        console.log('🚀 Initializing Article App...');
         
         this.setupEventListeners();
         this.showLoading();
@@ -24,48 +27,54 @@ class BlogApp {
         try {
             await this.loadPosts();
             this.renderPage();
-            
-
         } catch (error) {
-            console.error('❌ Blog initialization error:', error);
-            this.showError('블로그를 초기화하는데 실패했습니다.');
+            console.error('❌ Article initialization error:', error);
+            this.showError('아티클을 초기화하는데 실패했습니다.');
         }
     }
 
     /**
-     * Load posts from Google Sheets
+     * Load posts from Google Sheets and filter for articles
      */
     async loadPosts() {
         try {
             console.log('📡 Fetching posts from Google Sheets...');
-            this.allPosts = await window.SheetsAPI.fetchPosts();
+            const allPostsFromSheets = await window.SheetsAPI.fetchPosts();
+            
+            // Filter for posts that have 'article' tag
+            this.allPosts = allPostsFromSheets.filter(post => {
+                return post.tags && post.tags.some(tag => 
+                    tag.toLowerCase().includes(this.articleFilter.toLowerCase())
+                );
+            });
+            
             this.filterPosts();
-            console.log(`✅ Loaded ${this.allPosts.length} posts`);
+            console.log(`✅ Loaded ${this.allPosts.length} article posts`);
             
             // Debug: Show first few posts
             if (this.allPosts.length > 0) {
-                console.log('📋 Loaded posts:', this.allPosts.slice(0, 3).map(p => ({
+                console.log('📋 Loaded article posts:', this.allPosts.slice(0, 3).map(p => ({
                     id: p.id,
                     title: p.title,
-                    idType: typeof p.id
+                    tags: p.tags
                 })));
             } else {
-                console.warn('⚠️ No posts loaded! Check Google Sheets configuration.');
+                console.warn('⚠️ No article posts found! Make sure posts have "article" tag.');
             }
         } catch (error) {
-            console.error('❌ Error loading posts:', error);
-            console.log('⚠️ Failed to load posts. Please check your Google Sheets configuration.');
+            console.error('❌ Error loading article posts:', error);
+            console.log('⚠️ Failed to load articles. Please check your Google Sheets configuration.');
         }
     }
 
     /**
-     * Filter posts based on current filters
+     * Filter posts based on current filters (excluding the base 'article' filter)
      */
     filterPosts() {
         let filteredPosts = [...this.allPosts];
 
-        // Filter by tag
-        if (this.currentTag) {
+        // Filter by additional tag (if selected)
+        if (this.currentTag && this.currentTag !== this.articleFilter) {
             filteredPosts = window.SheetsAPI.filterByTag(filteredPosts, this.currentTag);
         }
 
@@ -105,16 +114,20 @@ class BlogApp {
         this.renderPosts();
         this.renderPagination();
         this.updatePageTitle();
+        this.updatePostsCount();
     }
 
     /**
-     * Render tag filters
+     * Render tag filters (excluding the base 'article' tag)
      */
     renderTagFilters() {
         const tagFiltersContainer = document.getElementById('tagFilters');
         if (!tagFiltersContainer) return;
 
-        const allTags = window.SheetsAPI.getAllTags(this.allPosts);
+        // Get all tags from article posts, excluding 'article' itself
+        const allTags = window.SheetsAPI.getAllTags(this.allPosts).filter(tag => 
+            tag.toLowerCase() !== this.articleFilter.toLowerCase()
+        );
         const tagCounts = this.getTagCounts();
 
         let filtersHTML = `
@@ -147,7 +160,7 @@ class BlogApp {
     }
 
     /**
-     * Get tag counts
+     * Get tag counts (excluding 'article' tag)
      * @returns {Object} Tag counts
      */
     getTagCounts() {
@@ -155,7 +168,9 @@ class BlogApp {
         
         this.allPosts.forEach(post => {
             post.tags.forEach(tag => {
-                counts[tag] = (counts[tag] || 0) + 1;
+                if (tag.toLowerCase() !== this.articleFilter.toLowerCase()) {
+                    counts[tag] = (counts[tag] || 0) + 1;
+                }
             });
         });
 
@@ -163,16 +178,41 @@ class BlogApp {
     }
 
     /**
+     * Update posts count display
+     */
+    updatePostsCount() {
+        const postsCountElement = document.getElementById('postsCount');
+        if (postsCountElement) {
+            const total = this.posts.length;
+            const currentStart = (this.currentPage - 1) * this.postsPerPage + 1;
+            const currentEnd = Math.min(this.currentPage * this.postsPerPage, total);
+            
+            if (total > 0) {
+                postsCountElement.innerHTML = `
+                    <span class="count-info">${currentStart}-${currentEnd} of ${total} articles</span>
+                `;
+            } else {
+                postsCountElement.innerHTML = `<span class="count-info">0 articles</span>`;
+            }
+        }
+    }
+
+    /**
      * Render posts
      */
     renderPosts() {
         const postsContainer = document.getElementById('postsContainer');
+        const emptyMessage = document.getElementById('emptyMessage');
+        
         if (!postsContainer) return;
 
         if (this.posts.length === 0) {
             this.showEmptyState();
             return;
         }
+
+        // Hide empty message
+        if (emptyMessage) emptyMessage.style.display = 'none';
 
         // Calculate pagination
         const startIndex = (this.currentPage - 1) * this.postsPerPage;
@@ -209,26 +249,24 @@ class BlogApp {
      */
     async openPostDetail(postId) {
         try {
-            console.log('🔍 Opening post ID:', postId);
+            console.log('🔍 Opening article post ID:', postId);
             
             const post = this.allPosts.find(p => p.id === postId || String(p.id) === String(postId));
             if (!post) {
-                console.error('❌ Post not found:', postId);
-                showToast('포스트를 찾을 수 없습니다', 'error');
+                console.error('❌ Article post not found:', postId);
+                showToast('아티클을 찾을 수 없습니다', 'error');
                 return;
             }
 
-            console.log('✅ Navigating to post:', post.title);
+            console.log('✅ Navigating to article:', post.title);
             // Navigate to post.html with post ID
             window.location.href = `post.html?id=${encodeURIComponent(postId)}`;
             
         } catch (error) {
-            console.error('❌ Error opening post:', error);
-            showToast('포스트를 불러오는데 실패했습니다', 'error');
+            console.error('❌ Error opening article:', error);
+            showToast('아티클을 불러오는데 실패했습니다', 'error');
         }
     }
-
-
 
     /**
      * Render individual post card
@@ -238,7 +276,12 @@ class BlogApp {
     renderPostCard(post) {
         const hasThumbnail = post.thumbnail && post.thumbnail.trim() !== '';
         
-        const tagsHTML = post.tags.map(tag => 
+        // Filter out 'article' tag from display
+        const displayTags = post.tags.filter(tag => 
+            tag.toLowerCase() !== this.articleFilter.toLowerCase()
+        );
+        
+        const tagsHTML = displayTags.map(tag => 
             `<a href="?tag=${encodeURIComponent(tag)}" class="post-tag" onclick="event.stopPropagation()">${tag}</a>`
         ).join('');
 
@@ -250,6 +293,7 @@ class BlogApp {
                         <div class="post-card-content">
                             <div class="post-card-meta">
                                 <span class="post-date">${formatDate(post.date)}</span>
+                                <span class="post-type">Article</span>
                             </div>
                             
                             <h2 class="post-card-title">
@@ -275,19 +319,18 @@ class BlogApp {
                         </div>
                         
                         <h2 class="post-card-title">
-                        ${post.title}
+                            ${post.title}
                         </h2>
                         <p class="post-card-excerpt">${post.excerpt}</p>
                         <div class="post-card-meta">
                             <span class="post-date">${formatDate(post.date)}</span>
+                            <span class="post-type">Article</span>
                         </div>
-                        
-                        
                     </div>
                 </article>
-                `;
-            }
+            `;
         }
+    }
 
     /**
      * Setup lazy loading for images
@@ -392,6 +435,7 @@ class BlogApp {
         this.currentPage = page;
         this.renderPosts();
         this.renderPagination();
+        this.updatePostsCount();
         scrollToElement('.posts', 100);
     }
 
@@ -443,24 +487,35 @@ class BlogApp {
      */
     showEmptyState() {
         const postsContainer = document.getElementById('postsContainer');
+        const emptyMessage = document.getElementById('emptyMessage');
+        
         if (!postsContainer) return;
 
-        let message = '포스트가 없습니다.';
+        // Hide posts container and show empty message
+        postsContainer.innerHTML = '';
         
-        if (this.currentTag) {
-            message = `"${this.currentTag}" 태그의 포스트가 없습니다.`;
+        if (emptyMessage) {
+            emptyMessage.style.display = 'block';
         }
 
-        postsContainer.innerHTML = `
-            <div class="empty-state">
-                <h3>${message}</h3>
-                <p>다른 검색어나 태그를 시도해보세요.</p>
-                ${this.currentTag ? 
-                    '<button class="btn btn-secondary" onclick="app.clearFilters()">필터 초기화</button>' : 
-                    '<a href="editor.html" class="btn btn-primary">첫 번째 포스트 작성하기</a>'
-                }
-            </div>
-        `;
+        let message = '아티클이 없습니다.';
+        
+        if (this.currentTag) {
+            message = `"${this.currentTag}" 태그의 아티클이 없습니다.`;
+        }
+
+        if (postsContainer) {
+            postsContainer.innerHTML = `
+                <div class="empty-state">
+                    <h3>${message}</h3>
+                    <p>아직 작성된 아티클이 없거나, 다른 태그를 시도해보세요.</p>
+                    ${this.currentTag ? 
+                        '<button class="btn btn-secondary" onclick="app.clearFilters()">필터 초기화</button>' : 
+                        '<a href="blog.html" class="btn btn-primary">블로그 둘러보기</a>'
+                    }
+                </div>
+            `;
+        }
     }
 
     /**
@@ -483,10 +538,10 @@ class BlogApp {
      * Update page title based on current filters
      */
     updatePageTitle() {
-        let title = CONFIG.BLOG_TITLE;
+        let title = 'Articles - ' + CONFIG.BLOG_TITLE;
         
         if (this.currentTag) {
-            title = `${this.currentTag} - ${CONFIG.BLOG_TITLE}`;
+            title = `${this.currentTag} Articles - ${CONFIG.BLOG_TITLE}`;
         }
         
         document.title = title;
@@ -502,45 +557,45 @@ class BlogApp {
             await window.SheetsAPI.refreshPosts();
             await this.loadPosts();
             this.renderPage();
-            showToast('포스트가 새로고침되었습니다', 'success');
+            showToast('아티클이 새로고침되었습니다', 'success');
         } catch (error) {
             console.error('❌ Refresh error:', error);
-            this.showError('포스트를 새로고침하는데 실패했습니다.');
+            this.showError('아티클을 새로고침하는데 실패했습니다.');
         }
     }
 
     /**
-     * Show blog statistics (for debugging)
+     * Show article statistics (for debugging)
      */
     showStats() {
         const stats = window.SheetsAPI.getPostsStats(this.allPosts);
         console.table(stats);
         
-        showToast(`총 ${stats.totalPosts}개 포스트, ${stats.totalTags}개 태그`, 'info');
+        showToast(`총 ${stats.totalPosts}개 아티클, ${stats.totalTags}개 태그`, 'info');
     }
 }
 
-// Initialize blog app
+// Initialize article app
 let app = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    app = new BlogApp();
+    app = new ArticleApp();
 });
 
 // Export for global use
 if (typeof window !== 'undefined') {
-    window.BlogApp = BlogApp;
+    window.ArticleApp = ArticleApp;
     window.app = app;
 }
 
-// Add some additional utility functions for the blog
-function refreshBlog() {
+// Add some additional utility functions for the article page
+function refreshArticles() {
     if (app) {
         app.refreshPosts();
     }
 }
 
-function clearBlogCache() {
+function clearArticleCache() {
     clearCache();
     if (app) {
         app.refreshPosts();
@@ -549,10 +604,10 @@ function clearBlogCache() {
 
 // Add keyboard shortcuts
 document.addEventListener('keydown', (e) => {
-    // Ctrl/Cmd + R: Refresh posts
+    // Ctrl/Cmd + R: Refresh articles
     if ((e.ctrlKey || e.metaKey) && e.key === 'r' && e.shiftKey) {
         e.preventDefault();
-        refreshBlog();
+        refreshArticles();
     }
     
     // Escape: Clear filters
