@@ -14,12 +14,12 @@ export default async function handler(req, res) {
     
     try {
         // 환경변수에서 실제 Google Apps Script URL 가져오기
-        const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL;
+        const APPS_SCRIPT_URL = process.env.GOOGLE_API || process.env.APPS_SCRIPT_URL;
         
         if (!APPS_SCRIPT_URL) {
             return res.status(500).json({ 
                 success: false, 
-                error: 'APPS_SCRIPT_URL not configured' 
+                error: 'GOOGLE_API or APPS_SCRIPT_URL not configured' 
             });
         }
         

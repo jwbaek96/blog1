@@ -22,6 +22,7 @@ tmp/
 
 # 사용자별 설정 파일 (실제 API 키가 포함된 경우)
 js/config.local.js
+.env
 
 # 백업 파일
 *.bak

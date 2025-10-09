@@ -1,13 +1,14 @@
 // Configuration file for Google Sheets Blog
 
+// 환경 감지
+const isLocal = window.location.hostname === 'localhost' || 
+               window.location.hostname === '127.0.0.1' ||
+               window.location.hostname === '';
+
 const CONFIG = {
-    // API URLs - 개발환경에서는 직접 Google Apps Script 사용
-    APPS_SCRIPT_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-        ? 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec'
-        : '/api/sheets',
-    UPLOAD_API_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec'
-        : '/api/sheets',
+    // API URLs - 환경에 따라 다르게 설정
+    APPS_SCRIPT_URL: isLocal ? null : '/api/sheets', // 로컬에서는 나중에 .env에서 로드
+    UPLOAD_API_URL: isLocal ? null : '/api/sheets',  // 배포환경에서는 Vercel API Routes 사용
     
     // Google Sheets
     GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 실제 Google 스프레드시트 ID
@@ -83,30 +84,73 @@ function validateConfig() {
     return true;
 }
 
-// Auto-validate on load
-if (typeof window !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!validateConfig()) {
-            // Show user-friendly message
-            const banner = document.createElement('div');
-            banner.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                background: #ff6b6b;
-                color: white;
-                padding: 10px;
-                text-align: center;
-                z-index: 9999;
-                font-weight: 500;
-            `;
-            banner.innerHTML = '⚠️ 블로그 설정이 완료되지 않았습니다. js/config.js 파일을 확인해주세요.';
-            document.body.prepend(banner);
-            
-            setTimeout(() => banner.remove(), 1000);
+// 환경변수 초기화 함수
+async function initializeConfig() {
+    if (isLocal) {
+        // 로컬 환경: .env 파일에서 환경변수 로드
+        try {
+            const response = await fetch('/.env');
+            if (response.ok) {
+                const envText = await response.text();
+                const envLines = envText.split('\n');
+                
+                envLines.forEach(line => {
+                    line = line.trim();
+                    if (line && !line.startsWith('#') && line.includes('=')) {
+                        const [key, ...valueParts] = line.split('=');
+                        const value = valueParts.join('=').trim();
+                        
+                        // GOOGLE_API를 우선으로 확인 (Vercel 환경변수명과 일치)
+                        if (key.trim() === 'GOOGLE_API') {
+                            CONFIG.APPS_SCRIPT_URL = value;
+                            CONFIG.UPLOAD_API_URL = value;
+                        }
+                        if (key.trim() === 'APPS_SCRIPT_URL') {
+                            CONFIG.APPS_SCRIPT_URL = value;
+                        }
+                        if (key.trim() === 'UPLOAD_API_URL') {
+                            CONFIG.UPLOAD_API_URL = value;
+                        }
+                    }
+                });
+            } else {
+                // .env 파일이 없으면 기본값 사용
+                CONFIG.APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
+                CONFIG.UPLOAD_API_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
+            }
+        } catch (error) {
+            console.warn('환경변수 로드 실패, 기본값 사용:', error);
+            CONFIG.APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
+            CONFIG.UPLOAD_API_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
         }
-    });
+    }
+    
+    // 설정 검증
+    if (!validateConfig()) {
+        // Show user-friendly message
+        const banner = document.createElement('div');
+        banner.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            z-index: 9999;
+            font-weight: 500;
+        `;
+        banner.innerHTML = '⚠️ 블로그 설정이 완료되지 않았습니다. js/config.js 파일을 확인해주세요.';
+        document.body.prepend(banner);
+        
+        setTimeout(() => banner.remove(), 1000);
+    }
+}
+
+// Auto-initialize on load
+if (typeof window !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', initializeConfig);
 }
 
 // Make CONFIG available globally
