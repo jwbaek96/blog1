@@ -161,28 +161,28 @@ const FloatingActions = {
     },
 
     // 스크롤 위치에 따른 scroll to top 버튼 표시/숨김 설정
-    setupScrollToTopVisibility: function() {
-        let scrollTimeout;
+    // setupScrollToTopVisibility: function() {
+    //     let scrollTimeout;
         
-        const handleWindowScroll = () => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                const scrollTopBtn = document.querySelector('.floating-scroll-top-btn');
-                if (!scrollTopBtn) return;
+    //     const handleWindowScroll = () => {
+    //         clearTimeout(scrollTimeout);
+    //         scrollTimeout = setTimeout(() => {
+    //             const scrollTopBtn = document.querySelector('.floating-scroll-top-btn');
+    //             if (!scrollTopBtn) return;
 
-                // 페이지 상단에서 300px 이상 스크롤했을 때 버튼 표시
-                if (window.scrollY > 300) {
-                    scrollTopBtn.classList.add('visible');
-                } else {
-                    scrollTopBtn.classList.remove('visible');
-                }
-            }, 100);
-        };
+    //             // 페이지 상단에서 300px 이상 스크롤했을 때 버튼 표시
+    //             if (window.scrollY > 300) {
+    //                 scrollTopBtn.classList.add('visible');
+    //             } else {
+    //                 scrollTopBtn.classList.remove('visible');
+    //             }
+    //         }, 100);
+    //     };
 
-        window.addEventListener('scroll', handleWindowScroll);
-        // 초기 상태 설정
-        handleWindowScroll();
-    },
+    //     window.addEventListener('scroll', handleWindowScroll);
+    //     // 초기 상태 설정
+    //     handleWindowScroll();
+    // },
 
     // 금지어 필터링
     validateInput: function(text, type = 'message') {
@@ -461,7 +461,26 @@ const FloatingActions = {
                 })
             });
             
-            const result = await response.json();
+            // 응답 상태 확인
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            // 응답 내용 확인
+            const responseText = await response.text();
+            
+            // HTML이 반환되었는지 확인
+            if (responseText.startsWith('<!DOCTYPE') || responseText.startsWith('<html')) {
+                throw new Error('API 엔드포인트가 올바르게 설정되지 않았습니다. HTML 페이지가 반환되었습니다.');
+            }
+            
+            // JSON 파싱
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                throw new Error(`JSON 파싱 오류: ${parseError.message}. 응답: ${responseText.substring(0, 200)}...`);
+            }
             
             if (result.success) {
                 // 성공시 폼 초기화
@@ -515,7 +534,27 @@ const FloatingActions = {
             }
             
             const response = await fetch(`${window.CONFIG.APPS_SCRIPT_URL}?action=getGuestbook&offset=${this.loadState.offset}&limit=${this.loadState.limit}`);
-            const result = await response.json();
+            
+            // 응답 상태 확인
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            // 응답 내용 확인
+            const responseText = await response.text();
+            
+            // HTML이 반환되었는지 확인
+            if (responseText.startsWith('<!DOCTYPE') || responseText.startsWith('<html')) {
+                throw new Error('API 엔드포인트가 올바르게 설정되지 않았습니다. HTML 페이지가 반환되었습니다.');
+            }
+            
+            // JSON 파싱
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                throw new Error(`JSON 파싱 오류: ${parseError.message}. 응답: ${responseText.substring(0, 200)}...`);
+            }
             
             if (result.success) {
                 const newEntries = result.entries || [];
@@ -715,7 +754,26 @@ const FloatingActions = {
                     })
                 });
                 
-                const result = await response.json();
+                // 응답 상태 확인
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // 응답 내용 확인
+                const responseText = await response.text();
+                
+                // HTML이 반환되었는지 확인
+                if (responseText.startsWith('<!DOCTYPE') || responseText.startsWith('<html')) {
+                    throw new Error('API 엔드포인트가 올바르게 설정되지 않았습니다. HTML 페이지가 반환되었습니다.');
+                }
+                
+                // JSON 파싱
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    throw new Error(`JSON 파싱 오류: ${parseError.message}. 응답: ${responseText.substring(0, 200)}...`);
+                }
                 
                 if (result.success) {
                     alert('방명록이 삭제되었습니다.');

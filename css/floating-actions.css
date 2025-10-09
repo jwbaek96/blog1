@@ -47,13 +47,13 @@
 
 /* Scroll to Top Button */
 .floating-scroll-top-btn {
-    opacity: 0;
+    transition: all 0.3s ease;
+    /* opacity: 0;
     visibility: hidden;
     transform: translateY(20px);
-    transition: all 0.3s ease;
 }
 
-.floating-scroll-top-btn.visible {
+.floating-scroll-top-btn.visible { */
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
