@@ -239,6 +239,15 @@ class BlogApp {
      * @returns {string} HTML string
      */
     renderPostCard(post) {
+        // Debug: Log post data
+        console.log('🃏 Rendering post card:', {
+            id: post.id,
+            title: post.title,
+            excerpt: post.excerpt,
+            content: post.content ? `${post.content.substring(0, 50)}...` : 'NO CONTENT',
+            contentLength: post.content ? post.content.length : 0
+        });
+        
         const hasThumbnail = post.thumbnail && post.thumbnail.trim() !== '';
         
         // post.tags가 배열인지 확인하고 안전하게 처리

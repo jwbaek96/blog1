@@ -60,18 +60,31 @@ class PostApp {
      */
     async loadPost() {
         try {
-            console.log('🔍 Looking for post ID:', this.postId);
+            console.log('🔍 Looking for post ID:', this.postId, '(type:', typeof this.postId, ')');
+            console.log('🔍 Available posts:', this.allPosts.map(p => ({
+                id: p.id, 
+                idType: typeof p.id,
+                title: p.title
+            })));
             
-            // Find post by ID
-            this.post = this.allPosts.find(p => String(p.id) === String(this.postId));
+            // Find post by ID (try both string and number comparison)
+            this.post = this.allPosts.find(p => 
+                String(p.id) === String(this.postId) || 
+                parseInt(p.id) === parseInt(this.postId)
+            );
             
             if (!this.post) {
-                console.error('❌ Post not found:', this.postId);
+                console.error('❌ Post not found for ID:', this.postId);
+                console.error('❌ Available post IDs:', this.allPosts.map(p => p.id));
                 this.showError('포스트를 찾을 수 없습니다.');
                 return;
             }
 
-            console.log('✅ Post found:', this.post.title);
+            console.log('✅ Post found:', {
+                id: this.post.id,
+                title: this.post.title,
+                contentLength: this.post.content ? this.post.content.length : 0
+            });
             this.renderPost();
             this.hideLoading();
             
