@@ -147,7 +147,7 @@ html {
     transform: translateY(0px);
     cursor: pointer;
     min-width: 120px;
-    animation: skillHover 10.5s infinite;
+    animation: skillHover 13.5s infinite;
 }
 
 .skill-item:nth-child(1) { animation-delay: 0s; }
@@ -157,6 +157,9 @@ html {
 .skill-item:nth-child(5) { animation-delay: 6s; }
 .skill-item:nth-child(6) { animation-delay: 7.5s; }
 .skill-item:nth-child(7) { animation-delay: 9s; }
+.skill-item:nth-child(8) { animation-delay: 10.5s; }
+.skill-item:nth-child(9) { animation-delay: 12s; }
+.skill-item:nth-child(10) { animation-delay: 13.5s; }
 
 .skill-item:hover {
     transform: translateY(-8px);
@@ -601,7 +604,8 @@ footer {
 }
 /* ========================== */
 @media (max-width: 480px) {
-    .about-text p {font-size: .95rem;}
+    .hero-landing h1{text-align: left;}
+    .about-text p {font-size: .9rem;}
     .skill-item {
         padding: 1rem;
         min-width: 0;
@@ -734,7 +738,7 @@ footer {
 .form-group textarea {
     width: 100%;
     padding: 1rem 1.25rem;
-    border: none;
+    border: 1px solid #ced4da;
     background: #f1f3f4;
     border-radius: 8px;
     font-size: 1rem;
