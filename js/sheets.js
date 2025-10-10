@@ -124,53 +124,37 @@ class SheetsAPI {
      */
     processPost(row) {
         try {
-            // Debug: Show all available fields in the row
-            console.log('🔍 Available fields in row:', Object.keys(row));
+            // Debug: Show raw row data
             console.log('🔍 Raw row data:', row);
             
-            // Helper function to get field value with case-insensitive matching
-            const getField = (fieldName) => {
-                // Try exact match first
-                if (row[fieldName] !== undefined) return row[fieldName];
-                
-                // Try case-insensitive match
-                const key = Object.keys(row).find(k => 
-                    k.toLowerCase() === fieldName.toLowerCase()
-                );
-                return key ? row[key] : '';
-            };
-
-            const id = getField('id') || getField('ID') || getField('Id');
-            const title = getField('title') || getField('Title') || getField('TITLE');
-            const content = getField('content') || getField('Content') || getField('CONTENT');
-            
             // Only skip completely empty rows or rows without ID
-            if (!id || (!title && !content)) {
-                console.warn('⚠️ Skipping empty post row - ID:', id, 'Title:', title, 'Content length:', content?.length);
+            if (!row.id || (!row.title && !row.content)) {
+                console.warn('⚠️ Skipping empty post row:', row);
                 return null;
             }
 
             const post = {
-                id: parseInt(id) || Date.now(),
-                title: (title || '').trim() || 'Untitled',
-                date: this.parseDate(getField('date') || getField('Date') || getField('DATE')),
-                author: (getField('author') || getField('Author') || getField('AUTHOR') || '').trim() || CONFIG.BLOG_AUTHOR,
-                content: this.cleanContent(content || ''),
-                excerpt: createExcerpt(content || '', 150),
-                thumbnail: this.processImageUrl(getField('thumbnail') || getField('Thumbnail') || getField('THUMBNAIL') || ''),
-                tags: this.processTags(getField('tags') || getField('Tags') || getField('TAGS') || ''),
-                images: this.processImages(getField('images') || getField('Images') || getField('IMAGES') || ''),
-                videos: this.processVideos(getField('videos') || getField('Videos') || getField('VIDEOS') || ''),
-                status: (getField('status') || getField('Status') || getField('STATUS') || '').toLowerCase() || 'draft',
-                slug: this.generateSlug(title || 'untitled'),
-                readTime: this.calculateReadTime(content || '')
+                id: parseInt(row.id) || Date.now(),
+                title: (row.title || '').trim() || 'Untitled',
+                date: this.parseDate(row.date),
+                author: CONFIG.BLOG_AUTHOR, // Google Sheets에 author 컬럼이 없으므로 기본값 사용
+                content: this.cleanContent(row.content || ''),
+                excerpt: createExcerpt(row.content || '', 150),
+                thumbnail: this.processImageUrl(row.thumbnail || ''),
+                tags: this.processTags(row.tags || ''),
+                images: this.processImages(row.images || ''),
+                videos: this.processVideos(row.videos || ''),
+                status: (row.status || '').toLowerCase() || 'draft',
+                slug: this.generateSlug(row.title || 'untitled'),
+                readTime: this.calculateReadTime(row.content || '')
             };
             
             console.log('✅ Processed post:', {
                 id: post.id,
                 title: post.title,
                 contentLength: post.content.length,
-                excerptLength: post.excerpt.length
+                excerptLength: post.excerpt.length,
+                status: post.status
             });
 
             // Debug: Show processed tags
