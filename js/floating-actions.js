@@ -261,7 +261,7 @@ const FloatingActions = {
             '닥쳐', '닥쳐라', '꺼져', '꺼져라', '씨발놈', '씨발년', '병신년', '병신놈', '느금마', '느금애', '느금', 
             '지랄', 'ㅈㄹ', 'ㅈ ㄹ', '존나', '존내', '좆같네', '좆같아', '좆같은', '개같네', '개같아', '개같은',
             '씹새끼', '씹창', '씹할놈', '씹할년', '씨발',  '개새끼', '병신','좆', 'ㅈ', '미친', '또라이',
-            '닥쳐', '꺼져', '느금마', '지랄', '존나', '좆같네', '개같네', '씹창',
+            '닥쳐', '꺼져', '느금마', '지랄', '존나', '좆같네', '개같네', '씹창','바보'
             // 영어 욕설들
             'fuck', 'shit', 'bitch', 'asshole', 'motherfucker', 'cocksucker'
         ];
@@ -644,9 +644,6 @@ const FloatingActions = {
                 
                 .author-note-slide {
                     width: ${100 / this.noteState.notes.length}%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
                     padding: 1rem;
                     flex-shrink: 0;
                 }
