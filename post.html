@@ -86,9 +86,9 @@
         <!-- Loading State -->
         <div id="loadingState" class="loading-container">
             <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>포스트를 불러오는 중...</p>
+                <!-- <div class="spinner"></div> -->
             </div>
+            <p>포스트를 불러오는 중...</p>
         </div>
 
         <!-- Error State -->
@@ -115,48 +115,48 @@
                     
                     <h1 class="post-title" id="postTitle"></h1>
                     
-                    <div class="post-tags" id="postTags">
-                        <!-- 태그들이 동적으로 추가됩니다 -->
-                    </div>
                 </div>
-
+                
                 <!-- Post Thumbnail -->
                 <div class="post-thumbnail" id="postThumbnail" style="display: none;">
                     <img id="thumbnailImage" alt="" loading="lazy">
                 </div>
-
+                
                 <!-- Post Body -->
                 <div class="post-body">
                     <div class="post-content" id="postContentBody">
                         <!-- 포스트 내용이 동적으로 추가됩니다 -->
                     </div>
                 </div>
-
+                
                 <!-- Post Footer -->
-                <div class="post-share">
-                    <!-- <h3>공유하기</h3> -->
-                    <div class="share-buttons">
-                        <button class="share-btn" id="copyUrl" title="링크 복사">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
-                                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
-                            </svg>
-                        </button>
-                        <!-- <button class="share-btn" id="shareTwitter" title="트위터 공유">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
-                            </svg>
-                        </button>
-                        <button class="share-btn" id="shareFacebook" title="페이스북 공유">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
-                            </svg>
-                        </button> -->
-                    </div>
-                </div>
-                <footer class="post-footer">
+                <div class="post-footer">
                     <!-- Share Buttons -->
-
+                    <div class="post-share">
+                        <!-- <h3>공유하기</h3> -->
+                        <div class="share-buttons">
+                            <button class="share-btn" id="copyUrl" title="링크 복사">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                                    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                                </svg>
+                                <!-- <button class="share-btn" id="shareTwitter" title="트위터 공유">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                                    </svg>
+                                </button>
+                                <button class="share-btn" id="shareFacebook" title="페이스북 공유">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                                    </svg>
+                                </button> -->
+                            </button>
+                        </div>
+                    </div>
+                    <div class="post-tags" id="postTags">
+                        <!-- 태그들이 동적으로 추가됩니다 -->
+                    </div>
+                    
                     <!-- Navigation -->
                     <div class="post-navigation">
                         <a id="prevPost" class="nav-post nav-prev" style="display: none;">
@@ -164,11 +164,11 @@
                             <span class="nav-title"></span>
                         </a>
                         <a id="nextPost" class="nav-post nav-next" style="display: none;">
-                            <span class="nav-label">다음 포스트</span>
                             <span class="nav-title"></span>
+                            <span class="nav-label">다음 포스트</span>
                         </a>
                     </div>
-                </footer>
+                </div>
             </div>
         </article>
 
