@@ -40,10 +40,10 @@ class SheetsAPI {
                 throw new Error(result.error || 'Apps Script returned error');
             }
             
-            const posts = result.posts || [];
+            const rawPosts = result.posts || [];
             
-            // ID 순서로 정렬 (내림차순 - 최신 포스트 먼저)
-            posts.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+            // Apps Script 데이터를 processPosts로 처리하여 excerpt 등 필요한 필드 추가
+            const posts = this.processPosts(rawPosts);
             
             console.log(`✅ Fetched ${posts.length} posts from Apps Script API`);
             

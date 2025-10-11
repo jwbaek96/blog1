@@ -163,11 +163,11 @@ class PostApp {
         }
 
         // Read time (estimate based on content length)
-        const postReadTime = document.getElementById('postReadTime');
-        if (postReadTime) {
-            const readTime = this.estimateReadTime(this.post.content || this.post.excerpt);
-            postReadTime.textContent = `${readTime}분 읽기`;
-        }
+        // const postReadTime = document.getElementById('postReadTime');
+        // if (postReadTime) {
+        //     const readTime = this.estimateReadTime(this.post.content || this.post.excerpt);
+        //     postReadTime.textContent = `${readTime}분 읽기`;
+        // }
 
         // Title
         const postTitle = document.getElementById('postTitle');
@@ -230,15 +230,15 @@ class PostApp {
     /**
      * Estimate reading time
      */
-    estimateReadTime(content) {
-        if (!content) return 1;
+    // estimateReadTime(content) {
+    //     if (!content) return 1;
         
-        const wordsPerMinute = 200; // Average reading speed
-        const wordCount = content.split(/\s+/).length;
-        const readTime = Math.max(1, Math.ceil(wordCount / wordsPerMinute));
+    //     const wordsPerMinute = 200; // Average reading speed
+    //     const wordCount = content.split(/\s+/).length;
+    //     const readTime = Math.max(1, Math.ceil(wordCount / wordsPerMinute));
         
-        return readTime;
-    }
+    //     return readTime;
+    // }
 
     /**
      * Setup event listeners
