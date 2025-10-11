@@ -297,10 +297,23 @@ class PostApp {
         // Copy URL
         const copyUrl = document.getElementById('copyUrl');
         if (copyUrl) {
-            copyUrl.addEventListener('click', async () => {
+            copyUrl.addEventListener('click', async (e) => {
                 try {
                     await navigator.clipboard.writeText(url);
-                    showToast('링크가 복사되었습니다', 'success');
+                    
+                    // Show tooltip popup
+                    const tooltip = copyUrl.querySelector('.copied-tooltip');
+                    if (tooltip) {
+                        tooltip.classList.add('show');
+                        
+                        // Hide tooltip after 2 seconds
+                        setTimeout(() => {
+                            tooltip.classList.remove('show');
+                        }, 2000);
+                    }
+                    
+                    // Optional: Also show toast (you can remove this if you prefer only the tooltip)
+                    // showToast('링크가 복사되었습니다', 'success');
                 } catch (error) {
                     console.error('Failed to copy URL:', error);
                     showToast('링크 복사에 실패했습니다', 'error');
