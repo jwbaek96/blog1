@@ -32,3 +32,6 @@ backup/
 # 빌드 파일 (만약 빌드 과정이 있다면)
 dist/
 build/
+
+# 환경 변수 파일 예시
+.env.example
