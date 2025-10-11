@@ -2,26 +2,45 @@
 :root{
     --editor-padding-side-mobile: 8px;
 }
-.main{
-    padding-top: 0;
-}
-/* Simple Editor Styles */
-.simple-editor-wrapper {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 20px 0;
+
+body.editor {
+    height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
     position: relative;
+    overflow: hidden; /* body 전체 스크롤 방지 */
 }
 
-/* Header Styles */
+/* 레이아웃 */
 .header {
     background: #fff;
     border: none;
     padding: 10px 0 0 0;
-
+    flex-shrink: 0; /* 크기 고정 */
+}
+.toolbar-section {
+    background: #fff;
+    width: 100%;
+    z-index: 1000;
+    flex-shrink: 0; /* 크기 고정 */
+}
+.main{
+    padding-top: 0;
+    flex: 1; /* 남은 공간 모두 차지 */
+    overflow-y: auto; /* 세로 스크롤만 허용 */
+    min-height: 0; /* flex item이 overflow 되도록 */
+}
+.footer {
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    padding: 0;
+    width: 100%;
+    z-index: 1000;
+    flex-shrink: 0; /* 크기 고정 */
 }
 
+/* Header Styles */
 .header .container {
     max-width: 100%;
 }
@@ -61,15 +80,7 @@
 }
 
 /* Toolbar Section Styles */
-.toolbar-section {
-    background: #fff;
-    /* position: fixed;
-    bottom: 65px; */
-    position: sticky;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
-}
+
 
 .toolbar-section .container {
     max-width: 100%;
@@ -99,20 +110,35 @@
     display: none; /* Chrome, Safari */
 }
 
+
+/* Simple Editor Styles */
+.simple-editor-wrapper {
+    background: white;
+    position: relative;
+    flex: 1; /* 남은 공간 모두 차지 */
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* flex item이 overflow 되도록 */
+}
 /* Tags Input Styles */
 .tags-container {
     border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0; /* 크기 고정 */
 }
 
 .tags-wrapper {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    padding: 12px var(--editor-padding-side-mobile);
+    padding: 0px var(--editor-padding-side-mobile);
     background: white;
     min-height: 50px;
     align-items: center;
     transition: border-color 0.3s ease;
+    max-height: 125px;
+    overflow: auto;
+    margin: 5px auto;
+    max-width: 1000px;
 }
 
 .tags-wrapper:focus-within {
@@ -244,11 +270,13 @@
 }
 
 .simple-editor {
-    min-height: 400px;
-    padding: 0px 10px;
+    padding: 20px 10px;
     outline: none;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.6;
+    flex: 1; /* 남은 공간 모두 차지 */
+    overflow-y: auto; /* 내용이 넘치면 스크롤 */
+    min-height: 0; /* flex item이 overflow 되도록 */
 }
 
 
@@ -320,6 +348,9 @@ input[type="color"] {
     max-width: 1000px;
     margin: 0 auto;
     background-color: var(--bg-primary);
+    height: 100%; /* main의 전체 높이 사용 */
+    display: flex;
+    flex-direction: column;
 }
 
 .editor-header {
@@ -333,13 +364,14 @@ input[type="color"] {
 
 .editor-header p {
     color: var(--text-secondary);
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
 }
 
 /* Post Metadata */
 .post-metadata {
     display: grid;
     grid-template-columns: 1fr;
+    flex-shrink: 0; /* 크기 고정 */
 }
 
 .datetime-display {
@@ -367,7 +399,7 @@ input[type="color"] {
     border-bottom: 2px solid var(--border-color);
 }
 .title-input {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: var(--font-weight-semibold);
     border: none;
     border-bottom: 1px solid var(--border-color);
@@ -378,16 +410,6 @@ input[type="color"] {
 }
 
 /* Footer Styles */
-.footer {
-    background: #fff;
-    border-top: 1px solid #dee2e6;
-    position: fixed;
-    margin-top: auto;
-    padding: 0;
-    width: 100%;
-    bottom: 0;
-    z-index: 1000;
-}
 
 .footer .container {
     max-width: 100%;
@@ -492,7 +514,8 @@ input[type="color"] {
         right: 10px;
         transform: none;
         max-width: none;
-        padding: 8px;
+        padding: 5px;
+        border-radius: 0;
         gap: 3px;
         flex-wrap: nowrap;
     }
@@ -521,12 +544,10 @@ input[type="color"] {
         width: 16px;
         height: 4px;
     }
-    
-    .simple-editor-wrapper {
-        padding-bottom: 70px;
-    }
+
     .simple-editor {
         padding: var(--editor-padding-side-mobile);
+        overflow: scroll;
     }
     .footer-actions {
         /* flex-direction: column; */
@@ -543,6 +564,12 @@ input[type="color"] {
 @media (max-width: 480px) {
     .title-input {
         font-size: 1.5rem;
+    }
+
+    .tag,
+    .tag button{
+        font-size: 12px;
+        padding: 4px 8px;
     }
     
 }

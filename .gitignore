@@ -33,5 +33,5 @@ backup/
 dist/
 build/
 
-# 환경 변수 파일 예시
-.env.example
+#
+.env

@@ -24,6 +24,9 @@ const CONFIG = {
     DEV_MODE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
     DEV_PORT: 5500, // 로컬 개발 서버 포트
     
+    // Local Admin Settings (로컬 개발용 - 실제 비밀번호로 변경하세요)
+    LOCAL_ADMIN_KEY: '9632', // 로컬 개발용 관리자 비밀번호
+    
     // Pagination
     POSTS_PER_PAGE: 10,
     

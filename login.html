@@ -108,7 +108,6 @@
                 <a href="index.html" style="text-decoration: none; color: #000; transition: all 0.3s ease;">&larr; Back</a>
             </div>
             <h2>Admin Panel</h2>
-            <p>You are currently logged in as admin.</p>
             <div class="admin-actions">
                 <button id="logoutBtn" class="btn" style="background: #dc3545;">Logout</button>
             </div>
@@ -116,7 +115,27 @@
         </div>
     </div>
 
+    <!-- Config -->
+    <script src="js/config.js"></script>
+    
     <script>
+        // 로컬 환경에서 비밀번호 확인
+        function checkLocalPassword(password) {
+            const isLocal = window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1' ||
+                          window.location.hostname === '';
+            
+            if (!isLocal) return false;
+            
+            const adminKey = CONFIG.LOCAL_ADMIN_KEY;
+            if (!adminKey || adminKey === 'your_local_admin_password') {
+                console.warn('로컬 환경에서 LOCAL_ADMIN_KEY가 설정되지 않았습니다. config.js에서 LOCAL_ADMIN_KEY를 설정하세요.');
+                return false;
+            }
+            
+            return password === adminKey;
+        }
+        
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -133,6 +152,26 @@
             loginBtn.disabled = true;
             loginBtn.textContent = 'Logging in...';
             message.innerHTML = '';
+            
+            // 로컬 환경에서 먼저 확인
+            if (checkLocalPassword(password)) {
+                console.log('로컬 환경: 비밀번호 확인 성공');
+                
+                // 로컬에서 성공한 경우 토큰 생성
+                const token = 'local_admin_token_' + Date.now();
+                const expiresAt = Date.now() + (24 * 60 * 60 * 1000); // 24시간
+                
+                localStorage.setItem('admin_token', token);
+                localStorage.setItem('admin_expires', expiresAt);
+                
+                message.innerHTML = '<div class="success">Login successful! Redirecting...</div>';
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+                
+                return;
+            }
             
             try {
                 const response = await fetch('/api/login', {
@@ -169,12 +208,11 @@
                     localStorage.setItem('admin_token', result.token);
                     localStorage.setItem('admin_expires', result.expiresAt);
                     
-                    message.innerHTML = '<div class="success">Login successful!</div>';
+                    message.innerHTML = '<div class="success">Login successful! Redirecting...</div>';
                     
-                    // 1초 후 로그아웃 패널로 전환
+                    // 1초 후 홈화면으로 리디렉션
                     setTimeout(() => {
-                        checkLoginStatus();
-                        message.innerHTML = '';
+                        window.location.href = 'index.html';
                     }, 1000);
                 } else {
                     // 로그인 실패
