@@ -21,11 +21,18 @@ class PWAInstaller {
             return;
         }
         
-        // Listen for beforeinstallprompt event
+        // Setup event listeners
+        this.setupEventListeners();
+        
+        // Show popup after delay for web users
+        setTimeout(() => {
+            this.showPopup();
+        }, 3000);
+        
+        // Listen for beforeinstallprompt event (Chrome/Edge용)
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             this.deferredPrompt = e;
-            this.showPopup();
         });
         
         // Listen for app installed event
@@ -33,16 +40,6 @@ class PWAInstaller {
             this.hidePopup();
             console.log('✅ PWA가 성공적으로 설치되었습니다.');
         });
-        
-        // Setup event listeners
-        this.setupEventListeners();
-        
-        // Show popup after delay if prompt is available
-        setTimeout(() => {
-            if (this.deferredPrompt) {
-                this.showPopup();
-            }
-        }, 3000);
     }
     
     setupEventListeners() {
@@ -105,8 +102,49 @@ class PWAInstaller {
     
     showPopup() {
         if (this.popup) {
+            // 브라우저별 메시지 설정
+            const browserMessage = this.getBrowserSpecificMessage();
+            this.updatePopupContent(browserMessage);
+            
             this.popup.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    // 팝업 내용 업데이트
+    updatePopupContent(messageData) {
+        const titleElement = this.popup.querySelector('h3');
+        const messageElement = this.popup.querySelector('p');
+        const installButton = this.installBtn;
+        
+        if (titleElement) {
+            titleElement.textContent = messageData.title;
+        }
+        
+        if (messageElement) {
+            messageElement.textContent = messageData.message;
+        }
+        
+        if (installButton) {
+            installButton.textContent = messageData.buttonText;
+            
+            // 기존 이벤트 리스너 제거
+            installButton.replaceWith(installButton.cloneNode(true));
+            this.installBtn = document.getElementById('pwa-install-btn');
+            
+            // 설치 불가능한 브라우저의 경우 버튼 동작 변경
+            if (!messageData.isInstallable) {
+                this.installBtn.addEventListener('click', () => {
+                    // Chrome으로 리다이렉트
+                    const currentUrl = encodeURIComponent(window.location.href);
+                    window.open(`https://www.google.com/chrome/?url=${currentUrl}`, '_blank');
+                    this.dismissForToday();
+                });
+            } else {
+                this.installBtn.addEventListener('click', () => {
+                    this.installApp();
+                });
+            }
         }
     }
     
@@ -142,11 +180,57 @@ class PWAInstaller {
         
         return false;
     }
-
+    
+    // 브라우저 감지 함수
+    detectBrowser() {
+        const userAgent = navigator.userAgent;
+        
+        if (userAgent.includes('Firefox')) {
+            return 'firefox';
+        } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+            return 'safari';
+        } else if (userAgent.includes('Chrome') || userAgent.includes('Chromium')) {
+            return 'chrome';
+        } else if (userAgent.includes('Edge')) {
+            return 'edge';
+        }
+        
+        return 'unknown';
+    }
+    
+    // 브라우저별 메시지 생성
+    getBrowserSpecificMessage() {
+        const browser = this.detectBrowser();
+        
+        switch (browser) {
+            case 'safari':
+                return {
+                    title: '앱 설치',
+                    message: 'Chrome 브라우저를 이용하면 앱으로 다운로드가 가능합니다.',
+                    buttonText: 'Chrome으로 열기',
+                    isInstallable: false
+                };
+            case 'firefox':
+                return {
+                    title: '앱 설치',
+                    message: 'Chrome 브라우저를 이용하면 앱으로 다운로드가 가능합니다.',
+                    buttonText: 'Chrome으로 열기',
+                    isInstallable: false
+                };
+            case 'chrome':
+            case 'edge':
+            default:
+                return {
+                    title: '앱으로 설치',
+                    message: '홈 화면에 추가하여 앱처럼 사용해보세요!',
+                    buttonText: '설치하기',
+                    isInstallable: true
+                };
+        }
+    }
 }
 
 // Initialize PWA installer when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new PWAInstaller();
 });
-

@@ -261,7 +261,7 @@ const FloatingActions = {
             '닥쳐', '닥쳐라', '꺼져', '꺼져라', '씨발놈', '씨발년', '병신년', '병신놈', '느금마', '느금애', '느금', 
             '지랄', 'ㅈㄹ', 'ㅈ ㄹ', '존나', '존내', '좆같네', '좆같아', '좆같은', '개같네', '개같아', '개같은',
             '씹새끼', '씹창', '씹할놈', '씹할년', '씨발',  '개새끼', '병신','좆', 'ㅈ', '미친', '또라이',
-            '닥쳐', '꺼져', '느금마', '지랄', '존나', '좆같네', '개같네', '씹창','바보'
+            '닥쳐', '꺼져', '느금마', '지랄', '존나', '좆같네', '개같네', '씹창','바보',
             // 영어 욕설들
             'fuck', 'shit', 'bitch', 'asshole', 'motherfucker', 'cocksucker'
         ];
@@ -474,18 +474,21 @@ const FloatingActions = {
         const notificationDot = document.getElementById('noteNotificationDot');
         if (notificationDot) {
             notificationDot.style.display = 'none';
-            // 로컬스토리지에 노트 확인 상태 저장
-            localStorage.setItem('noteViewed', 'true');
+            // 로컬스토리지에 오늘 날짜 저장 (하루 기준)
+            const today = new Date().toDateString(); // 'Mon Oct 12 2025' 형식
+            localStorage.setItem('noteViewedDate', today);
         }
     },
 
     // 알림 점 상태 확인 및 초기화
     initNotificationState: function() {
         const notificationDot = document.getElementById('noteNotificationDot');
-        const noteViewed = localStorage.getItem('noteViewed');
+        const noteViewedDate = localStorage.getItem('noteViewedDate');
+        const today = new Date().toDateString();
         
         if (notificationDot) {
-            if (noteViewed === 'true') {
+            // 오늘 이미 확인했는지 체크
+            if (noteViewedDate === today) {
                 notificationDot.style.display = 'none';
             } else {
                 notificationDot.style.display = 'block';
