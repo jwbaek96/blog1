@@ -8,8 +8,7 @@ header{
     width: 100%;
     z-index: 1000;
 }
-/* header .container{
-} */
+header .container{padding: 0;}
 header a{
     color: white;
     text-decoration: none;
@@ -153,7 +152,7 @@ header.header-dark .mobile-menu-toggle{
 }
 @media (max-width: 480px) {
     .header-content {
-        padding: 15px 15px;
+        padding: 15px 16px;
     }
     
     .mobile-menu-toggle {

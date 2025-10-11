@@ -13,13 +13,13 @@
   "categories": ["portfolio", "blog", "art", "design"],
   "icons": [
     {
-      "src": "./assets/Vector.png",
-      "sizes": "any",
+      "src": "/assets/favicon/icon_192x192.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "./assets/Vector.png",
+      "src": "/assets/favicon/icon_512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"

@@ -25,6 +25,10 @@
     --text-secondary: #6c757d;
     --text-muted: #adb5bd;
     
+    /* Accent Color */
+    --accent-color: #181818;
+    --accent-color-dark: #000000;
+
     /* Border & Shadow */
     --border-color: #dee2e6;
     --border-radius: 8px;

@@ -7,20 +7,22 @@
     
     // Favicon 설정 (경로는 assets 폴더 기준)
     const faviconConfigs = [
-        { rel: 'shortcut icon', href: 'assets/favicon.ico' },
-        { rel: 'apple-touch-icon', sizes: '57x57', href: 'assets/Vector.png' },
-        { rel: 'apple-touch-icon', sizes: '60x60', href: 'assets/Vector.png' },
-        { rel: 'apple-touch-icon', sizes: '72x72', href: 'assets/Vector.png' },
-        { rel: 'apple-touch-icon', sizes: '76x76', href: 'assets/Vector.png' },
-        { rel: 'apple-touch-icon', sizes: '114x114', href: 'assets/Vector.png' },
-        { rel: 'apple-touch-icon', sizes: '120x120', href: 'assets/Vector.png' },
-        { rel: 'apple-touch-icon', sizes: '144x144', href: 'assets/Vector.png' },
-        { rel: 'apple-touch-icon', sizes: '152x152', href: 'assets/Vector.png' },
-        { rel: 'apple-touch-icon', sizes: '180x180', href: 'assets/Vector.png' },
-        { rel: 'icon', type: 'image/png', sizes: '192x192', href: 'assets/Vector.png' },
-        { rel: 'icon', type: 'image/png', sizes: '32x32', href: 'assets/Vector.png' },
-        { rel: 'icon', type: 'image/png', sizes: '96x96', href: 'assets/Vector.png' },
-        { rel: 'icon', type: 'image/png', sizes: '16x16', href: 'assets/Vector.png' }
+        { rel: 'shortcut icon', href: '/favicon.ico' },
+        { rel: 'apple-touch-icon', sizes: '57x57', href: '/assets/Vector.png' },
+        { rel: 'apple-touch-icon', sizes: '60x60', href: '/assets/Vector.png' },
+        { rel: 'apple-touch-icon', sizes: '72x72', href: '/assets/Vector.png' },
+        { rel: 'apple-touch-icon', sizes: '76x76', href: '/assets/Vector.png' },
+        { rel: 'apple-touch-icon', sizes: '114x114', href: '/assets/Vector.png' },
+        { rel: 'apple-touch-icon', sizes: '120x120', href: '/assets/Vector.png' },
+        { rel: 'apple-touch-icon', sizes: '144x144', href: '/assets/Vector.png' },
+        { rel: 'apple-touch-icon', sizes: '152x152', href: '/assets/Vector.png' },
+        { rel: 'apple-touch-icon', sizes: '192x192', href: '/assets/favicon/icon_192x192.png' },
+        { rel: 'apple-touch-icon', sizes: '512x512', href: '/assets/favicon/icon_512x512.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/assets/favicon/icon_16x16.png' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/assets/favicon/icon_32x32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/assets/favicon/icon_96x96.png' },
+        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/assets/favicon/icon_192x192.png' },
+        { rel: 'icon', type: 'image/png', sizes: '512x512', href: '/assets/favicon/icon_512x512.png' }
     ];
     
     // 기본 메타태그 설정

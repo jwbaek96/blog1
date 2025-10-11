@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JW.BAEK - Web Designer & Art Director</title>
-    <link rel="shortcut icon" href="./assets/Vector.png">
-    <link rel="manifest" href="./manifest.json">
+    <title>JW.BAEK - Web Designer & Artist</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="manifest" href="manifest.json">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="JW.BAEK">
-    <link rel="apple-touch-icon" href="./assets/Vector.png">
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Web Designer & Art Director - 창의적이고 혁신적인 디자인 솔루션을 제공합니다">
+    <meta name="description" content="Web Designer & Artist - 창의적이고 혁신적인 디자인 솔루션을 제공합니다">
     <meta name="keywords" content="웹디자인, 아트디렉터, UI/UX, 그래픽디자인, 브랜딩">
     <meta name="author" content="JW.BAEk">
     
@@ -32,8 +32,10 @@
     <link rel="stylesheet" href="css/header.css">
     
     <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/pwa.css">
     <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/floating-actions.css">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -327,10 +329,27 @@
         });
     </script>
     
+    <!-- PWA Install Popup -->
+    <div id="pwa-install-popup" class="pwa-install-popup" style="display: none;">
+        <div class="pwa-install-content">
+            <button class="pwa-close-btn">&times;</button>
+            <div class="pwa-install-icon">
+                <img src="assets/Vector.png" alt="App Icon" width="80" height="80">
+            </div>
+            <h3>앱으로 설치하기</h3>
+            <p>JW.BAEK 블로그를 홈 화면에 추가하여<br>더 빠르고 편리하게 이용하세요!</p>
+            <div class="pwa-install-buttons">
+                <button id="pwa-install-btn" class="pwa-btn pwa-btn-primary">설치하기</button>
+                <button id="pwa-later-btn" class="pwa-btn pwa-btn-secondary">나중에</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header Component -->
     <script src="js/header-component.js"></script>
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/floating-actions.js"></script>
+    <script src="js/pwa-install.js"></script>
 </body>
 </html>
