@@ -703,11 +703,15 @@ html {
 }
 
 @media (max-width: 480px) {
+    .contact-info h2,
+    .contact-info .contact-item p{text-align: center; width: 100%;}
+    .social-links {justify-content: center;}
+    
     .contact-info h2 {
         font-size: 2rem;
     }
+    
     .contact-social h4{display: none;}
-
     .form-group input,
     .form-group textarea {
         padding: 0.875rem 1rem;
