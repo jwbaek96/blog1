@@ -647,13 +647,13 @@ const FloatingActions = {
                 
                 .author-note-slide {
                     width: ${100 / this.noteState.notes.length}%;
-                    padding: 1rem;
+                    padding: 1rem 0rem 1rem 1.5rem;
                     flex-shrink: 0;
                 }
                 
                 .author-note-text {
                     text-align: center;
-                    font-size: 0.95rem;
+                    font-size: 0.85rem;
                     line-height: 1.6;
                     max-width: 90%;
                 }

@@ -27,7 +27,7 @@ class PWAInstaller {
         // Show popup after delay for web users
         setTimeout(() => {
             this.showPopup();
-        }, 3000);
+        }, 2000);
         
         // Listen for beforeinstallprompt event (Chrome/Edge용)
         window.addEventListener('beforeinstallprompt', (e) => {
