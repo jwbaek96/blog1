@@ -134,7 +134,7 @@ body.blog-page .main {
     background: var(--accent-color);
     color: white;
     border-color: var(--accent-color);
-    transform: translateY(-1px);
+    /* transform: translateY(-1px); */
 }
 
 .tag-filters-horizontal .tag-filter.active {
@@ -194,13 +194,13 @@ body.blog-page .main {
     
     .tag-filters-horizontal {
         gap: 0.5rem;
-        padding: 0.25rem 0;
+        padding: 0;
     }
     
     .tag-filters-horizontal .tag-filter {
         padding: 0.4rem 0.8rem;
         font-size: 0.8rem;
-        margin-bottom: 1rem;
+        margin-bottom: .25rem;
     }
     
     .sidebar-title {
@@ -247,7 +247,7 @@ header .container{max-width: 100%;margin: 0;}
     background-color: var(--accent-color, #007bff);
     border-color: var(--accent-color, #007bff);
     color: white;
-    transform: translateY(-2px);
+    /* transform: translateY(-2px); */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -757,6 +757,7 @@ body {
     .btn {padding: var(--spacing-sm) var(--spacing-md);font-size: var(--font-size-sm);}
     .sidebar-content {padding: 1rem;border-radius: 8px;}
     .sidebar-title {font-size: 0.9rem;margin-bottom: 0.75rem;}
+    .tags-horizontal-section{margin: 0;}
     .tag-filters-sidebar .tag-filter {font-size: 0.75rem;padding: 0.3rem 0.6rem;}
 }
 

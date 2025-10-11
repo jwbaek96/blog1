@@ -12,14 +12,14 @@ class PWAInstaller {
     
     init() {
         // Check if app is already installed
-        // if (this.isAppInstalled()) {
-        //     return;
-        // }
+        if (this.isAppInstalled()) {
+            return;
+        }
         
         // Check if user dismissed popup today
-        // if (this.isDismissedToday()) {
-        //     return;
-        // }
+        if (this.isDismissedToday()) {
+            return;
+        }
         
         // Listen for beforeinstallprompt event
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -39,10 +39,10 @@ class PWAInstaller {
         
         // Show popup after delay if prompt is available
         setTimeout(() => {
-            // if (this.deferredPrompt) {
+            if (this.deferredPrompt) {
                 this.showPopup();
-            // }
-        }, 1000);
+            }
+        }, 3000);
     }
     
     setupEventListeners() {
