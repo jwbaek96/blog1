@@ -1,4 +1,7 @@
 /* Editor Specific Styles */
+:root{
+    --editor-padding-side-mobile: 8px;
+}
 .main{
     padding-top: 0;
 }
@@ -14,7 +17,9 @@
 /* Header Styles */
 .header {
     background: #fff;
-    border-bottom: 1px solid #dee2e6;
+    border: none;
+    padding: 10px 0 0 0;
+
 }
 
 .header .container {
@@ -22,7 +27,6 @@
 }
 
 .header-actions {
-    padding: 10px 0;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -97,14 +101,14 @@
 
 /* Tags Input Styles */
 .tags-container {
-    margin: 15px 0;
+    border-bottom: 1px solid #dee2e6;
 }
 
 .tags-wrapper {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    padding: 12px 6px;
+    padding: 12px var(--editor-padding-side-mobile);
     background: white;
     min-height: 50px;
     align-items: center;
@@ -241,7 +245,7 @@
 
 .simple-editor {
     min-height: 400px;
-    padding: 0px 5px;
+    padding: 0px 10px;
     outline: none;
     font-size: 16px;
     line-height: 1.6;
@@ -309,48 +313,6 @@ input[type="color"] {
     padding: 0;
     cursor: pointer;
     background: none;
-}
-/* 모바일 반응형 */
-@media (max-width: 768px) {
-    .simple-toolbar {
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-        transform: none;
-        max-width: none;
-        padding: 8px;
-        gap: 3px;
-        flex-wrap: nowrap;
-    }
-    
-    .simple-toolbar button {
-        padding: 6px 8px;
-        font-size: 12px;
-        min-width: 30px;
-    }
-    
-    .simple-toolbar select {
-        padding: 6px;
-        font-size: 12px;
-    }
-    
-    .color-button {
-        width: 30px;
-        height: 28px;
-    }
-    
-    .color-letter {
-        font-size: 10px;
-    }
-    
-    .color-bar {
-        width: 16px;
-        height: 4px;
-    }
-    
-    .simple-editor-wrapper {
-        padding-bottom: 70px;
-    }
 }
 
 /* Editor Container */
@@ -521,22 +483,66 @@ input[type="color"] {
     transform: none;
 }
 
-/* Responsive */
+
+/* 모바일 반응형 */
 @media (max-width: 768px) {
+    .simple-toolbar {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        transform: none;
+        max-width: none;
+        padding: 8px;
+        gap: 3px;
+        flex-wrap: nowrap;
+    }
+    
+    .simple-toolbar button {
+        padding: 6px 8px;
+        font-size: 12px;
+        min-width: 30px;
+    }
+    
+    .simple-toolbar select {
+        padding: 6px;
+        font-size: 12px;
+    }
+    
+    .color-button {
+        width: 30px;
+        height: 28px;
+    }
+    
+    .color-letter {
+        font-size: 10px;
+    }
+    
+    .color-bar {
+        width: 16px;
+        height: 4px;
+    }
+    
+    .simple-editor-wrapper {
+        padding-bottom: 70px;
+    }
+    .simple-editor {
+        padding: var(--editor-padding-side-mobile);
+    }
     .footer-actions {
         /* flex-direction: column; */
         gap: 10px;
-        padding: 12px 0;
-    }
-    
-    .footer-left,
-    .footer-right {
-        /* width: 100%; */
-        /* justify-content: center; */
+        padding: 12px var(--editor-padding-side-mobile);
     }
     
     .btn {
         padding: 12px 24px;
         font-size: 16px;
     }
+}
+
+@media (max-width: 480px) {
+    .title-input {
+        font-size: 1.5rem;
+    }
+    
 }

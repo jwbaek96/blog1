@@ -20,6 +20,12 @@
     <script src="js/head-meta.js"></script>
     <!-- Auth js -->
     <script src="js/auth.js"></script>
+    
+    <style>
+        .backBtn:hover {
+            background-color: #f5f5f5 !important;
+        }
+    </style>
 </head>
 <body>
     <!-- 인증 확인 스크립트 -->
@@ -34,7 +40,9 @@
         <div class="container">
             <div class="header-actions">
                 <div class="header-left">
-                    <a href="/" class="homeBtn">홈</a>
+                    <button onclick="history.back()" class="backBtn" style="background: none; border: none; color: #333; font-size: 1rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 4px; transition: background-color 0.2s ease;">
+                        ← 
+                    </button>
                 </div>
             </div>
         </div>

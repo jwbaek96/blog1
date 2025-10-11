@@ -79,6 +79,12 @@
             align-items: center;
         }
         .back-to-home:hover a{ transform: translateX(-3px);}
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1rem;
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -98,10 +104,12 @@
         
         <!-- 로그아웃 섹션 (로그인된 경우) -->
         <div id="logoutSection" style="display: none;">
+            <div class="back-to-home">
+                <a href="index.html" style="text-decoration: none; color: #000; transition: all 0.3s ease;">&larr; Back</a>
+            </div>
             <h2>Admin Panel</h2>
             <p>You are currently logged in as admin.</p>
             <div class="admin-actions">
-                <a href="editor.html" class="btn" style="background: #28a745; margin-bottom: 1rem; display: block; text-align: center; color: white; text-decoration: none;">Write New Post</a>
                 <button id="logoutBtn" class="btn" style="background: #dc3545;">Logout</button>
             </div>
             <div id="logoutMessage"></div>
