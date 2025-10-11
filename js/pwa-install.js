@@ -11,8 +11,8 @@ class PWAInstaller {
     }
     
     init() {
-        // Check if app is already installed
-        if (this.isAppInstalled()) {
+        // Check if running as installed app (standalone mode)
+        if (this.isRunningAsApp()) {
             return;
         }
         
@@ -31,7 +31,7 @@ class PWAInstaller {
         // Listen for app installed event
         window.addEventListener('appinstalled', () => {
             this.hidePopup();
-            this.setInstalled(true);
+            console.log('✅ PWA가 성공적으로 설치되었습니다.');
         });
         
         // Setup event listeners
@@ -89,7 +89,6 @@ class PWAInstaller {
             
             if (outcome === 'accepted') {
                 console.log('사용자가 앱 설치를 승인했습니다.');
-                this.setInstalled(true);
             } else {
                 console.log('사용자가 앱 설치를 거부했습니다.');
             }
@@ -130,19 +129,20 @@ class PWAInstaller {
         return dismissedDate === today;
     }
     
-    isAppInstalled() {
-        // Check if running in standalone mode (app is installed)
+    isRunningAsApp() {
+        // Check if running in standalone mode (app is installed and launched)
         if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
             return true;
         }
         
-        // Check localStorage flag
-        return localStorage.getItem('pwa-installed') === 'true';
+        // Check for iOS Safari standalone mode
+        if (window.navigator.standalone === true) {
+            return true;
+        }
+        
+        return false;
     }
-    
-    setInstalled(installed) {
-        localStorage.setItem('pwa-installed', installed.toString());
-    }
+
 }
 
 // Initialize PWA installer when DOM is loaded

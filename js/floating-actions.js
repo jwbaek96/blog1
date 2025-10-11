@@ -16,6 +16,7 @@ const FloatingActions = {
     config: {
         showEditor: true,
         showGuestbook: true,
+        showAuthorNote: true,
         autoInit: true
     },
 
@@ -38,8 +39,21 @@ const FloatingActions = {
         let guestbookHTML = '';
         
         // 플로팅 액션 버튼들
-        if (config.showGuestbook || config.showEditor) {
+        if (config.showGuestbook || config.showEditor || config.showAuthorNote) {
             actionsHTML = '<div class="floating-action-stack" id="floatingActionStack">';
+            
+            // 작가노트 버튼 (첫 번째 위치) - config에 따라 조건부 표시
+            if (config.showAuthorNote) {
+                actionsHTML += `
+                    <!-- Author Note Button -->
+                    <button class="floating-btn floating-note-btn" onclick="FloatingActions.toggleAuthorNote()" title="작가노트">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="scale: 1.2;">
+                            <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="note-notification-dot" id="noteNotificationDot" style="display: block;"></div>
+                    </button>
+                `;
+            }
             
             if (config.showGuestbook) {
                 actionsHTML += `
@@ -77,6 +91,47 @@ const FloatingActions = {
             actionsHTML += '</div>';
         }
         
+        // 작가노트 UI - config에 따라 조건부 생성
+        let authorNoteHTML = '';
+        if (config.showAuthorNote) {
+            authorNoteHTML = `
+                <!-- Floating Author Note -->
+                <div class="floating-guestbook floating-author-note" id="floatingAuthorNote">
+                    <div class="guestbook-header">
+                        <h3>Note.</h3>
+                        <button class="guestbook-close" onclick="FloatingActions.toggleAuthorNote()">✕</button>
+                    </div>
+                    
+                    <div class="guestbook-content">
+                        <!-- 슬라이드 컨테이너 -->
+                        <div class="author-note-slider" id="authorNoteSlider">
+                            <div class="author-note-content" id="authorNoteContent">
+                                <div class="guestbook-loading">
+                                    <div class="loading-spinner"></div>
+                                    <p>작가노트를 불러오는 중...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 슬라이드 네비게이션 (푸터 위치) -->
+                        <div class="author-note-nav" id="authorNoteNav" style="display: none;">
+                            <button class="note-nav-btn prev-btn" id="prevNoteBtn" onclick="FloatingActions.previousNote()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15,18 9,12 15,6"></polyline>
+                                </svg>
+                            </button>
+                            <div class="note-indicators" id="noteIndicators"></div>
+                            <button class="note-nav-btn next-btn" id="nextNoteBtn" onclick="FloatingActions.nextNote()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9,18 15,12 9,6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         // 방명록 UI
         if (config.showGuestbook) {
             guestbookHTML = `
@@ -116,7 +171,7 @@ const FloatingActions = {
             `;
         }
         
-        return actionsHTML + guestbookHTML;
+        return actionsHTML + authorNoteHTML + guestbookHTML;
     },
 
     // 컴포넌트 초기화
@@ -129,6 +184,11 @@ const FloatingActions = {
         
         // 이벤트 리스너 설정
         this.setupEventListeners();
+        
+        // 알림 점 상태 초기화
+        setTimeout(() => {
+            this.initNotificationState();
+        }, 100);
     },
 
     // 이벤트 리스너 설정
@@ -147,12 +207,17 @@ const FloatingActions = {
             nameInput.addEventListener('input', this.validateNameInput.bind(this));
         }
 
-        // ESC 키로 방명록 닫기
+        // ESC 키로 팝업 닫기
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 const guestbook = document.getElementById('floatingGuestbook');
+                const authorNote = document.getElementById('floatingAuthorNote');
+                
                 if (guestbook && guestbook.classList.contains('active')) {
                     guestbook.classList.remove('active');
+                }
+                if (authorNote && authorNote.classList.contains('active')) {
+                    authorNote.classList.remove('active');
                 }
             }
         });
@@ -386,6 +451,372 @@ const FloatingActions = {
         } else {
             messageTextarea.style.borderColor = '';
             messageTextarea.title = '';
+        }
+    },
+
+    // 작가노트 토글
+    toggleAuthorNote: function() {
+        const authorNote = document.getElementById('floatingAuthorNote');
+        const isVisible = authorNote.classList.contains('active');
+        
+        if (isVisible) {
+            authorNote.classList.remove('active');
+        } else {
+            authorNote.classList.add('active');
+            this.loadAuthorNote();
+            // 노트를 열면 알림 점 숨기기
+            this.hideNotificationDot();
+        }
+    },
+
+    // 알림 점 숨기기 함수
+    hideNotificationDot: function() {
+        const notificationDot = document.getElementById('noteNotificationDot');
+        if (notificationDot) {
+            notificationDot.style.display = 'none';
+            // 로컬스토리지에 노트 확인 상태 저장
+            localStorage.setItem('noteViewed', 'true');
+        }
+    },
+
+    // 알림 점 상태 확인 및 초기화
+    initNotificationState: function() {
+        const notificationDot = document.getElementById('noteNotificationDot');
+        const noteViewed = localStorage.getItem('noteViewed');
+        
+        if (notificationDot) {
+            if (noteViewed === 'true') {
+                notificationDot.style.display = 'none';
+            } else {
+                notificationDot.style.display = 'block';
+            }
+        }
+    },
+
+    // 노트 슬라이드 상태
+    noteState: {
+        currentSlide: 0,
+        totalSlides: 2,
+        notes: [],
+        touchStartX: 0,
+        touchEndX: 0
+    },
+
+    // 작가노트 로드 (슬라이드 시스템)
+    loadAuthorNote: async function() {
+        const contentContainer = document.getElementById('authorNoteContent');
+        const navContainer = document.getElementById('authorNoteNav');
+        const slider = document.getElementById('authorNoteSlider');
+        
+        try {
+            // 모든 노트 파일들을 병렬로 로드
+            const notePromises = [
+                fetch('note1.txt').then(res => res.ok ? res.text() : null),
+                fetch('note2.txt').then(res => res.ok ? res.text() : null)
+            ];
+            
+            const noteContents = await Promise.all(notePromises);
+            this.noteState.notes = noteContents.filter(content => content !== null);
+            
+            if (this.noteState.notes.length === 0) {
+                throw new Error('노트 파일을 찾을 수 없습니다.');
+            }
+            
+            // 슬라이드 컨테이너 생성
+            this.setupSlideContainer();
+            
+            // 네비게이션 표시 (2개 이상일 때만)
+            if (this.noteState.notes.length > 1) {
+                navContainer.style.display = 'flex';
+                this.updateNavigation();
+            }
+            
+            // 첫 번째 슬라이드 표시
+            this.showSlide(0);
+            
+            // 터치 이벤트 설정
+            this.setupTouchEvents();
+            
+        } catch (error) {
+            console.error('작가노트 로드 오류:', error);
+            contentContainer.innerHTML = `
+                <div class="guestbook-error">
+                    <p>작가노트를 불러오는 중 오류가 발생했습니다.</p>
+                    <button onclick="FloatingActions.loadAuthorNote()" class="retry-btn">다시 시도</button>
+                </div>
+            `;
+        }
+    },
+
+    // 슬라이드 컨테이너 설정
+    setupSlideContainer: function() {
+        const slider = document.getElementById('authorNoteSlider');
+        const slidesHTML = this.noteState.notes.map((content, index) => {
+            const formattedContent = content
+                .split('\n\n')
+                .map(paragraph => paragraph.trim())
+                .filter(paragraph => paragraph.length > 0)
+                .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+            
+            return `
+                <div class="author-note-slide" data-slide="${index}">
+                    <div class="author-note-text">
+                        ${formattedContent}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        slider.innerHTML = `
+            <div class="author-note-slides-container" id="slidesContainer">
+                ${slidesHTML}
+            </div>
+            <style>
+                .floating-author-note .guestbook-content {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                }
+                
+                .author-note-slider {
+                    position: relative;
+                    overflow-x: hidden;
+                    overflow-y: auto;
+                    min-height: 300px;
+                    flex: 1;
+                    /* 스크롤바 스타일링 */
+                    scrollbar-width: thin;
+                    scrollbar-color: var(--text-secondary) transparent;
+                }
+                
+                /* 웹킷 기반 브라우저 스크롤바 */
+                .author-note-slider::-webkit-scrollbar {
+                    width: 6px;
+                    background: transparent;
+                }
+                
+                .author-note-slider::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                
+                .author-note-slider::-webkit-scrollbar-thumb {
+                    background: var(--text-secondary);
+                    border-radius: 3px;
+                    opacity: 0.5;
+                }
+                
+                .author-note-slider::-webkit-scrollbar-thumb:hover {
+                    background: var(--text-primary);
+                    opacity: 0.8;
+                }
+                
+                /* 스크롤바를 오버레이로 만들기 */
+                .author-note-slider {
+                    scrollbar-gutter: stable;
+                }
+                
+                /* Firefox에서 스크롤바 오버레이 효과 */
+                @supports (scrollbar-width: thin) {
+                    .author-note-slider {
+                        scrollbar-width: thin;
+                        scrollbar-color: rgba(var(--text-secondary-rgb, 128, 128, 128), 0.5) transparent;
+                    }
+                }
+                
+                /* 스크롤바가 컨텐츠 위에 오도록 설정 */
+                .author-note-slider::-webkit-scrollbar {
+                    width: 6px;
+                    background: transparent;
+                    position: absolute;
+                    z-index: 999;
+                }
+                
+                .author-note-slider::-webkit-scrollbar-corner {
+                    background: transparent;
+                }
+                
+                .author-note-slides-container {
+                    display: flex;
+                    transition: transform 0.3s ease;
+                    width: ${this.noteState.notes.length * 100}%;
+                }
+                
+                .author-note-slide {
+                    width: ${100 / this.noteState.notes.length}%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 1rem;
+                    flex-shrink: 0;
+                }
+                
+                .author-note-text {
+                    text-align: center;
+                    font-size: 0.95rem;
+                    line-height: 1.6;
+                    max-width: 90%;
+                }
+                
+                .author-note-text p {
+                    margin-bottom: 1rem;
+                }
+                
+                .author-note-text p:last-child {
+                    margin-bottom: 0;
+                }
+                
+                .author-note-nav {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 0.75rem 1rem;
+                    border-top: 1px solid var(--border-color);
+                    background: var(--bg-secondary);
+                    margin-top: auto;
+                }
+                
+                .note-nav-btn {
+                    background: none;
+                    border: none;
+                    color: var(--text-secondary);
+                    cursor: pointer;
+                    padding: 0.5rem;
+                    border-radius: 4px;
+                    transition: all 0.3s ease;
+                }
+                
+                .note-nav-btn:hover {
+                    background: var(--bg-secondary);
+                    color: var(--text-primary);
+                }
+                
+                .note-nav-btn:disabled {
+                    opacity: 0.3;
+                    cursor: default;
+                }
+                
+                .note-indicators {
+                    display: flex;
+                    gap: 0.5rem;
+                }
+                
+                .note-indicator {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background: var(--text-secondary);
+                    opacity: 0.3;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                
+                .note-indicator.active {
+                    opacity: 1;
+                    background: var(--accent-color);
+                }
+            </style>
+        `;
+    },
+
+    // 슬라이드 표시
+    showSlide: function(slideIndex) {
+        const slidesContainer = document.getElementById('slidesContainer');
+        if (!slidesContainer) return;
+        
+        this.noteState.currentSlide = Math.max(0, Math.min(slideIndex, this.noteState.notes.length - 1));
+        const translateX = -(this.noteState.currentSlide * (100 / this.noteState.notes.length));
+        
+        slidesContainer.style.transform = `translateX(${translateX}%)`;
+        this.updateNavigation();
+    },
+
+    // 네비게이션 업데이트
+    updateNavigation: function() {
+        const prevBtn = document.getElementById('prevNoteBtn');
+        const nextBtn = document.getElementById('nextNoteBtn');
+        const indicators = document.getElementById('noteIndicators');
+        
+        // 버튼 상태 업데이트
+        if (prevBtn) prevBtn.disabled = this.noteState.currentSlide === 0;
+        if (nextBtn) nextBtn.disabled = this.noteState.currentSlide === this.noteState.notes.length - 1;
+        
+        // 인디케이터 업데이트
+        if (indicators) {
+            const indicatorsHTML = this.noteState.notes.map((_, index) => 
+                `<div class="note-indicator ${index === this.noteState.currentSlide ? 'active' : ''}" 
+                      onclick="FloatingActions.goToSlide(${index})"></div>`
+            ).join('');
+            indicators.innerHTML = indicatorsHTML;
+        }
+    },
+
+    // 이전 슬라이드
+    previousNote: function() {
+        if (this.noteState.currentSlide > 0) {
+            this.showSlide(this.noteState.currentSlide - 1);
+        }
+    },
+
+    // 다음 슬라이드
+    nextNote: function() {
+        if (this.noteState.currentSlide < this.noteState.notes.length - 1) {
+            this.showSlide(this.noteState.currentSlide + 1);
+        }
+    },
+
+    // 특정 슬라이드로 이동
+    goToSlide: function(slideIndex) {
+        this.showSlide(slideIndex);
+    },
+
+    // 터치 이벤트 설정
+    setupTouchEvents: function() {
+        const slider = document.getElementById('authorNoteSlider');
+        if (!slider) return;
+        
+        slider.addEventListener('touchstart', (e) => {
+            this.noteState.touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        slider.addEventListener('touchend', (e) => {
+            this.noteState.touchEndX = e.changedTouches[0].screenX;
+            this.handleSwipe();
+        });
+        
+        // 마우스 드래그도 지원
+        let isMouseDown = false;
+        slider.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            this.noteState.touchStartX = e.clientX;
+        });
+        
+        slider.addEventListener('mousemove', (e) => {
+            if (!isMouseDown) return;
+            e.preventDefault();
+        });
+        
+        slider.addEventListener('mouseup', (e) => {
+            if (!isMouseDown) return;
+            isMouseDown = false;
+            this.noteState.touchEndX = e.clientX;
+            this.handleSwipe();
+        });
+    },
+
+    // 스와이프 처리
+    handleSwipe: function() {
+        const swipeThreshold = 50;
+        const swipeDistance = this.noteState.touchStartX - this.noteState.touchEndX;
+        
+        if (Math.abs(swipeDistance) > swipeThreshold) {
+            if (swipeDistance > 0) {
+                // 왼쪽 스와이프 - 다음 슬라이드
+                this.nextNote();
+            } else {
+                // 오른쪽 스와이프 - 이전 슬라이드
+                this.previousNote();
+            }
         }
     },
 
@@ -817,9 +1248,11 @@ const FloatingActions = {
     refresh: function() {
         const existingStack = document.getElementById('floatingActionStack');
         const existingGuestbook = document.getElementById('floatingGuestbook');
+        const existingAuthorNote = document.getElementById('floatingAuthorNote');
         
         if (existingStack) existingStack.remove();
         if (existingGuestbook) existingGuestbook.remove();
+        if (existingAuthorNote) existingAuthorNote.remove();
         
         this.init();
     },
@@ -840,14 +1273,44 @@ const FloatingActions = {
     }
 };
 
+// 페이지별 설정 결정
+function getPageSpecificConfig() {
+    const currentPage = window.location.pathname;
+    const isIndexPage = currentPage === '/' || currentPage.endsWith('/index.html') || currentPage.endsWith('/');
+    
+    return {
+        showEditor: true,
+        showGuestbook: true,
+        showAuthorNote: isIndexPage, // index 페이지에서만 작가노트 표시
+        autoInit: true
+    };
+}
+
 // 자동 초기화 (페이지 로드 후)
 document.addEventListener('DOMContentLoaded', function() {
     if (FloatingActions.config.autoInit) {
-        FloatingActions.init();
+        const pageConfig = getPageSpecificConfig();
+        FloatingActions.init(pageConfig);
     }
 });
 
 // 호환성을 위한 전역 함수들 (기존 HTML에서 사용 중인 함수명)
+function toggleAuthorNote() {
+    FloatingActions.toggleAuthorNote();
+}
+
+function previousNote() {
+    FloatingActions.previousNote();
+}
+
+function nextNote() {
+    FloatingActions.nextNote();
+}
+
+function goToSlide(slideIndex) {
+    FloatingActions.goToSlide(slideIndex);
+}
+
 function toggleGuestbook() {
     FloatingActions.toggleGuestbook();
 }
