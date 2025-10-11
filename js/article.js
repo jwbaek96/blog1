@@ -221,6 +221,25 @@ class ArticleApp {
                 const postId = card.dataset.postId;
                 this.openPostDetail(postId);
             });
+
+            // 카드에서 마우스가 벗어나면 액션 메뉴 닫기
+            card.addEventListener('mouseleave', (e) => {
+                const postActions = card.querySelector('.post-actions');
+                const postActionsMenu = card.querySelector('.post-actions-menu');
+                
+                if (postActions) postActions.classList.remove('active');
+                if (postActionsMenu) postActionsMenu.classList.remove('active');
+            });
+        });
+
+        // 액션 메뉴 외부 클릭 시 메뉴 닫기
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.post-actions')) {
+                const activeMenus = document.querySelectorAll('.post-actions-menu.active');
+                const activeActions = document.querySelectorAll('.post-actions.active');
+                activeMenus.forEach(menu => menu.classList.remove('active'));
+                activeActions.forEach(action => action.classList.remove('active'));
+            }
         });
     }
 
@@ -266,10 +285,40 @@ class ArticleApp {
             `<a href="?tag=${encodeURIComponent(tag)}" class="post-tag" onclick="event.stopPropagation()">${tag}</a>`
         ).join('');
 
+        // 더보기 버튼과 액션 메뉴 HTML (로그인 상태에서만 표시)
+        const isLoggedIn = window.AuthManager && window.AuthManager.isLoggedIn();
+        const actionsHTML = isLoggedIn ? `
+            <div class="post-actions">
+                <button class="post-more-btn" onclick="event.stopPropagation(); this.parentElement.classList.toggle('active'); this.parentElement.querySelector('.post-actions-menu').classList.toggle('active')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="12" cy="5" r="1"></circle>
+                        <circle cx="12" cy="19" r="1"></circle>
+                    </svg>
+                </button>
+                <div class="post-actions-menu">
+                    <button class="post-action-btn edit-btn" onclick="event.stopPropagation(); app.editPost('${post.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m18 2 4 4-14 14H4v-4L18 2z"></path>
+                        </svg>
+                        수정
+                    </button>
+                    <button class="post-action-btn delete-btn" onclick="event.stopPropagation(); app.deletePost('${post.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3,6 5,6 21,6"></polyline>
+                            <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1 2-2h4a2,2 0 0,1 2,2v2"></path>
+                        </svg>
+                        삭제
+                    </button>
+                </div>
+            </div>
+        ` : '';
+
         if (hasThumbnail) {
             // 썸네일이 있는 경우: 배경 이미지 카드
             return `
                 <article class="post-card post-card-with-image" data-post-id="${post.id}" style="background-image: url('${post.thumbnail}')">
+                    ${actionsHTML}
                     <div class="post-card-overlay">
                         <div class="post-card-content">
                             <div class="post-card-meta">
@@ -294,6 +343,7 @@ class ArticleApp {
             // 썸네일이 없는 경우: 기본 카드
             return `
                 <article class="post-card post-card-no-image" data-post-id="${post.id}">
+                    ${actionsHTML}
                     <div class="post-card-content">
                         <div class="post-card-tags">
                             ${tagsHTML}
@@ -545,6 +595,75 @@ class ArticleApp {
     }
 
     /**
+     * Edit post
+     * @param {string} postId - Post ID to edit
+     */
+    editPost(postId) {
+        console.log('✏️ Editing article post:', postId);
+        
+        // 인증 확인
+        if (!window.AuthManager || !window.AuthManager.isLoggedIn()) {
+            showToast('수정하려면 로그인이 필요합니다', 'error');
+            return;
+        }
+        
+        // 에디터 페이지로 이동 (수정 모드)
+        window.location.href = `editor.html?edit=${encodeURIComponent(postId)}`;
+    }
+
+    /**
+     * Delete post
+     * @param {string} postId - Post ID to delete
+     */
+    async deletePost(postId) {
+        console.log('🗑️ Deleting article post:', postId);
+        
+        // 인증 확인
+        if (!window.AuthManager || !window.AuthManager.isLoggedIn()) {
+            showToast('삭제하려면 로그인이 필요합니다', 'error');
+            return;
+        }
+        
+        const post = this.allPosts.find(p => p.id === postId || String(p.id) === String(postId));
+        if (!post) {
+            showToast('아티클을 찾을 수 없습니다', 'error');
+            return;
+        }
+        
+        // 확인 다이얼로그
+        const confirmed = confirm(`"${post.title}" 아티클을 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`);
+        if (!confirmed) {
+            return;
+        }
+        
+        try {
+            // 로딩 상태 표시
+            showToast('아티클을 삭제하는 중...', 'info');
+            
+            // Google Sheets에서 삭제
+            await window.SheetsAPI.deletePost(postId);
+            
+            // 로컬 데이터에서 제거
+            this.allPosts = this.allPosts.filter(p => p.id !== postId && String(p.id) !== String(postId));
+            this.filterPosts();
+            this.renderPage();
+            
+            showToast('아티클이 삭제되었습니다', 'success');
+            
+        } catch (error) {
+            console.error('❌ Delete error:', error);
+            showToast('아티클 삭제에 실패했습니다', 'error');
+        }
+    }
+
+    /**
+     * Refresh post cards when login state changes
+     */
+    refreshPostCards() {
+        this.renderPosts();
+    }
+
+    /**
      * Show article statistics (for debugging)
      */
     showStats() {
@@ -579,6 +698,12 @@ function clearArticleCache() {
     clearCache();
     if (app) {
         app.refreshPosts();
+    }
+}
+
+function refreshArticleCards() {
+    if (app) {
+        app.refreshPostCards();
     }
 }
 

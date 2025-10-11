@@ -278,8 +278,9 @@ class BlogApp {
             `<a href="?tag=${encodeURIComponent(tag)}" class="post-tag" onclick="event.stopPropagation()">${tag}</a>`
         ).join('');
 
-        // 더보기 버튼과 액션 메뉴 HTML
-        const actionsHTML = `
+        // 더보기 버튼과 액션 메뉴 HTML (로그인 상태에서만 표시)
+        const isLoggedIn = window.AuthManager && window.AuthManager.isLoggedIn();
+        const actionsHTML = isLoggedIn ? `
             <div class="post-actions">
                 <button class="post-more-btn" onclick="event.stopPropagation(); this.parentElement.classList.toggle('active'); this.parentElement.querySelector('.post-actions-menu').classList.toggle('active')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -298,13 +299,13 @@ class BlogApp {
                     <button class="post-action-btn delete-btn" onclick="event.stopPropagation(); app.deletePost('${post.id}')">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3,6 5,6 21,6"></polyline>
-                            <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1 2-2h4a2,2 0 0,1 2,2v2"></path>
+                            <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1 2,2v2"></path>
                         </svg>
                         삭제
                     </button>
                 </div>
             </div>
-        `;
+        ` : '';
 
         if (hasThumbnail) {
             // 썸네일이 있는 경우: 배경 이미지 카드
@@ -638,6 +639,13 @@ class BlogApp {
     }
 
     /**
+     * Refresh post cards when login state changes
+     */
+    refreshPostCards() {
+        this.renderPosts();
+    }
+
+    /**
      * Show blog statistics (for debugging)
      */
     showStats() {
@@ -665,6 +673,12 @@ if (typeof window !== 'undefined') {
 function refreshBlog() {
     if (app) {
         app.refreshPosts();
+    }
+}
+
+function refreshBlogCards() {
+    if (app) {
+        app.refreshPostCards();
     }
 }
 
