@@ -161,6 +161,8 @@ function doPost(e) {
     // Check request type
     if (requestData.action === 'savePost') {
       return handlePostSave(requestData);
+    } else if (requestData.action === 'deletePost') {
+      return handleDeletePost(requestData);
     } else if (requestData.action === 'addGuestbook') {
       return handleAddGuestbook(requestData);
     } else if (requestData.action === 'deleteGuestbook') {
@@ -335,6 +337,71 @@ function handlePostSave(requestData) {
     
   } catch (error) {
     console.error('❌ Post save error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
+}
+
+/**
+ * Handle post delete requests
+ */
+function handleDeletePost(requestData) {
+  try {
+    console.log('🗑️ ===== POST DELETE REQUEST RECEIVED =====');
+    console.log('📥 Full request data:', JSON.stringify(requestData, null, 2));
+    
+    const postId = requestData.postId;
+    
+    if (!postId) {
+      throw new Error('Post ID is required for deletion');
+    }
+    
+    // Get spreadsheet
+    const spreadsheet = getSpreadsheet();
+    const sheet = spreadsheet.getActiveSheet();
+    
+    // Find the post by ID
+    const dataRange = sheet.getDataRange();
+    const values = dataRange.getValues();
+    
+    let targetRowIndex = -1;
+    for (let i = 1; i < values.length; i++) { // Skip header row
+      const row = values[i];
+      const rowId = row[0];
+      
+      // Check if this is the target post
+      if (rowId == postId) {
+        targetRowIndex = i + 1; // Convert to 1-based index for Google Sheets
+        break;
+      }
+    }
+    
+    if (targetRowIndex === -1) {
+      throw new Error('Post not found with ID: ' + postId);
+    }
+    
+    // Delete the row
+    sheet.deleteRow(targetRowIndex);
+    
+    console.log(`✅ Post deleted successfully: ID ${postId}`);
+    
+    const response = {
+      success: true,
+      postId: postId,
+      message: 'Post deleted successfully',
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(response);
+    
+  } catch (error) {
+    console.error('❌ Post delete error:', error.toString());
     
     const errorResponse = {
       success: false,

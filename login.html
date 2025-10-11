@@ -40,18 +40,15 @@
         }
         button {
             padding: 0.75rem;
-            background: #000000;
+            background: #007bff;
             color: white;
             border: none;
             border-radius: 4px;
             font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
         button:hover {
-            background: #252525;
-            transform: translateY(-2px);
-            
+            background: #0056b3;
         }
         button:disabled {
             background: #ccc;
@@ -67,46 +64,12 @@
             text-align: center;
             margin-top: 0.5rem;
         }
-        
-        .back {
-            margin-bottom: 1rem;
-            width: 100%;
-            overflow: visible;
-        }
-        .back a {
-            text-decoration: none;
-            color: #000;
-            font-size: 0.9rem;
-            width: 100%;
-            display: inline-block;
-            transition: all 0.3s ease;
-        }
-        .back a:hover {
-            transform: translateX(-3px);
-        }
-        
-        .admin-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 1rem;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <!-- 로그인 폼 (로그인 안된 경우) -->
         <div id="loginSection">
-            <div class="back">
-                <a href="index.html">
-                    ← back
-                </a>
-            </div>
             <h2>Admin Login</h2>
             <form class="login-form" id="loginForm">
                 <input type="password" id="password" placeholder="Enter admin password" required>
@@ -120,6 +83,7 @@
             <h2>Admin Panel</h2>
             <p>You are currently logged in as admin.</p>
             <div class="admin-actions">
+                <a href="editor.html" class="btn" style="background: #28a745; margin-bottom: 1rem; display: block; text-align: center; color: white; text-decoration: none;">Write New Post</a>
                 <button id="logoutBtn" class="btn" style="background: #dc3545;">Logout</button>
             </div>
             <div id="logoutMessage"></div>
@@ -160,11 +124,12 @@
                     localStorage.setItem('admin_token', result.token);
                     localStorage.setItem('admin_expires', result.expiresAt);
                     
-                    message.innerHTML = '<div class="success">Login successful! Redirecting to home...</div>';
+                    message.innerHTML = '<div class="success">Login successful!</div>';
                     
-                    // 1초 후 홈 화면으로 리다이렉트
+                    // 1초 후 로그아웃 패널로 전환
                     setTimeout(() => {
-                        window.location.href = 'index.html';
+                        checkLoginStatus();
+                        message.innerHTML = '';
                     }, 1000);
                 } else {
                     message.innerHTML = `<div class="error">${result.error}</div>`;

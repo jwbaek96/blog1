@@ -176,7 +176,7 @@ html {
     justify-content: center;
     border-radius: 12px;
     transition: all 0.3s ease-in;
-    animation: skillIconScale 10.5s infinite;
+    animation: skillIconScale 13.5s infinite;
     animation-delay: inherit;
 }
 
@@ -186,7 +186,7 @@ html {
     object-fit: contain;
     filter: saturate(0);
     transition: filter 0.3s ease-in;
-    animation: skillIconFilter 10.5s infinite;
+    animation: skillIconFilter 13.5s infinite;
     animation-delay: inherit;
 }
 
@@ -504,10 +504,10 @@ footer {
     line-height: 1.5;
 }
 
-/* .footer-bottom p:first-child {
-    font-weight: 600;
-    color: #2d3436;
-    } */
+.tologinpage{
+    text-decoration: none;
+    color: #636e72;
+}
     
 @media (max-width: 1100px) {
     .about-text{padding: 2rem 2rem;}

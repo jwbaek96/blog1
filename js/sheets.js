@@ -340,13 +340,22 @@ class SheetsAPI {
      */
     getAllTags(posts) {
         const tagSet = new Set();
+        let hasUntaggedPosts = false;
         
         posts.forEach(post => {
             // post.tags가 배열인지 확인
-            if (Array.isArray(post.tags)) {
+            if (Array.isArray(post.tags) && post.tags.length > 0) {
                 post.tags.forEach(tag => tagSet.add(tag));
+            } else {
+                // 태그가 없는 포스트가 있으면 미분류 태그 추가
+                hasUntaggedPosts = true;
             }
         });
+        
+        // 태그가 없는 포스트가 있으면 "미분류" 태그 추가
+        if (hasUntaggedPosts) {
+            tagSet.add('미분류');
+        }
         
         return Array.from(tagSet).sort();
     }
@@ -359,6 +368,13 @@ class SheetsAPI {
      */
     filterByTag(posts, tag) {
         if (!tag) return posts;
+        
+        // "미분류" 태그로 필터링하는 경우
+        if (tag === '미분류') {
+            return posts.filter(post => 
+                !Array.isArray(post.tags) || post.tags.length === 0
+            );
+        }
         
         return posts.filter(post => 
             Array.isArray(post.tags) && post.tags.includes(tag.toLowerCase())
@@ -424,7 +440,42 @@ class SheetsAPI {
         return await this.fetchPosts();
     }
 
-
+    /**
+     * Delete a post
+     * @param {string} postId - Post ID to delete
+     * @returns {Promise<Object>} Delete result
+     */
+    async deletePost(postId) {
+        try {
+            console.log('🗑️ Deleting post ID:', postId);
+            
+            const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}`;
+            
+            const response = await fetch(appsScriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'deletePost',
+                    postId: postId
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to delete post');
+            }
+            
+            console.log('✅ Post deleted successfully:', postId);
+            return result;
+            
+        } catch (error) {
+            console.error('❌ Error deleting post:', error);
+            throw error;
+        }
+    }
 
     /**
      * Get posts statistics  

@@ -42,208 +42,8 @@
 
     <!-- Icon meta js -->
     <script src="js/head-meta.js"></script>
-    
-    <!-- PWA Install Popup Styles -->
-    <style>
-        .pwa-install-popup {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        .pwa-popup-content {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 400px;
-            width: 90%;
-            max-height: 90vh;
-            overflow: hidden;
-            animation: slideUp 0.3s ease-out;
-        }
-        
-        .pwa-popup-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.5rem;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .pwa-app-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .pwa-app-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .pwa-app-details h3 {
-            margin: 0;
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #2d3436;
-        }
-        
-        .pwa-app-details p {
-            margin: 0.25rem 0 0 0;
-            font-size: 0.9rem;
-            color: #636e72;
-        }
-        
-        .pwa-close-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: #f8f9fa;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            color: #636e72;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-        
-        .pwa-close-btn:hover {
-            background: #e9ecef;
-            color: #2d3436;
-        }
-        
-        .pwa-popup-body {
-            padding: 1.5rem;
-        }
-        
-        .pwa-popup-body p {
-            margin: 0 0 1.5rem 0;
-            color: #636e72;
-            line-height: 1.5;
-        }
-        
-        .pwa-popup-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        
-        .pwa-install-btn {
-            background: #2d3436;
-            color: white;
-            border: none;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-        }
-        
-        .pwa-install-btn:hover {
-            background: #636e72;
-            transform: translateY(-1px);
-        }
-        
-        .pwa-later-btn {
-            background: transparent;
-            color: #636e72;
-            border: 1px solid #dee2e6;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .pwa-later-btn:hover {
-            background: #f8f9fa;
-            border-color: #adb5bd;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideUp {
-            from { 
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .pwa-popup-content {
-                margin: 1rem;
-                width: calc(100% - 2rem);
-            }
-            
-            .pwa-popup-header {
-                padding: 1rem;
-            }
-            
-            .pwa-popup-body {
-                padding: 1rem;
-            }
-            
-            .pwa-app-icon {
-                width: 40px;
-                height: 40px;
-            }
-        }
-    </style>
 </head>
 <body>
-    <!-- PWA Install Popup -->
-    <div id="pwaInstallPopup" class="pwa-install-popup" style="display: none;">
-        <div class="pwa-popup-content">
-            <div class="pwa-popup-header">
-                <div class="pwa-app-info">
-                    <img src="./assets/Vector.png" alt="JW.BAEK" class="pwa-app-icon">
-                    <div class="pwa-app-details">
-                        <h3>JW.BAEK</h3>
-                        <p>앱으로 더 편리하게 이용하세요</p>
-                    </div>
-                </div>
-                <button class="pwa-close-btn" onclick="closePWAPopup()">&times;</button>
-            </div>
-            <div class="pwa-popup-body">
-                <p>홈 화면에 추가하면 네이티브 앱처럼 빠르고 편리하게 사용할 수 있습니다.</p>
-                <div class="pwa-popup-buttons">
-                    <button class="pwa-install-btn" onclick="installPWA()">
-                        <i class="fa-solid fa-download"></i>
-                        다운받기
-                    </button>
-                    <button class="pwa-later-btn" onclick="hidePWAPopupToday()">
-                        오늘 하루 그만보기
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Header will be inserted by header-component.js -->
     <div id="header-placeholder"></div>
     
@@ -324,29 +124,6 @@
                     </div>
                     <span class="skill-name">VS Code</span>
                 </div>
-
-                <div class="skill-item">
-                    <div class="skill-icon">
-                        <img src="assets/icons/html.svg" alt="HTML" />
-                    </div>
-                    <span class="skill-name">HTML</span>
-                </div>
-
-                <div class="skill-item">
-                    <div class="skill-icon">
-                        <img src="assets/icons/css.svg" alt="CSS" />
-                    </div>
-                    <span class="skill-name">CSS</span>
-                </div>
-
-                <div class="skill-item">
-                    <div class="skill-icon">
-                        <img src="assets/icons/javascript.svg" alt="JavaScript" />
-                    </div>
-                    <span class="skill-name">JavaScript</span>
-                </div>
-
-                
                 
                 <div class="skill-item">
                     <div class="skill-icon">
@@ -468,7 +245,7 @@
             <div class="footer-bottom">
                 <!-- <span>jwbaek96@gmail.com</span> -->
                 <p>OA Design Studio</p>
-                <p>&copy; 2025 <a href="/login.html">JW.BAEK</a>. All rights reserved.</p>
+                <p>&copy; 2025 <a href="/login.html" class="tologinpage">JW.BAEK</a>. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -536,8 +313,5 @@
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/floating-actions.js"></script>
-    
-    <!-- PWA Install Script -->
-    <script src="js/pwa-install.js"></script>
 </body>
 </html>

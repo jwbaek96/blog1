@@ -114,7 +114,6 @@ class ArticleApp {
         this.renderPosts();
         this.renderPagination();
         this.updatePageTitle();
-        this.updatePostsCount();
     }
 
     /**
@@ -177,25 +176,7 @@ class ArticleApp {
         return counts;
     }
 
-    /**
-     * Update posts count display
-     */
-    updatePostsCount() {
-        const postsCountElement = document.getElementById('postsCount');
-        if (postsCountElement) {
-            const total = this.posts.length;
-            const currentStart = (this.currentPage - 1) * this.postsPerPage + 1;
-            const currentEnd = Math.min(this.currentPage * this.postsPerPage, total);
-            
-            if (total > 0) {
-                postsCountElement.innerHTML = `
-                    <span class="count-info">${currentStart}-${currentEnd} of ${total} articles</span>
-                `;
-            } else {
-                postsCountElement.innerHTML = `<span class="count-info">0 articles</span>`;
-            }
-        }
-    }
+
 
     /**
      * Render posts
@@ -435,7 +416,6 @@ class ArticleApp {
         this.currentPage = page;
         this.renderPosts();
         this.renderPagination();
-        this.updatePostsCount();
         scrollToElement('.posts', 100);
     }
 

@@ -224,7 +224,7 @@ header .container{max-width: 100%;margin: 0;}
 /* Main Content */
 .main {
     min-height: calc(100vh - 200px);
-    padding: var(--spacing-xl) 0;
+    /* padding: var(--spacing-xl) 0; */
 }
 
 /* Sidebar Tag Filters */
@@ -273,7 +273,8 @@ body {
 
 /* Post Card - Base Styles */
 .post-card {
-    overflow: hidden;
+    position: relative;
+    /* overflow: hidden; */
     transition: var(--transition);
     cursor: pointer;
 }
@@ -750,10 +751,6 @@ body {
 }
 
 @media (max-width: 480px) {
-    .main .container {
-        /* padding: 0 var(--spacing-md); */
-    }
-    
     .post-card-title {
         font-size: var(--font-size-lg);
     }
@@ -848,5 +845,114 @@ body {
     background: var(--border-color);
     transform: translateY(-1px);
     color: var(--text-primary);
+}
+
+/* Post Actions */
+.post-actions {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
+}
+
+.post-more-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+    transform: scale(0.8);
+}
+.post-more-btn:hover svg{transition: all 0.2s ease;}
+.post-more-btn:hover svg {transform: scale(1.08);}
+
+.post-card:hover .post-more-btn,
+.post-actions.active .post-more-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.post-actions-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem;
+    min-width: 120px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.post-actions-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.post-action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.post-action-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.post-action-btn.delete-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.post-action-btn svg {
+    flex-shrink: 0;
+}
+
+/* 썸네일이 있는 카드의 액션 버튼 스타일 조정 */
+.post-card-with-image .post-more-btn {
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+}
+
+.post-card-with-image .post-more-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+}
+
+/* 모바일에서 항상 표시 */
+@media (max-width: 768px) {
+    .post-more-btn {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    .post-actions-menu {
+        right: -0.5rem;
+        min-width: 140px;
+    }
 }
 
