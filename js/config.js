@@ -15,8 +15,8 @@ const CONFIG = {
     GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXRuG3cRUqGABTludaX-ddVgqUCsfJ0EV37n3IifaAbREUxSqa4rJYp64evCH15v9hC8O-YSNMtPMc/pub?output=csv', // 실제 공개된 시트 CSV URL
     
     // Blog Settings
-    BLOG_TITLE: 'My Google Sheets Blog',
-    BLOG_DESCRIPTION: '구글 스프레드시트를 데이터베이스로 활용하는 블로그',
+    BLOG_TITLE: 'JW.BAEK - Blog',
+    BLOG_DESCRIPTION: 'JW.BAEK의 블로그 - 창작 과정과 예술적 탐구를 공유합니다.',
     BLOG_AUTHOR: 'Your Name',
     BLOG_URL: 'https://blog1-mu-two.vercel.app/',
     

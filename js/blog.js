@@ -47,7 +47,8 @@ class BlogApp {
                 console.log('📋 Loaded posts:', this.allPosts.slice(0, 3).map(p => ({
                     id: p.id,
                     title: p.title,
-                    idType: typeof p.id
+                    idType: typeof p.id,
+                    content: p.content ? `${p.content.substring(0, 50)}...` : 'NO CONTENT'
                 })));
             } else {
                 console.warn('⚠️ No posts loaded! Check Google Sheets configuration.');
