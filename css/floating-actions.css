@@ -302,43 +302,6 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
-    .floating-action-stack {
-        bottom: 1rem;
-        right: 1rem;
-    }
-    
-    .floating-btn {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .floating-scroll-top-btn.visible {
-        opacity: 0.9;
-    }
-    
-    .floating-guestbook {
-        width: calc(100vw - 2rem);
-        right: -100vw;
-        bottom: 1rem;
-    }
-    
-    .floating-guestbook.active {
-        right: .5rem;
-    }
-    
-    /* 모바일에서 사이드바 열렸을 때는 숨김 */
-    .sidebar-open .floating-action-stack {
-        opacity: 0;
-        pointer-events: none;
-    }
-    
-    .sidebar-open .floating-guestbook {
-        opacity: 0;
-        pointer-events: none;
-    }
-}
 
 /* Guestbook Infinite Scroll */
 .guestbook-load-more {
@@ -469,4 +432,50 @@
     padding: 2rem 1rem;
     margin: auto;
     color: #666;
+}
+/* =========================== */
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .floating-action-stack {
+        bottom: 1rem;
+        right: 1rem;
+    }
+    
+    .floating-btn {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .floating-scroll-top-btn.visible {
+        opacity: 0.9;
+    }
+    
+    .floating-guestbook {
+        width: calc(100vw - 2rem);
+        right: -100vw;
+        bottom: 1rem;
+    }
+    
+    .floating-guestbook.active {
+        right: .5rem;
+    }
+    
+    /* 모바일에서 사이드바 열렸을 때는 숨김 */
+    .sidebar-open .floating-action-stack {
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .sidebar-open .floating-guestbook {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+@media (max-width: 480px) {
+    .floating-action-stack{gap: 0.5rem;}
+    .floating-btn {
+        width: 45px;
+        height: 45px;
+    }
 }

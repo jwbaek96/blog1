@@ -751,6 +751,7 @@ body {
 }
 
 @media (max-width: 480px) {
+    body.blog-page {padding-top: 38px;}
     .post-card-title {
         font-size: var(--font-size-lg);
     }

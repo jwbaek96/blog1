@@ -527,17 +527,15 @@ body.post-page .main {
 }
 
 @media (max-width: 480px) {
+    body.post-page {padding-top: 57px;}
     .main .container {
         padding: 0 1rem;
     }
+    .post-header{margin-bottom: 2rem;}
+    .post-article{padding: 0;}
+    .post-meta{margin-bottom: 0;}
+    .post-title {font-size: 1.75rem; margin-bottom: 0;}
     
-    .post-title {
-        font-size: 1.75rem;
-    }
-    
-    .nav-post {
-        padding: 1rem;
-    }
     
     .post-content h2 {
         font-size: 1.5rem;
@@ -546,6 +544,12 @@ body.post-page .main {
     .post-content h3 {
         font-size: 1.3rem;
     }
+
+    .post-share {margin-bottom: 1rem;}
+
+    .post-navigation{margin: 1.5rem 0 2rem 0;}
+    .nav-post {padding: .2rem;}
+    .nav-label{display: inline-block;width: 100%;font-size: 0.7rem;margin: 0;}
 }
 
 /* Dark mode support */
