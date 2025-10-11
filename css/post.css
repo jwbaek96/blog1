@@ -41,7 +41,7 @@ body.post-page .main {
 
 /* Back to Blog Button */
 .back-to-blog {
-    padding: 2rem 0 1rem;
+    padding: 1rem 0 1rem;
 }
 
 .back-btn {
@@ -212,6 +212,7 @@ body.post-page .main {
 /* Post Body */
 .post-body {
     margin-bottom: 4rem;
+    min-height: 150px;
 }
 
 .post-content {
@@ -286,10 +287,9 @@ body.post-page .main {
 }
 
 /* Post Footer */
-.post-footer {
+/* .post-footer {
     padding-top: 3rem;
-    /* border-top: 1px solid var(--border-color); */
-}
+} */
 
 /* Share Buttons */
 .post-share {
@@ -531,19 +531,13 @@ body.post-page .main {
     .main .container {
         padding: 0 1rem;
     }
-    .post-header{margin-bottom: 2rem;}
+    .post-header{margin-bottom: 1.5rem; padding-bottom: 1.5rem;}
     .post-article{padding: 0;}
     .post-meta{margin-bottom: 0;}
     .post-title {font-size: 1.75rem; margin-bottom: 0;}
     
-    
-    .post-content h2 {
-        font-size: 1.5rem;
-    }
-    
-    .post-content h3 {
-        font-size: 1.3rem;
-    }
+    .post-content h2 {font-size: 1.5rem;}
+    .post-content h3 {font-size: 1.3rem;}
 
     .post-share {margin-bottom: 1rem;}
 

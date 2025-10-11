@@ -319,15 +319,10 @@ class BlogApp {
                                 <span class="post-date">${formatDate(post.date)}</span>
                             </div>
                             
-                            <h2 class="post-card-title">
-                                ${post.title}
-                            </h2>
-                            
+                            <h2 class="post-card-title">${post.title}</h2>
                             <p class="post-card-excerpt">${post.excerpt || '내용 미리보기가 없습니다.'}</p>
                             
-                            <div class="post-card-tags">
-                                ${tagsHTML}
-                            </div>
+                            <div class="post-card-tags">${tagsHTML}</div>
                         </div>
                     </div>
                 </article>
@@ -338,19 +333,14 @@ class BlogApp {
                 <article class="post-card post-card-no-image" data-post-id="${post.id}">
                     ${actionsHTML}
                     <div class="post-card-content">
-                        <div class="post-card-tags">
-                            ${tagsHTML}
-                        </div>
-                        
-                        <h2 class="post-card-title">
-                        ${post.title}
-                        </h2>
-                        <p class="post-card-excerpt">${post.excerpt || '내용 미리보기가 없습니다.'}</p>
                         <div class="post-card-meta">
                             <span class="post-date">${formatDate(post.date)}</span>
                         </div>
+
+                        <h2 class="post-card-title">${post.title}</h2>
+                        <p class="post-card-excerpt">${post.excerpt || '내용 미리보기가 없습니다.'}</p>
                         
-                        
+                        <div class="post-card-tags">${tagsHTML}</div>
                     </div>
                 </article>
                 `;
