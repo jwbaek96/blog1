@@ -144,6 +144,10 @@
     .notice-link:hover {
         color: #ffffff;
     }
+
+    .empty-state h2 {
+        font-size: 1rem;
+    }
 }
 
 
