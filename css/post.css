@@ -388,11 +388,15 @@ body.post-page .main {
 }
 .nav-post:hover {background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);}
 
-.nav-post:first-child{border-top: 1px solid var(--text-primary); border-bottom: 1px solid var(--border-color);}
-.nav-post:last-child{border-bottom: 1px solid var(--text-primary);}
+.nav-post:first-child{
+    text-align: left; margin-right: auto;
+    border-top: 1px solid var(--text-primary); border-bottom: 1px solid var(--border-color);}
+.nav-post:last-child{
+    text-align: right; margin-left: auto;
+    border-bottom: 1px solid var(--text-primary);}
 
-.nav-prev {text-align: left;}
-.nav-next {text-align: right;margin-left: auto;}
+/* .nav-prev {text-align: left;}
+.nav-next {text-align: right;margin-left: auto;} */
 
 .nav-label {
     font-size: 0.8rem;
