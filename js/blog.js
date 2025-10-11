@@ -265,7 +265,7 @@ class BlogApp {
         console.log('🃏 Rendering post card:', {
             id: post.id,
             title: post.title,
-            excerpt: post.excerpt,
+            excerpt: post.excerpt || 'NO EXCERPT',
             content: post.content ? `${post.content.substring(0, 50)}...` : 'NO CONTENT',
             contentLength: post.content ? post.content.length : 0
         });
@@ -322,7 +322,7 @@ class BlogApp {
                                 ${post.title}
                             </h2>
                             
-                            <p class="post-card-excerpt">${post.excerpt}</p>
+                            <p class="post-card-excerpt">${post.excerpt || '내용 미리보기가 없습니다.'}</p>
                             
                             <div class="post-card-tags">
                                 ${tagsHTML}
@@ -344,7 +344,7 @@ class BlogApp {
                         <h2 class="post-card-title">
                         ${post.title}
                         </h2>
-                        <p class="post-card-excerpt">${post.excerpt}</p>
+                        <p class="post-card-excerpt">${post.excerpt || '내용 미리보기가 없습니다.'}</p>
                         <div class="post-card-meta">
                             <span class="post-date">${formatDate(post.date)}</span>
                         </div>

@@ -133,13 +133,26 @@ class SheetsAPI {
                 return null;
             }
 
+            // Debug: Check createExcerpt function and content
+            const rawContent = row.content || '';
+            const cleanedContent = this.cleanContent(rawContent);
+            const generatedExcerpt = createExcerpt(cleanedContent, 150);
+            
+            console.log('🔍 Excerpt generation debug:', {
+                hasCreateExcerpt: typeof createExcerpt,
+                rawContentLength: rawContent.length,
+                cleanedContentLength: cleanedContent.length,
+                generatedExcerpt: generatedExcerpt,
+                excerptType: typeof generatedExcerpt
+            });
+
             const post = {
                 id: parseInt(row.id) || Date.now(),
                 title: (row.title || '').trim() || 'Untitled',
                 date: this.parseDate(row.date),
                 author: CONFIG.BLOG_AUTHOR, // Google Sheets에 author 컬럼이 없으므로 기본값 사용
-                content: this.cleanContent(row.content || ''),
-                excerpt: createExcerpt(row.content || '', 150),
+                content: cleanedContent,
+                excerpt: generatedExcerpt || '내용 미리보기를 생성할 수 없습니다.',
                 thumbnail: this.processImageUrl(row.thumbnail || ''),
                 tags: this.processTags(row.tags || ''),
                 images: this.processImages(row.images || ''),
