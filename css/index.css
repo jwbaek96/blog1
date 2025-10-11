@@ -147,7 +147,7 @@ html {
     transform: translateY(0px);
     cursor: pointer;
     min-width: 120px;
-    animation: skillHover 13.5s infinite;
+    animation: skillHover 16.5s infinite;
 }
 
 .skill-item:nth-child(1) { animation-delay: 0s; }
@@ -176,7 +176,7 @@ html {
     justify-content: center;
     border-radius: 12px;
     transition: all 0.3s ease-in;
-    animation: skillIconScale 13.5s infinite;
+    animation: skillIconScale 16.5s infinite;
     animation-delay: inherit;
 }
 
@@ -186,7 +186,7 @@ html {
     object-fit: contain;
     filter: saturate(0);
     transition: filter 0.3s ease-in;
-    animation: skillIconFilter 13.5s infinite;
+    animation: skillIconFilter 16.5s infinite;
     animation-delay: inherit;
 }
 
@@ -201,30 +201,18 @@ html {
 
 /* Skill Hover Animation Keyframes */
 @keyframes skillHover {
-    0%, 25.7% {
-        transform: translateY(0);
-    }
-    7.1%, 14.3% {
-        transform: translateY(-8px);
-    }
+    0%, 15% {transform: translateY(0);}
+    5%, 10% {transform: translateY(-8px);}
 }
 
 @keyframes skillIconScale {
-    0%, 25.7% {
-        transform: scale(1);
-    }
-    7.1%, 14.3% {
-        transform: scale(1.08);
-    }
+    0%, 15% {transform: scale(1);}
+    5%, 10% {transform: scale(1.08);}
 }
 
 @keyframes skillIconFilter {
-    0%, 25.7% {
-        filter: saturate(0);
-    }
-    7.1%, 14.3% {
-        filter: none;
-    }
+    0%, 15% {filter: saturate(0);}
+    5%, 10% {filter: none;}
 }
 
 .skill-name {

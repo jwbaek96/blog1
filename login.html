@@ -40,7 +40,7 @@
         }
         button {
             padding: 0.75rem;
-            background: #007bff;
+            background: #000000;
             color: white;
             border: none;
             border-radius: 4px;
@@ -48,7 +48,7 @@
             cursor: pointer;
         }
         button:hover {
-            background: #0056b3;
+            background: #202020;
         }
         button:disabled {
             background: #ccc;
@@ -64,12 +64,30 @@
             text-align: center;
             margin-top: 0.5rem;
         }
+        .admin-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .back-to-home {
+            margin-bottom: 2rem;
+            width: 100%;
+            overflow: visible;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        .back-to-home:hover a{ transform: translateX(-3px);}
     </style>
 </head>
 <body>
     <div class="login-container">
         <!-- 로그인 폼 (로그인 안된 경우) -->
         <div id="loginSection">
+            <div class="back-to-home">
+                <a href="index.html" style="text-decoration: none; color: #000; transition: all 0.3s ease;">&larr; Back</a>
+            </div>
             <h2>Admin Login</h2>
             <form class="login-form" id="loginForm">
                 <input type="password" id="password" placeholder="Enter admin password" required>
@@ -117,7 +135,26 @@
                     body: JSON.stringify({ password })
                 });
                 
-                const result = await response.json();
+                // 응답 상태 확인
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // 응답 텍스트 확인 후 JSON 파싱
+                const responseText = await response.text();
+                
+                if (!responseText.trim()) {
+                    throw new Error('Empty response from server');
+                }
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (jsonError) {
+                    console.error('JSON parse error:', jsonError);
+                    console.error('Response text:', responseText);
+                    throw new Error('Invalid JSON response');
+                }
                 
                 if (result.success) {
                     // 토큰 저장
@@ -132,17 +169,16 @@
                         message.innerHTML = '';
                     }, 1000);
                 } else {
-                    message.innerHTML = `<div class="error">${result.error}</div>`;
+                    // 로그인 실패
+                    message.innerHTML = '<div class="error">Login failed. Please try again.</div>';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Login';
                 }
             } catch (error) {
                 console.error('Login error:', error);
                 message.innerHTML = '<div class="error">Login failed. Please try again.</div>';
-            } finally {
-                // 성공하지 않은 경우에만 버튼 상태 복원
-                if (!result?.success) {
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Login';
-                }
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
             }
         });
         
