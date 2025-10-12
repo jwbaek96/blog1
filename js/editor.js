@@ -938,8 +938,8 @@ function setupEditorButtons() {
                 tags: tags,
                 readTime: Math.max(1, Math.ceil(htmlToText(content).split(' ').length / 200)), // 읽는 시간 (사용 안함)
                 thumbnail: '', // 썸네일 (아직 미구현)
-                images: '', // 이미지 목록 (아직 미구현)
-                videos: '', // 비디오 목록 (아직 미구현)
+                images: getUploadedFilesByType('image'), // 업로드된 이미지 목록
+                videos: getUploadedFilesByType('video'), // 업로드된 비디오 목록
                 status: status
             };
             
@@ -1060,8 +1060,52 @@ function setupEditorButtons() {
 
 
 
+/**
+ * Get uploaded files by type
+ */
+function getUploadedFilesByType(fileType) {
+    if (!window.uploadedFiles || window.uploadedFiles.length === 0) {
+        return '';
+    }
+    
+    const filesOfType = window.uploadedFiles.filter(file => file.type === fileType);
+    return JSON.stringify(filesOfType);
+}
+
+/**
+ * Reset uploaded files list (call when creating new post)
+ */
+function resetUploadedFiles() {
+    window.uploadedFiles = [];
+}
+
+/**
+ * Load uploaded files from post data
+ */
+function loadUploadedFiles(postData) {
+    try {
+        window.uploadedFiles = [];
+        
+        if (postData.images) {
+            const images = JSON.parse(postData.images);
+            window.uploadedFiles.push(...images);
+        }
+        
+        if (postData.videos) {
+            const videos = JSON.parse(postData.videos);
+            window.uploadedFiles.push(...videos);
+        }
+    } catch (error) {
+        console.warn('Failed to load uploaded files:', error);
+        window.uploadedFiles = [];
+    }
+}
+
 // Export for global use
 if (typeof window !== 'undefined') {
     window.RichTextEditor = RichTextEditor;
     window.editor = editor;
+    window.getUploadedFilesByType = getUploadedFilesByType;
+    window.resetUploadedFiles = resetUploadedFiles;
+    window.loadUploadedFiles = loadUploadedFiles;
 }

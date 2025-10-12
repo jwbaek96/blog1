@@ -15,6 +15,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Google API Libraries -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+
     <!-- Icon meta js -->
     <script src="js/head-meta.js"></script>
     <!-- Auth js -->
@@ -105,6 +109,9 @@
                     
                     <button id="linkToggleBtn" onclick="toggleLink(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="링크">🔗</button>
                     
+                    <button id="imageUploadBtn" onclick="openImageUpload(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="이미지 업로드">📷</button>
+                    <button id="videoUploadBtn" onclick="openVideoUpload(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="비디오 업로드">🎥</button>
+                    
                     <div class="separator"></div>
                     
                     <button onclick="format('undo'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="실행 취소">↶</button>
@@ -185,6 +192,7 @@
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/drive-uploader.js"></script>
     <script src="js/upload.js"></script>
     <script src="js/editor.js"></script>
     
@@ -396,7 +404,136 @@
         document.addEventListener('DOMContentLoaded', () => {
             tagsInput = new TagsInput();
             window.tagsInput = tagsInput; // 전역 접근 가능하도록
+            
+            // Initialize uploaded files list for new post
+            resetUploadedFiles();
+        });
+
+        // Google Drive Upload Functions
+        function openImageUpload() {
+            document.getElementById('imageFileInput').click();
+        }
+
+        function openVideoUpload() {
+            document.getElementById('videoFileInput').click();
+        }
+
+        async function handleFileUpload(files, fileType) {
+            if (!files || files.length === 0) return;
+
+            const file = files[0];
+            
+            try {
+                // DriveUploader 인스턴스 생성
+                const uploader = new DriveUploader();
+                
+                // 파일 업로드 실행
+                const result = await uploader.uploadFile(file, fileType);
+                
+                if (result.success) {
+                    // 에디터에 업로드된 파일 삽입
+                    insertUploadedFile(result.url, file.name, fileType);
+                } else {
+                    alert('업로드 실패: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('업로드 중 오류가 발생했습니다.');
+            }
+        }
+
+        // Global variable to track uploaded files
+        window.uploadedFiles = window.uploadedFiles || [];
+
+        function insertUploadedFile(url, filename, fileType) {
+            if (!window.editor) return;
+
+            const editor = window.editor.editor;
+            
+            // Add to uploaded files list
+            const fileInfo = {
+                url: url,
+                filename: filename,
+                type: fileType,
+                uploadedAt: new Date().toISOString()
+            };
+            window.uploadedFiles.push(fileInfo);
+            
+            if (fileType === 'image') {
+                // 이미지 삽입
+                const img = `<img src="${url}" alt="${filename}" style="max-width: 100%; height: auto;">`;
+                document.execCommand('insertHTML', false, img);
+            } else if (fileType === 'video') {
+                // 비디오 삽입
+                const video = `<video controls style="max-width: 100%; height: auto;">
+                    <source src="${url}" type="${getMimeType(filename)}">
+                    <a href="${url}">${filename}</a>
+                </video>`;
+                document.execCommand('insertHTML', false, video);
+            }
+            
+            editor.focus();
+        }
+
+        function getMimeType(filename) {
+            const ext = filename.toLowerCase().split('.').pop();
+            const mimeTypes = {
+                'mp4': 'video/mp4',
+                'webm': 'video/webm',
+                'ogg': 'video/ogg',
+                'avi': 'video/x-msvideo',
+                'mov': 'video/quicktime',
+                'wmv': 'video/x-ms-wmv'
+            };
+            return mimeTypes[ext] || 'video/mp4';
+        }
+
+        // Drag and Drop functionality
+        function initializeDragAndDrop() {
+            const editor = document.getElementById('editor');
+            
+            // Drag over
+            editor.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                editor.classList.add('drag-over');
+            });
+            
+            // Drag leave
+            editor.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                editor.classList.remove('drag-over');
+            });
+            
+            // Drop
+            editor.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                editor.classList.remove('drag-over');
+                
+                const files = Array.from(e.dataTransfer.files);
+                
+                files.forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        handleFileUpload([file], 'image');
+                    } else if (file.type.startsWith('video/')) {
+                        handleFileUpload([file], 'video');
+                    } else {
+                        alert(`지원하지 않는 파일 형식입니다: ${file.name}`);
+                    }
+                });
+            });
+        }
+
+        // Initialize drag and drop when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDragAndDrop();
         });
     </script>
+
+    <!-- Hidden File Input Elements -->
+    <input type="file" id="imageFileInput" accept="image/*" style="display: none;" onchange="handleFileUpload(this.files, 'image')">
+    <input type="file" id="videoFileInput" accept="video/*" style="display: none;" onchange="handleFileUpload(this.files, 'video')">
 </body>
 </html>

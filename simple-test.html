@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google API 최소 테스트</title>
+</head>
+<body>
+    <h1>Google API 초기화 테스트</h1>
+    <div id="status">로딩 중...</div>
+    <button id="testBtn" onclick="testInit()">API 초기화 테스트</button>
+    
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        const CLIENT_ID = '201175895307-8au0ct74b8d78mlae58mdm7noddabjvm.apps.googleusercontent.com';
+        const API_KEY = 'AIzaSyAY4DHjJkDmVklkxXT3TXtorayCd3XPccI';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        
+        function testInit() {
+            document.getElementById('status').innerHTML = '⏳ 초기화 중...';
+            
+            gapi.load('client:auth2', async () => {
+                try {
+                    await gapi.client.init({
+                        apiKey: API_KEY,
+                        clientId: CLIENT_ID,
+                        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+                        scope: SCOPES
+                    });
+                    
+                    document.getElementById('status').innerHTML = '✅ 초기화 성공!';
+                    console.log('✅ Google API 초기화 성공');
+                    
+                } catch (error) {
+                    document.getElementById('status').innerHTML = '❌ 초기화 실패: ' + error.error;
+                    console.error('❌ Google API 초기화 실패:', error);
+                }
+            });
+        }
+        
+        // 페이지 로드시 현재 URL 표시
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('현재 URL:', window.location.href);
+            console.log('현재 Origin:', window.location.origin);
+        });
+    </script>
+</body>
+</html>

@@ -14,6 +14,12 @@ const CONFIG = {
     GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 실제 Google 스프레드시트 ID
     GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXRuG3cRUqGABTludaX-ddVgqUCsfJ0EV37n3IifaAbREUxSqa4rJYp64evCH15v9hC8O-YSNMtPMc/pub?output=csv', // 실제 공개된 시트 CSV URL
     
+    // Google Drive Settings
+    GOOGLE_DRIVE_FOLDER_ID: '1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb', // "Blog Data" 폴더 ID - 위에서 복사한 폴더 ID로 교체
+    GOOGLE_DRIVE_API_KEY: 'AIzaSyAY4DHjJkDmVklkxXT3TXtorayCd3XPccI', // Google Drive API 키 - 위에서 생성한 API 키로 교체
+    GOOGLE_API_KEY: 'AIzaSyAY4DHjJkDmVklkxXT3TXtorayCd3XPccI', // 테스트 파일 호환용 (GOOGLE_DRIVE_API_KEY와 동일)
+    GOOGLE_CLIENT_ID: '201175895307-8au0ct74b8d78mlae58mdm7noddabjvm.apps.googleusercontent.com', // Google OAuth Client ID - 위에서 생성한 클라이언트 ID로 교체
+    
     // Blog Settings
     BLOG_TITLE: 'JW.BAEK - Blog',
     BLOG_DESCRIPTION: 'JW.BAEK의 블로그 - 창작 과정과 예술적 탐구를 공유합니다.',
@@ -35,11 +41,25 @@ const CONFIG = {
     CACHE_KEY: 'blog_posts_cache',
     
     // Upload Settings
-    MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+    MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB (Google Drive 용)
+    MAX_IMAGE_SIZE: 10 * 1024 * 1024, // 10MB (이미지)
+    MAX_VIDEO_SIZE: 100 * 1024 * 1024, // 100MB (비디오)
     ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
-    ALLOWED_VIDEO_TYPES: ['video/mp4', 'video/webm', 'video/ogg'],
+    ALLOWED_VIDEO_TYPES: ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov'],
     IMAGE_MAX_WIDTH: 1920, // 리사이즈 최대 너비
     IMAGE_QUALITY: 0.85, // JPEG 압축 품질
+    
+    // Google Drive Upload Settings
+    DRIVE_FOLDER_STRUCTURE: {
+        ROOT_FOLDER: 'Blog Data',
+        USE_DATE_FOLDERS: true, // 연도/월별 폴더 생성 여부
+        THUMBNAIL_FOLDER: 'thumbnails',
+        TEMP_FOLDER: 'temp'
+    },
+    
+    // OAuth Scopes for Google Drive
+    GOOGLE_DRIVE_API_SCOPE: 'https://www.googleapis.com/auth/drive.file', // 파일 업로드 및 관리 권한
+    GOOGLE_SCOPES: ['https://www.googleapis.com/auth/drive.file'], // 배열 형태 (드라이브 업로더용)
     
     // UI Settings
     TOAST_DURATION: 3000, // 3초

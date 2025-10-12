@@ -120,6 +120,124 @@ body.editor {
     flex-direction: column;
     min-height: 0; /* flex item이 overflow 되도록 */
 }
+
+/* Upload Progress Styles */
+.upload-progress {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    min-width: 300px;
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #00d4ff);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+#progressText {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+/* Drive Authentication Modal */
+.drive-auth-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+}
+
+.drive-auth-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.drive-auth-content h3 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.drive-auth-content p {
+    margin-bottom: 1.5rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+.drive-auth-btn {
+    background: #4285f4;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.drive-auth-btn:hover {
+    background: #3367d6;
+}
+
+/* Drag and Drop Styles */
+.simple-editor.drag-over {
+    border: 2px dashed #007bff !important;
+    background-color: #f8f9ff !important;
+}
+
+.simple-editor.drag-over::before {
+    content: "파일을 여기에 드롭하세요";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 123, 255, 0.9);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Upload Button Styles */
+#imageUploadBtn, #videoUploadBtn {
+    font-size: 1.2rem;
+    padding: 8px 12px;
+}
+
+#imageUploadBtn:hover, #videoUploadBtn:hover {
+    background: #f0f0f0;
+}
 /* Tags Input Styles */
 .tags-container {
     border-bottom: 1px solid #dee2e6;

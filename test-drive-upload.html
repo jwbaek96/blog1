@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive 업로드 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .test-button:hover {
+            background: #0056b3;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        #testResults {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        
+        .file-input {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Drive 업로드 기능 테스트</h1>
+    
+    <div class="test-section">
+        <h2>1. 설정 확인</h2>
+        <button class="test-button" onclick="checkConfig()">설정 확인</button>
+        <div id="configStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Google API 인증</h2>
+        <button class="test-button" onclick="testAuthentication()">인증 테스트</button>
+        <div id="authStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 파일 업로드 테스트</h2>
+        <div class="file-input">
+            <label for="imageTest">이미지 파일 선택:</label>
+            <input type="file" id="imageTest" accept="image/*" onchange="testImageUpload(this.files)">
+        </div>
+        <div class="file-input">
+            <label for="videoTest">비디오 파일 선택:</label>
+            <input type="file" id="videoTest" accept="video/*" onchange="testVideoUpload(this.files)">
+        </div>
+        <div id="uploadStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. 폴더 구조 확인</h2>
+        <button class="test-button" onclick="checkFolderStructure()">폴더 구조 확인</button>
+        <div id="folderStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>테스트 결과</h2>
+        <div id="testResults">테스트를 시작하려면 위의 버튼들을 클릭하세요.</div>
+    </div>
+    
+    <script src="js/config.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="js/drive-uploader.js"></script>
+    
+    <script>
+        let testResults = [];
+        
+        function addTestResult(test, status, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            testResults.push(`[${timestamp}] ${test}: ${status} - ${message}`);
+            document.getElementById('testResults').textContent = testResults.join('\n');
+        }
+        
+        function showStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function checkConfig() {
+            addTestResult('설정 확인', '시작', '설정 파일 확인 중...');
+            
+            try {
+                if (!CONFIG) {
+                    throw new Error('CONFIG 객체가 없습니다.');
+                }
+                
+                const requiredConfigs = [
+                    'GOOGLE_CLIENT_ID',
+                    'GOOGLE_DRIVE_API_KEY',
+                    'GOOGLE_DRIVE_FOLDER_ID',
+                    'GOOGLE_DRIVE_API_SCOPE'
+                ];
+                
+                const missing = requiredConfigs.filter(key => !CONFIG[key] || CONFIG[key].includes('YOUR_'));
+                
+                if (missing.length > 0) {
+                    throw new Error(`누락된 설정: ${missing.join(', ')}`);
+                }
+                
+                addTestResult('설정 확인', '성공', '모든 필수 설정이 확인되었습니다.');
+                showStatus('configStatus', 'success', '✅ 설정이 올바르게 구성되었습니다.');
+                
+            } catch (error) {
+                addTestResult('설정 확인', '실패', error.message);
+                showStatus('configStatus', 'error', '❌ ' + error.message);
+            }
+        }
+        
+        async function testAuthentication() {
+            addTestResult('인증 테스트', '시작', 'Google API 인증 시작...');
+            showStatus('authStatus', 'info', '⏳ Google Drive 인증 중...');
+            
+            try {
+                const uploader = new DriveUploader();
+                const result = await uploader.authenticate();
+                
+                if (result.success) {
+                    addTestResult('인증 테스트', '성공', 'Google Drive 인증 완료');
+                    showStatus('authStatus', 'success', '✅ Google Drive 인증이 완료되었습니다.');
+                } else {
+                    addTestResult('인증 테스트', '실패', result.error);
+                    showStatus('authStatus', 'error', '❌ 인증 실패: ' + result.error);
+                }
+                
+            } catch (error) {
+                addTestResult('인증 테스트', '실패', error.message);
+                showStatus('authStatus', 'error', '❌ 인증 실패: ' + error.message);
+            }
+        }
+        
+        async function testImageUpload(files) {
+            if (!files || files.length === 0) return;
+            
+            const file = files[0];
+            addTestResult('이미지 업로드', '시작', `파일: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+            
+            try {
+                const uploader = new DriveUploader();
+                const result = await uploader.uploadFile(file, 'image');
+                
+                if (result.success) {
+                    addTestResult('이미지 업로드', '성공', `업로드 완료: ${result.url}`);
+                    showStatus('uploadStatus', 'success', '✅ 이미지 업로드 성공!');
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                addTestResult('이미지 업로드', '실패', error.message);
+                showStatus('uploadStatus', 'error', '❌ 업로드 실패: ' + error.message);
+            }
+        }
+        
+        async function testVideoUpload(files) {
+            if (!files || files.length === 0) return;
+            
+            const file = files[0];
+            addTestResult('비디오 업로드', '시작', `파일: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+            
+            try {
+                const uploader = new DriveUploader();
+                const result = await uploader.uploadFile(file, 'video');
+                
+                if (result.success) {
+                    addTestResult('비디오 업로드', '성공', `업로드 완료: ${result.url}`);
+                    showStatus('uploadStatus', 'success', '✅ 비디오 업로드 성공!');
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                addTestResult('비디오 업로드', '실패', error.message);
+                showStatus('uploadStatus', 'error', '❌ 업로드 실패: ' + error.message);
+            }
+        }
+        
+        async function checkFolderStructure() {
+            addTestResult('폴더 구조', '시작', '드라이브 폴더 구조 확인 중...');
+            
+            try {
+                const uploader = new DriveUploader();
+                await uploader.authenticate();
+                
+                // Get main folder
+                const mainFolder = await uploader.getTargetFolder('image');
+                addTestResult('폴더 구조', '정보', `메인 폴더 ID: ${mainFolder.id}`);
+                
+                // Check subfolders
+                const imageFolder = await uploader.getTargetFolder('image');
+                const videoFolder = await uploader.getTargetFolder('video');
+                
+                addTestResult('폴더 구조', '성공', `이미지 폴더: ${imageFolder.name}, 비디오 폴더: ${videoFolder.name}`);
+                showStatus('folderStatus', 'success', '✅ 폴더 구조가 올바르게 설정되었습니다.');
+                
+            } catch (error) {
+                addTestResult('폴더 구조', '실패', error.message);
+                showStatus('folderStatus', 'error', '❌ 폴더 확인 실패: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
