@@ -336,8 +336,8 @@ class BlogApp {
                         <div class="post-card-meta">
                             <span class="post-date">${formatDate(post.date)}</span>
                         </div>
-
                         <h2 class="post-card-title">${post.title}</h2>
+
                         <p class="post-card-excerpt">${post.excerpt || '내용 미리보기가 없습니다.'}</p>
                         
                         <div class="post-card-tags">${tagsHTML}</div>

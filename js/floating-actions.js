@@ -158,7 +158,7 @@ const FloatingActions = {
                             <button class="guestbook-submit" onclick="FloatingActions.submitGuestbookEntry()"><i class="fa-solid fa-arrow-up"></i></button>
                         
                             <div class="textarea-container" style="position: relative;">
-                            <textarea placeholder="Message" id="guestMessage" rows="2" maxlength="50" required></textarea>
+                            <textarea placeholder="Message for guestbook" id="guestMessage" rows="2" maxlength="50" required></textarea>
                             <div class="char-counter" id="charCounter" style="position: absolute; bottom: 10px; right: 8px; font-size: 0.75em; color: #888;">0/50</div>
                             </div>
                             <div class="name-input-container">
@@ -257,11 +257,26 @@ const FloatingActions = {
     validateInput: function(text, type = 'message') {
         // 메시지 금지어 목록
         const messageBannedWords = [
-            '섹스', 'ㅅㅅ', 'ㅗ', '시발', 'ㅅㅂ', "ㅅ ㅂ", '병신', 'ㅄ', '좆', 'ㅈ', '개새끼', '개새', '미친', '또라이',
-            '닥쳐', '닥쳐라', '꺼져', '꺼져라', '씨발놈', '씨발년', '병신년', '병신놈', '느금마', '느금애', '느금', 
-            '지랄', 'ㅈㄹ', 'ㅈ ㄹ', '존나', '존내', '좆같네', '좆같아', '좆같은', '개같네', '개같아', '개같은',
-            '씹새끼', '씹창', '씹할놈', '씹할년', '씨발',  '개새끼', '병신','좆', 'ㅈ', '미친', '또라이',
-            '닥쳐', '꺼져', '느금마', '지랄', '존나', '좆같네', '개같네', '씹창','바보',
+            '섹스', '섹', '섹!스', '섹@스', '섹$스', 'ㅅㅅ','ㅆㅅ','ㅆㅆ',
+            'ㅗ', 
+            '시발','시!발','시@발','시 발', 'ㅅㅂ', "ㅅ ㅂ", 
+            '씨발', '씨!발', '씨@발', '씨 발','ㅆㅂ', 'ㅆ ㅂ',
+            '씹새끼', '씹창', '씹할놈', '씹할년',
+            '병신', '병!신','병@신','병 신',
+            'ㅄ', 'ㅂㅅ', 'ㅂ!ㅅ', 'ㅂ@ㅅ', 'ㅂ ㅅ',
+            '좆', 'ㅈ',  '좆같네', '좆같아', '좆같은', 
+            '닥쳐', '닥쳐라', 
+            '꺼져','ㄲㅈ',
+            '느금', 
+            '애미',
+            '애비',
+            '지랄', 'ㅈㄹ', 'ㅈ ㄹ', '존나', '존내','개같네', '개같아', '개같은',
+            '개새끼', '병신','좆', 'ㅈ', '미친', '또라이',
+            '개새끼', '개새', '미친', '또라이',
+            '바보',
+            '고추', '꼬추', '보추','딸딸', '자위',
+            '자지',
+            '보지',
             // 영어 욕설들
             'fuck', 'shit', 'bitch', 'asshole', 'motherfucker', 'cocksucker'
         ];

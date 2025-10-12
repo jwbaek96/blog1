@@ -345,17 +345,16 @@ class ArticleApp {
                 <article class="post-card post-card-no-image" data-post-id="${post.id}">
                     ${actionsHTML}
                     <div class="post-card-content">
-                        <div class="post-card-tags">
-                            ${tagsHTML}
+                    
+                        <div class="post-card-meta">
+                        <span class="post-date">${formatDate(post.date)}</span>
                         </div>
-                        
                         <h2 class="post-card-title">
-                            ${post.title}
+                        ${post.title}
                         </h2>
                         <p class="post-card-excerpt">${post.excerpt}</p>
-                        <div class="post-card-meta">
-                            <span class="post-date">${formatDate(post.date)}</span>
-                            <span class="post-type">Article</span>
+                        <div class="post-card-tags">
+                            ${tagsHTML}
                         </div>
                     </div>
                 </article>
