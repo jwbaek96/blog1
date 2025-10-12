@@ -101,7 +101,7 @@ function handleGetPosts() {
         tags: row[5] || '',              // F: Tags
         images: row[6] || '',            // G: Images
         videos: row[7] || '',            // H: Videos
-        status: row[8] || 'draft'        // I: Status
+        status: row[8] || 'published'    // I: Status
       };
       
       posts.push(post);
@@ -301,7 +301,7 @@ function handlePostSave(requestData) {
       postData.tags || '',             // F: Tags
       postData.images || '',           // G: Images
       postData.videos || '',           // H: Videos
-      postData.status || 'draft'       // I: Status
+      postData.status || 'published'   // I: Status
     ];
     
     console.log('📊 Saving data structure:');
@@ -313,7 +313,7 @@ function handlePostSave(requestData) {
     console.log('🏷️ Tags:', postData.tags || '(empty)');
     console.log('📷 Images:', postData.images || '(empty)');
     console.log('🎥 Videos:', postData.videos || '(empty)');
-    console.log('📊 Status:', postData.status || 'draft');
+    console.log('📊 Status:', postData.status || 'published');
     console.log('📋 Row data array:', rowData);
     
     // Add row to sheet

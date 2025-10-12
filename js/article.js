@@ -345,7 +345,6 @@ class ArticleApp {
                 <article class="post-card post-card-no-image" data-post-id="${post.id}">
                     ${actionsHTML}
                     <div class="post-card-content">
-                    
                         <div class="post-card-meta">
                         <span class="post-date">${formatDate(post.date)}</span>
                         </div>

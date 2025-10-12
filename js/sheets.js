@@ -157,7 +157,7 @@ class SheetsAPI {
                 tags: this.processTags(row.tags || ''),
                 images: this.processImages(row.images || ''),
                 videos: this.processVideos(row.videos || ''),
-                status: (row.status || '').toLowerCase() || 'draft',
+                status: (row.status || '').toLowerCase() || 'published',
                 slug: this.generateSlug(row.title || 'untitled'),
                 readTime: this.calculateReadTime(row.content || '')
             };

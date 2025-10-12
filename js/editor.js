@@ -902,7 +902,7 @@ function setupEditorButtons() {
         const title = document.getElementById('postTitle')?.value?.trim();
         const tags = window.tagsInput ? window.tagsInput.getTagsString() : '';
         const content = editor.getHTML();
-        const status = document.getElementById('statusSelect')?.value || 'draft';
+        const status = document.getElementById('statusSelect')?.value || 'published';
         const currentDateTime = new Date().toISOString().replace('T', ' ').split('.')[0]; // YYYY-MM-DD HH:MM:SS format
         
         // Validate required fields
