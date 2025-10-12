@@ -222,7 +222,7 @@ class PWAInstaller {
             default:
                 return {
                     title: '앱으로 설치',
-                    message: '홈 화면에 추가하여 앱처럼 사용해보세요!',
+                    message: '홈 화면에 추가하여 앱처럼 사용해보세요!/n (Chrome 환경에서 설치 가능합니다)',
                     buttonText: '설치하기',
                     isInstallable: true
                 };
