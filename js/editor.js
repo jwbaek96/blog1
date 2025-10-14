@@ -1003,17 +1003,18 @@ function setupEditorButtons() {
                 // No cache to clear - posts will always be fresh on next page load
                 console.log('✅ Post saved! Next page load will show fresh data.');
                 
-                // Clear form after successful save
-                if (confirm('저장이 완료되었습니다. 에디터를 초기화하시겠습니까?')) {
-                    document.getElementById('postTitle').value = '';
-                    if (window.tagsInput) {
-                        window.tagsInput.setTags([]);
+                // Clear saved draft
+                editor.clearDraft();
+                
+                // 저장 완료 후 2초 뒤에 뒤로가기
+                setTimeout(() => {
+                    // 이전 페이지가 있으면 뒤로가기, 없으면 블로그 메인으로
+                    if (window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        window.location.href = 'blog.html';
                     }
-                    editor.clear();
-                    
-                    // Clear saved draft
-                    editor.clearDraft();
-                }
+                }, 2000);
                 
             } else {
                 throw new Error(result.error || '저장에 실패했습니다');

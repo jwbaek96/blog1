@@ -205,15 +205,24 @@ class PostApp {
     renderPostContent() {
         const contentBody = document.getElementById('postContentBody');
         if (contentBody) {
-            // Process content - convert line breaks to paragraphs
             const content = this.post.content || this.post.excerpt;
-            const processedContent = this.processContent(content);
-            contentBody.innerHTML = processedContent;
+            
+            // HTML 콘텐츠인지 확인 (HTML 태그가 포함되어 있는지)
+            if (content && content.includes('<')) {
+                // HTML 콘텐츠는 그대로 렌더링
+                contentBody.innerHTML = content;
+                console.log('📄 Rendering HTML content directly');
+            } else {
+                // 플레인 텍스트는 처리해서 렌더링
+                const processedContent = this.processContent(content);
+                contentBody.innerHTML = processedContent;
+                console.log('📄 Processing plain text content');
+            }
         }
     }
 
     /**
-     * Process content text to HTML
+     * Process content text to HTML (플레인 텍스트용)
      */
     processContent(content) {
         if (!content) return '';
