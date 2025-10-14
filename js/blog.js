@@ -39,6 +39,16 @@ class BlogApp {
         try {
             console.log('📡 Fetching posts from Google Sheets...');
             this.allPosts = await window.SheetsAPI.fetchPosts();
+            
+            // Process posts to generate excerpts if missing
+            this.allPosts = this.allPosts.map(post => {
+                if (!post.excerpt && post.content) {
+                    // HTML에서 텍스트 추출하고 요약 생성
+                    post.excerpt = this.createExcerpt(post.content);
+                }
+                return post;
+            });
+            
             this.filterPosts();
             console.log(`✅ Loaded ${this.allPosts.length} posts`);
             
@@ -48,7 +58,8 @@ class BlogApp {
                     id: p.id,
                     title: p.title,
                     idType: typeof p.id,
-                    content: p.content ? `${p.content.substring(0, 50)}...` : 'NO CONTENT'
+                    content: p.content ? `${p.content.substring(0, 50)}...` : 'NO CONTENT',
+                    excerpt: p.excerpt ? `${p.excerpt.substring(0, 50)}...` : 'NO EXCERPT'
                 })));
             } else {
                 console.warn('⚠️ No posts loaded! Check Google Sheets configuration.');
@@ -57,6 +68,26 @@ class BlogApp {
             console.error('❌ Error loading posts:', error);
             console.log('⚠️ Failed to load posts. Please check your Google Sheets configuration.');
         }
+    }
+
+    /**
+     * Create excerpt from HTML content
+     */
+    createExcerpt(htmlContent, maxLength = 150) {
+        if (!htmlContent) return '내용이 없습니다.';
+        
+        // HTML 태그 제거
+        const textContent = htmlContent.replace(/<[^>]*>/g, '');
+        
+        // 공백 정리
+        const cleanText = textContent.replace(/\s+/g, ' ').trim();
+        
+        // 길이 제한
+        if (cleanText.length <= maxLength) {
+            return cleanText;
+        }
+        
+        return cleanText.substring(0, maxLength).trim() + '...';
     }
 
     /**

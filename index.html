@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="css/pwa.css">
     <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/floating-actions.css">
+    <link rel="stylesheet" href="css/index-popup.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -327,8 +328,105 @@
                 });
             }
         });
+
+        // Development Notice Popup Handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const devNoticePopup = document.getElementById('dev-notice-popup');
+            const devNoticeOkBtn = document.getElementById('dev-notice-ok-btn');
+            const devNoticeTodayBtn = document.getElementById('dev-notice-today-btn');
+            const devNoticeCloseBtn = document.querySelector('.dev-notice-close-btn');
+            
+            // 오늘 하루 보지 않기 체크
+            function isDismissedToday() {
+                const dismissedDate = localStorage.getItem('dev-notice-dismissed-date');
+                const today = new Date().toDateString();
+                return dismissedDate === today;
+            }
+            
+            // 팝업 표시
+            function showDevNotice() {
+                if (devNoticePopup) {
+                    devNoticePopup.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+            
+            // 팝업 숨기기
+            function hideDevNotice() {
+                if (devNoticePopup) {
+                    devNoticePopup.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            }
+            
+            // 오늘 하루 보지 않기 설정
+            function dismissForToday() {
+                const today = new Date().toDateString();
+                localStorage.setItem('dev-notice-dismissed-date', today);
+                hideDevNotice();
+            }
+            
+            // 이벤트 리스너
+            if (devNoticeOkBtn) {
+                devNoticeOkBtn.addEventListener('click', hideDevNotice);
+            }
+            
+            if (devNoticeTodayBtn) {
+                devNoticeTodayBtn.addEventListener('click', dismissForToday);
+            }
+            
+            if (devNoticeCloseBtn) {
+                devNoticeCloseBtn.addEventListener('click', hideDevNotice);
+            }
+            
+            // 배경 클릭으로 닫기
+            if (devNoticePopup) {
+                devNoticePopup.addEventListener('click', function(e) {
+                    if (e.target === devNoticePopup) {
+                        hideDevNotice();
+                    }
+                });
+            }
+            
+            // ESC 키로 닫기
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && devNoticePopup.style.display === 'flex') {
+                    hideDevNotice();
+                }
+            });
+            
+            // 페이지 로드 시 팝업 표시 (2초 후)
+            if (!isDismissedToday()) {
+                setTimeout(showDevNotice, 2000);
+            }
+        });
     </script>
     
+    <!-- Development Notice Popup -->
+    <div id="dev-notice-popup" class="dev-notice-popup" style="display: none;">
+        <div class="dev-notice-content">
+            <button class="dev-notice-close-btn">&times;</button>
+            <!-- <div class="dev-notice-icon">
+                <i class="fa-solid fa-code" style="font-size: 3rem; color: #f39c12;"></i>
+            </div> -->
+            <h3>- 웹사이트 제작 중 -</h3>
+            <div class="dev-notice-text">
+                <p>현재 웹사이트가 개발 중에 있습니다.</p>
+                <br>
+                <p><strong>• 테스트용 게시물</strong>들이 간헐적으로 업로드될 수 있습니다.</p>
+                <p><strong>• 일부 기능</strong>들이 일시적으로 동작하지 않을 수 있습니다.</p>
+                <br>
+                <p>불편을 끼쳐드려서 죄송하며, 더 나은 경험을 위해 열심히 작업 중입니다! 🎨</p>
+                <br>
+                <p class="dev-notice-signature">- 작가 백종훈</p>
+            </div>
+            <div class="dev-notice-buttons">
+                <button id="dev-notice-ok-btn" class="dev-notice-btn dev-notice-btn-primary">확인</button>
+                <button id="dev-notice-today-btn" class="dev-notice-btn dev-notice-btn-secondary">오늘 하루 보지 않기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- PWA Install Popup -->
     <div id="pwa-install-popup" class="pwa-install-popup" style="display: none;">
         <div class="pwa-install-content">

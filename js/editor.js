@@ -972,13 +972,13 @@ function setupEditorButtons() {
             // Send to Google Apps Script
             console.log('🚀 Sending request to Google Apps Script...');
             
-            // URL 파라미터로 데이터 전송 (CORS 문제 회피)
-            const params = new URLSearchParams();
-            params.append('action', 'savePost');
-            params.append('data', JSON.stringify(postData));
+            // POST 방식으로 데이터 전송 (URL 길이 제한 해결)
+            const formData = new FormData();
+            formData.append('data', JSON.stringify(requestData)); // 전체 requestData 객체 전송
             
-            const response = await fetch(`${CONFIG.UPLOAD_API_URL}?${params.toString()}`, {
-                method: 'GET'
+            const response = await fetch(CONFIG.UPLOAD_API_URL, {
+                method: 'POST',
+                body: formData
             });
             
             console.log('📡 Response received!');

@@ -86,15 +86,30 @@ function handleGetPosts() {
     
     // Skip header row and process data
     const posts = [];
+    console.log(`🔍 Processing ${values.length - 1} rows from spreadsheet`);
+    
     for (let i = 1; i < values.length; i++) {
       const row = values[i];
       
-      // Skip empty rows
-      if (!row[1]) continue; // Skip if title is empty
+      // Debug: Show row data
+      console.log(`📋 Row ${i}: Title="${row[1]}" | Content="${row[4] ? row[4].substring(0, 50) + '...' : 'EMPTY'}"`);
+      
+      // Skip empty rows - check both title and content
+      if (!row[1] || row[1].toString().trim() === '') {
+        console.log(`⏭️ Skipping row ${i}: Empty title`);
+        continue;
+      }
+      
+      // Skip rows that look like fragmented HTML content (no proper title)
+      const title = row[1].toString().trim();
+      if (title.includes('<div>') || title.includes('</div>') || title.match(/^\d+$/)) {
+        console.log(`⏭️ Skipping row ${i}: Looks like fragmented content - "${title}"`);
+        continue;
+      }
       
       const post = {
         id: row[0] || i,                 // A: ID
-        title: row[1] || 'Untitled',     // B: Title
+        title: title,                    // B: Title
         date: row[2] || '',              // C: Date
         thumbnail: row[3] || '',         // D: Thumbnail
         content: row[4] || '',           // E: Content
@@ -104,6 +119,7 @@ function handleGetPosts() {
         status: row[8] || 'published'    // I: Status
       };
       
+      console.log(`✅ Valid post found: ID=${post.id}, Title="${post.title}"`);
       posts.push(post);
     }
     
