@@ -24,7 +24,6 @@
     overflow-y: auto;
     position: relative;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    animation: slideUp 0.3s ease-out;
     text-align: center;
 }
 
@@ -47,7 +46,6 @@
 }
 
 .dev-notice-close-btn:hover {
-    background: #f5f5f5;
     color: #333;
 }
 
@@ -121,17 +119,6 @@
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { 
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.9) translateY(20px);
-    }
-    to { 
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1) translateY(0);
-    }
 }
 
 /* Mobile responsive */

@@ -247,7 +247,7 @@
     right: 14px;
     z-index: 1;
     transform: translate(0%, -72.5%);
-    background: #c0c0c0;
+    background: #000000;
     color: white;
     border: none;
     border-radius: 50px;
@@ -264,7 +264,7 @@
 }
 
 .guestbook-submit:hover {
-    background: #000;
+    background: #3a3a3a;
     top: -5px;
 }
 

@@ -534,10 +534,16 @@ const FloatingActions = {
             ];
             
             const noteContents = await Promise.all(notePromises);
-            this.noteState.notes = noteContents.filter(content => content !== null);
+            
+            // null이 아니고 내용이 있는 노트만 필터링
+            this.noteState.notes = noteContents.filter(content => {
+                return content !== null && content.trim() !== '';
+            });
+            
+            console.log(`📝 유효한 노트 ${this.noteState.notes.length}개 로드됨`);
             
             if (this.noteState.notes.length === 0) {
-                throw new Error('노트 파일을 찾을 수 없습니다.');
+                throw new Error('표시할 노트 내용이 없습니다.');
             }
             
             // 슬라이드 컨테이너 생성
@@ -547,6 +553,8 @@ const FloatingActions = {
             if (this.noteState.notes.length > 1) {
                 navContainer.style.display = 'flex';
                 this.updateNavigation();
+            } else {
+                navContainer.style.display = 'none';
             }
             
             // 첫 번째 슬라이드 표시
@@ -569,6 +577,10 @@ const FloatingActions = {
     // 슬라이드 컨테이너 설정
     setupSlideContainer: function() {
         const slider = document.getElementById('authorNoteSlider');
+        
+        // 실제 로드된 노트 개수로 totalSlides 업데이트
+        this.noteState.totalSlides = this.noteState.notes.length;
+        
         const slidesHTML = this.noteState.notes.map((content, index) => {
             const formattedContent = content
                 .split('\n\n')
@@ -670,7 +682,7 @@ const FloatingActions = {
                     text-align: center;
                     font-size: 0.85rem;
                     line-height: 1.6;
-                    max-width: 90%;
+                    max-width: calc(100% - 1rem);
                 }
                 
                 .author-note-text p {
