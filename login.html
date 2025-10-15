@@ -67,7 +67,6 @@
         .admin-actions {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
             margin-top: 1rem;
         }
         .back-to-home {
@@ -108,6 +107,7 @@
                 <a href="index.html" style="text-decoration: none; color: #000; transition: all 0.3s ease;">&larr; Back</a>
             </div>
             <h2>Admin Panel</h2>
+            
             <div class="admin-actions">
                 <button id="logoutBtn" class="btn" style="background: #dc3545;">Logout</button>
             </div>
@@ -117,6 +117,8 @@
 
     <!-- Config -->
     <script src="js/config.js"></script>
+    
+
     
     <script>
         // 로컬 환경에서 비밀번호 확인
@@ -228,9 +230,6 @@
             }
         });
         
-        // 페이지 로드시 로그인 상태 확인
-        checkLoginStatus();
-        
         // 로그아웃 버튼 이벤트
         document.getElementById('logoutBtn').addEventListener('click', handleLogout);
         
@@ -263,7 +262,7 @@
         function handleLogout() {
             const logoutMessage = document.getElementById('logoutMessage');
             
-            // 토큰 제거
+            // 관리자 토큰 제거
             localStorage.removeItem('admin_token');
             localStorage.removeItem('admin_expires');
             
@@ -275,6 +274,21 @@
                 logoutMessage.innerHTML = '';
             }, 2000);
         }
+
+
+
+        function checkLoginStatus() {
+            if (isLoggedIn()) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('logoutSection').style.display = 'block';
+            } else {
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('logoutSection').style.display = 'none';
+            }
+        }
+        
+        // 페이지 로드 시 로그인 상태 확인 (모든 함수 정의 후)
+        checkLoginStatus();
     </script>
 </body>
 </html>

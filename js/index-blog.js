@@ -5,7 +5,7 @@
 
 class IndexBlog {
     constructor() {
-        this.maxPosts = 4; // 표시할 최대 포스트 수
+        this.maxPosts = 8; // 표시할 최대 포스트 수
         this.loadingElement = null;
         this.gridElement = null;
         this.errorElement = null;
@@ -39,7 +39,6 @@ class IndexBlog {
         this.gridElement.innerHTML = `
             <div class="blog-loading">
                 <div class="loading-spinner"></div>
-                <p>최신 포스트를 불러오는 중...</p>
             </div>
         `;
     }

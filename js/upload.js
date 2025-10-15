@@ -11,6 +11,48 @@ class UploadManager {
     }
 
     /**
+     * Google Drive 인증 확인 및 자동 인증 시도
+     * @returns {Promise<boolean>} 인증 성공 여부
+     */
+    async ensureGoogleDriveAuth() {
+        try {
+            // DriveUploader 초기화
+            if (!window.driveUploader) {
+                console.log('🚀 Initializing DriveUploader for file upload...');
+                if (typeof initializeDriveUploader === 'function') {
+                    await initializeDriveUploader();
+                } else {
+                    window.driveUploader = new DriveUploader();
+                    await window.driveUploader.waitForInitialization();
+                }
+            }
+
+            // 이미 인증된 경우
+            if (window.driveUploader.isAuthenticated) {
+                console.log('✅ Already authenticated');
+                return true;
+            }
+
+            // 자동 인증 시도
+            console.log('🔄 Attempting authentication for file upload...');
+            
+            const authResult = await window.driveUploader.authenticate(false);
+            
+            if (authResult && authResult.success) {
+                console.log('✅ Authentication successful');
+                return true;
+            } else {
+                throw new Error('Google Drive 인증에 실패했습니다');
+            }
+
+        } catch (error) {
+            console.error('❌ Google Drive authentication failed:', error);
+            showToast(`Google Drive 연결 실패: ${error.message}`, 'error');
+            return false;
+        }
+    }
+
+    /**
      * Validate file before upload
      * @param {File} file - File to validate
      * @param {string} type - Expected file type ('image' or 'video')
@@ -221,6 +263,11 @@ class UploadManager {
                 return;
             }
 
+            // Google Drive 인증 확인 및 자동 인증 시도
+            if (!await this.ensureGoogleDriveAuth()) {
+                return;
+            }
+
             // Show progress
             progressElement = this.showUploadProgress('이미지 최적화 중...');
 
@@ -261,6 +308,11 @@ class UploadManager {
         try {
             // Validate file
             if (!this.validateFile(file, 'video')) {
+                return;
+            }
+
+            // Google Drive 인증 확인 및 자동 인증 시도
+            if (!await this.ensureGoogleDriveAuth()) {
                 return;
             }
 

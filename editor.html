@@ -16,8 +16,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Google API Libraries -->
-    <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
 
     <!-- Icon meta js -->
     <script src="js/head-meta.js"></script>
@@ -27,6 +27,49 @@
     <style>
         .backBtn:hover {
             background-color: #f5f5f5 !important;
+        }
+        
+        /* 드래그 앤 드롭 스타일 */
+        .simple-editor.drag-over {
+            background-color: rgba(74, 185, 255, 0.1) !important;
+            border: 2px dashed #4ab9ff !important;
+            transition: all 0.2s ease;
+        }
+        
+        .simple-editor::after {
+            content: '';
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(74, 185, 255, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .simple-editor.drag-over::after {
+            content: '📎 파일을 여기에 드롭하세요';
+            display: block;
+        }
+        
+        /* 업로드된 미디어 스타일 */
+        .simple-editor img {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .simple-editor img:hover {
+            transform: scale(1.02);
+        }
+        
+        .simple-editor iframe {
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -410,13 +453,107 @@
         });
 
         // Google Drive Upload Functions
-        function openImageUpload() {
-            document.getElementById('imageFileInput').click();
+        async function openImageUpload() {
+            try {
+                await ensureAuthBeforeUpload();
+                // 인증 완료 후 자동으로 파일 선택 다이얼로그 열기
+                document.getElementById('imageFileInput').click();
+            } catch (error) {
+                console.error('❌ Image upload preparation failed:', error);
+                // 인증 실패시 다이얼로그를 열지 않음
+            }
         }
 
-        function openVideoUpload() {
-            document.getElementById('videoFileInput').click();
+        async function openVideoUpload() {
+            try {
+                await ensureAuthBeforeUpload();
+                // 인증 완료 후 자동으로 파일 선택 다이얼로그 열기
+                document.getElementById('videoFileInput').click();
+            } catch (error) {
+                console.error('❌ Video upload preparation failed:', error);
+                // 인증 실패시 다이얼로그를 열지 않음
+            }
         }
+
+        // 파일 업로드 전 인증 확인 및 준비
+        async function ensureAuthBeforeUpload() {
+            try {
+                // DriveUploader 인스턴스 확인 및 초기화
+                if (!window.driveUploader) {
+                    console.log('🚀 Initializing DriveUploader...');
+                    showToast('Google Drive 준비 중...', 'info');
+                    await initializeDriveUploader();
+                }
+                
+                // 이미 인증된 경우 바로 리턴
+                if (window.driveUploader.isAuthenticated) {
+                    console.log('✅ Already authenticated, ready for upload');
+                    return;
+                }
+                
+                // 인증 필요한 경우 사용자에게 알리고 인증 진행
+                showToast('Google 계정으로 로그인해주세요...', 'info');
+                console.log('🔄 Authentication required, attempting auth...');
+                
+                const authResult = await window.driveUploader.authenticate(false);
+                
+                if (authResult && authResult.success) {
+                    console.log('✅ Authentication successful');
+                    showToast('인증 완료! 파일을 선택해주세요.', 'success');
+                    // 짧은 지연 후 파일 다이얼로그가 자동으로 열림
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } else {
+                    throw new Error('Google Drive 인증에 실패했습니다');
+                }
+                
+            } catch (error) {
+                console.error('❌ Pre-upload auth failed:', error);
+                showToast(`인증 실패: ${error.message}`, 'error');
+                throw error; // 인증 실패시 파일 선택을 진행하지 않음
+            }
+        }
+
+
+
+        // 관리자 로그인 상태 확인
+        function checkAdminAuth() {
+            const token = localStorage.getItem('admin_token');
+            const expires = localStorage.getItem('admin_expires');
+            
+            if (!token || !expires || Date.now() > parseInt(expires)) {
+                // 관리자 로그인이 필요함
+                alert('관리자 로그인이 필요합니다.');
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // DriveUploader 초기화 및 자동 로그인 확인
+        async function initializeDriveUploader() {
+            console.log('🚀 Initializing DriveUploader...');
+            
+            // 관리자 인증 확인
+            if (!checkAdminAuth()) {
+                return;
+            }
+            
+            window.driveUploader = new DriveUploader();
+            
+            // 초기화 완료 대기
+            await window.driveUploader.waitForInitialization();
+            
+            // 자동 로그인이 완료되었는지 확인 (UI 업데이트 없이)
+            setTimeout(() => {
+                if (window.driveUploader.isAuthenticated) {
+                    console.log('✅ Auto-login successful - ready for file uploads');
+                } else {
+                    console.log('📭 Auto-login not available - will authenticate on file upload');
+                }
+            }, 3000);
+        }
+        
+
 
         async function handleFileUpload(files, fileType) {
             if (!files || files.length === 0) return;
@@ -424,21 +561,31 @@
             const file = files[0];
             
             try {
-                // DriveUploader 인스턴스 생성
-                const uploader = new DriveUploader();
+                console.log('📤 Starting file upload:', file.name, fileType);
+                
+                // 인증은 이미 ensureAuthBeforeUpload에서 완료되었음
+                if (!window.driveUploader || !window.driveUploader.isAuthenticated) {
+                    console.error('❌ Authentication not ready for upload');
+                    showToast('인증 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+                    return;
+                }
+                
+                showToast('파일 업로드 중...', 'info');
                 
                 // 파일 업로드 실행
-                const result = await uploader.uploadFile(file, fileType);
+                const publicUrl = await window.driveUploader.uploadFile(file, Date.now(), fileType);
                 
-                if (result.success) {
-                    // 에디터에 업로드된 파일 삽입
-                    insertUploadedFile(result.url, file.name, fileType);
-                } else {
-                    alert('업로드 실패: ' + result.error);
-                }
+                console.log('✅ Upload successful:', publicUrl);
+                
+                // 에디터에 업로드된 파일 삽입
+                insertUploadedFile(publicUrl, file.name, fileType);
+                
+                // 성공 메시지
+                showToast(`${fileType === 'image' ? '이미지' : '동영상'}가 업로드되었습니다!`, 'success');
+                
             } catch (error) {
-                console.error('Upload error:', error);
-                alert('업로드 중 오류가 발생했습니다.');
+                console.error('❌ Upload error:', error);
+                showToast(`업로드 실패: ${error.message}`, 'error');
             }
         }
 
@@ -446,9 +593,19 @@
         window.uploadedFiles = window.uploadedFiles || [];
 
         function insertUploadedFile(url, filename, fileType) {
-            if (!window.editor) return;
-
-            const editor = window.editor.editor;
+            console.log('🔍 Checking editor availability...');
+            console.log('window.editor:', window.editor);
+            console.log('document.getElementById("editor"):', document.getElementById('editor'));
+            
+            // 에디터 요소 직접 찾기
+            const editorElement = document.getElementById('editor');
+            if (!editorElement) {
+                console.error('❌ Editor element not found');
+                showToast('에디터를 찾을 수 없습니다', 'error');
+                return;
+            }
+            
+            console.log('✅ Editor element found, inserting content...');
             
             // Add to uploaded files list
             const fileInfo = {
@@ -459,33 +616,217 @@
             };
             window.uploadedFiles.push(fileInfo);
             
+            console.log('📎 Inserting file into editor:', { url, filename, fileType });
+            
+            // 에디터에 포커스
+            editorElement.focus();
+            
+            // 현재 커서 위치 저장
+            const selection = window.getSelection();
+            const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+            
             if (fileType === 'image') {
-                // 이미지 삽입
-                const img = `<img src="${url}" alt="${filename}" style="max-width: 100%; height: auto;">`;
-                document.execCommand('insertHTML', false, img);
+                // 이미지 삽입 - Google Drive URL 처리
+                console.log('🖼️ Original URL:', url);
+                
+                // Google Drive URL을 직접 접근 가능한 형태로 변환
+                let imageUrl = url;
+                const fileIdMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch) {
+                    const fileId = fileIdMatch[1];
+                    // 여러 URL 형태 시도
+                    imageUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+                    console.log('🔄 Converted to thumbnail URL:', imageUrl);
+                }
+                
+                const imageHtml = `<div style="margin: 16px 0; text-align: center;">
+                    <img src="${imageUrl}" alt="${filename}" 
+                         style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" 
+                         loading="lazy"
+                         onerror="this.onerror=null; this.src='${url}'; console.log('🔄 Fallback to original URL:', '${url}');"
+                         onload="console.log('✅ Image loaded successfully:', this.src);">
+                    <div style="font-size: 12px; color: #666; margin-top: 8px;">${filename}</div>
+                    <div style="font-size: 10px; color: #999; margin-top: 4px;">
+                        <a href="${url}" target="_blank" style="color: #999;">원본 링크</a>
+                    </div>
+                </div>`;
+                
+                // 방법 1: execCommand 사용
+                try {
+                    console.log('🔧 Trying execCommand...');
+                    console.log('📄 Image HTML:', imageHtml.substring(0, 200) + '...');
+                    
+                    const result = document.execCommand('insertHTML', false, imageHtml);
+                    console.log('✅ execCommand result:', result);
+                    
+                    // 실제로 삽입되었는지 확인
+                    console.log('📝 Editor content after insert:', editorElement.innerHTML.length, 'chars');
+                    
+                    // 삽입된 이미지 요소 찾아서 로드 상태 확인
+                    setTimeout(() => {
+                        const insertedImages = editorElement.querySelectorAll('img');
+                        const lastImage = insertedImages[insertedImages.length - 1];
+                        if (lastImage) {
+                            console.log('🖼️ Inserted image element:', lastImage);
+                            console.log('🔗 Image src:', lastImage.src);
+                            console.log('📊 Image complete:', lastImage.complete);
+                            console.log('📐 Image naturalWidth:', lastImage.naturalWidth);
+                            console.log('📐 Image naturalHeight:', lastImage.naturalHeight);
+                        }
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.log('❌ execCommand failed:', error);
+                    console.log('🔧 Trying innerHTML append...');
+                    // 방법 2: 직접 HTML 추가
+                    const currentContent = editorElement.innerHTML;
+                    editorElement.innerHTML = currentContent + imageHtml;
+                    console.log('✅ innerHTML append completed');
+                }
+                
+                showToast('이미지가 에디터에 삽입되었습니다!', 'success');
+                
             } else if (fileType === 'video') {
-                // 비디오 삽입
-                const video = `<video controls style="max-width: 100%; height: auto;">
-                    <source src="${url}" type="${getMimeType(filename)}">
-                    <a href="${url}">${filename}</a>
-                </video>`;
-                document.execCommand('insertHTML', false, video);
+                // 비디오 삽입 - Google Drive 최적화 방식
+                console.log('🎥 Processing video URL:', url);
+                
+                const fileIdMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                let videoHtml;
+                
+                if (fileIdMatch) {
+                    const fileId = fileIdMatch[1];
+                    console.log('🆔 Video file ID:', fileId);
+                    console.log('🎬 Creating Google Drive video card');
+                    
+                    videoHtml = `<div style="margin: 20px 0; border: 2px solid #e1f5fe; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 600px;">
+                        <div style="padding: 20px 24px; background: linear-gradient(135deg, #2196f3 0%, #9c27b0 100%); color: white;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="font-size: 32px;">🎬</div>
+                                <div>
+                                    <h3 style="margin: 0; font-size: 18px; font-weight: 600;">비디오 첨부파일</h3>
+                                    <p style="margin: 4px 0 0 0; opacity: 0.9; font-size: 14px;">Google Drive에서 호스팅됨</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 24px; text-align: center;">
+                            <div style="position: relative; margin-bottom: 20px;">
+                                <iframe src="https://drive.google.com/file/d/${fileId}/preview" 
+                                        width="100%" height="300" 
+                                        style="border: none; border-radius: 12px; background: #f5f5f5;"
+                                        onload="console.log('✅ Video iframe loaded successfully');"
+                                        onerror="console.log('❌ Video iframe failed to load');">
+                                </iframe>
+                            </div>
+                            
+                            <div style="background: white; padding: 16px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                                <div style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">${filename}</div>
+                                <div style="display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                                    <span style="background: #e3f2fd; padding: 4px 12px; border-radius: 16px; color: #1976d2; font-size: 12px; font-weight: 500;">MP4 비디오</span>
+                                    <span style="background: #f3e5f5; padding: 4px 12px; border-radius: 16px; color: #7b1fa2; font-size: 12px; font-weight: 500;">Google Drive</span>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                                <a href="https://drive.google.com/file/d/${fileId}/view" target="_blank" 
+                                   style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #4285f4; color: white; text-decoration: none; border-radius: 10px; font-weight: 500; transition: all 0.3s; box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);">
+                                   ▶️ Google Drive에서 재생
+                                </a>
+                                
+                                <button onclick="window.open('https://drive.google.com/uc?id=${fileId}&export=download', '_blank'); console.log('🔽 Download attempt for:', '${fileId}');" 
+                                        style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #34a853; color: white; border: none; border-radius: 10px; font-weight: 500; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(52, 168, 83, 0.3);">
+                                    💾 다운로드 시도
+                                </button>
+                                
+                                <button onclick="navigator.clipboard.writeText('https://drive.google.com/file/d/${fileId}/view').then(() => alert('링크가 복사되었습니다!')).catch(() => alert('복사 실패'));" 
+                                        style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #ff9800; color: white; border: none; border-radius: 10px; font-weight: 500; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);">
+                                    🔗 링크 복사
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 16px 24px; background: rgba(255,255,255,0.7); border-top: 1px solid rgba(255,255,255,0.3); font-size: 12px; color: #666; text-align: center;">
+                            💡 Google Drive 비디오는 보안상 직접 스트리밍이 제한됩니다. 위 버튼들로 재생하거나 다운로드하세요.
+                        </div>
+                    </div>`;
+                } else {
+                    // 일반 비디오 URL인 경우
+                    videoHtml = `<div style="margin: 16px 0; text-align: center;">
+                        <video controls style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <source src="${url}" type="${getMimeType(filename)}">
+                            <p>브라우저가 동영상을 지원하지 않습니다. <a href="${url}" target="_blank">다운로드</a></p>
+                        </video>
+                        <div style="font-size: 12px; color: #666; margin-top: 8px;">${filename}</div>
+                    </div>`;
+                }
+                
+                // HTML 삽입
+                try {
+                    console.log('🔧 Inserting video HTML...');
+                    const result = document.execCommand('insertHTML', false, videoHtml);
+                    console.log('✅ Video insertion result:', result);
+                } catch (error) {
+                    console.log('❌ execCommand failed, using innerHTML...');
+                    editorElement.innerHTML += videoHtml;
+                }
+                
+                showToast('동영상이 에디터에 삽입되었습니다!', 'success');
             }
             
-            editor.focus();
+            // 커서를 삽입된 콘텐츠 뒤로 이동 및 포커스
+            setTimeout(() => {
+                editorElement.focus();
+                
+                // 에디터 끝으로 커서 이동
+                try {
+                    const range = document.createRange();
+                    const sel = window.getSelection();
+                    range.selectNodeContents(editorElement);
+                    range.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                } catch (error) {
+                    console.log('Cursor positioning failed:', error);
+                }
+            }, 100);
         }
 
         function getMimeType(filename) {
             const ext = filename.toLowerCase().split('.').pop();
             const mimeTypes = {
+                // 동영상
                 'mp4': 'video/mp4',
                 'webm': 'video/webm',
                 'ogg': 'video/ogg',
+                'ogv': 'video/ogg',
                 'avi': 'video/x-msvideo',
                 'mov': 'video/quicktime',
-                'wmv': 'video/x-ms-wmv'
+                'qt': 'video/quicktime',
+                'wmv': 'video/x-ms-wmv',
+                'flv': 'video/x-flv',
+                'mkv': 'video/x-matroska',
+                'm4v': 'video/mp4',
+                '3gp': 'video/3gpp',
+                '3g2': 'video/3gpp2',
+                // 이미지
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'png': 'image/png',
+                'gif': 'image/gif',
+                'webp': 'image/webp',
+                'svg': 'image/svg+xml',
+                'bmp': 'image/bmp',
+                // 오디오
+                'mp3': 'audio/mpeg',
+                'wav': 'audio/wav',
+                'oga': 'audio/ogg',
+                'm4a': 'audio/mp4',
+                'aac': 'audio/aac'
             };
-            return mimeTypes[ext] || 'video/mp4';
+            
+            const mimeType = mimeTypes[ext] || 'video/mp4';
+            console.log(`🔍 File: ${filename} → Extension: ${ext} → MIME: ${mimeType}`);
+            return mimeType;
         }
 
         // Drag and Drop functionality
@@ -497,6 +838,8 @@
                 e.preventDefault();
                 e.stopPropagation();
                 editor.classList.add('drag-over');
+                editor.style.backgroundColor = 'rgba(74, 185, 255, 0.1)';
+                editor.style.borderColor = '#4ab9ff';
             });
             
             // Drag leave
@@ -504,6 +847,8 @@
                 e.preventDefault();
                 e.stopPropagation();
                 editor.classList.remove('drag-over');
+                editor.style.backgroundColor = '';
+                editor.style.borderColor = '';
             });
             
             // Drop
@@ -511,29 +856,86 @@
                 e.preventDefault();
                 e.stopPropagation();
                 editor.classList.remove('drag-over');
+                editor.style.backgroundColor = '';
+                editor.style.borderColor = '';
                 
                 const files = Array.from(e.dataTransfer.files);
+                console.log('📎 Files dropped:', files.length);
+                
+                // 인증 확인
+                if (!window.driveUploader || !window.driveUploader.isAuthenticated) {
+                    showToast('먼저 Google Drive 인증을 완료해주세요 (🔐 버튼 클릭)', 'error');
+                    return;
+                }
                 
                 files.forEach(file => {
+                    console.log('📄 Processing file:', file.name, file.type);
+                    
                     if (file.type.startsWith('image/')) {
                         handleFileUpload([file], 'image');
                     } else if (file.type.startsWith('video/')) {
                         handleFileUpload([file], 'video');
                     } else {
-                        alert(`지원하지 않는 파일 형식입니다: ${file.name}`);
+                        showToast(`지원하지 않는 파일 형식입니다: ${file.name}`, 'error');
                     }
                 });
             });
         }
 
+        // Simple toast notification function
+        function showToast(message, type = 'info') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+                color: white;
+                border-radius: 4px;
+                z-index: 10000;
+                font-size: 14px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            toast.textContent = message;
+            
+            // Add to page
+            document.body.appendChild(toast);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+
         // Initialize drag and drop when DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 페이지 로드 시 즉시 관리자 인증 확인
+            if (!checkAdminAuth()) {
+                return; // 인증 실패 시 초기화 중단
+            }
+            
             initializeDragAndDrop();
+            
+            // Initialize DriveUploader with auto-login
+            await initializeDriveUploader();
+            
+            // 초기화 후 인증 상태 확인
+            setTimeout(() => {
+                if (window.driveUploader) {
+                    updateAuthButton(window.driveUploader.isAuthenticated);
+                }
+            }, 1000);
         });
     </script>
 
     <!-- Hidden File Input Elements -->
-    <input type="file" id="imageFileInput" accept="image/*" style="display: none;" onchange="handleFileUpload(this.files, 'image')">
-    <input type="file" id="videoFileInput" accept="video/*" style="display: none;" onchange="handleFileUpload(this.files, 'video')">
+    <input type="file" id="imageFileInput" accept="image/*" style="display: none;" onchange="setTimeout(() => handleFileUpload(this.files, 'image'), 100)">
+    <input type="file" id="videoFileInput" accept="video/*" style="display: none;" onchange="setTimeout(() => handleFileUpload(this.files, 'video'), 100)">
 </body>
 </html>
