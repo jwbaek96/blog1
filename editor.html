@@ -23,6 +23,9 @@
     <script src="js/head-meta.js"></script>
     <!-- Auth js -->
     <script src="js/auth.js"></script>
+
+    <!-- FontAwesome -->
+    <script src="https://kit.fontawesome.com/0470599ade.js" crossorigin="anonymous"></script>
     
     <style>
         .backBtn:hover {
@@ -108,21 +111,11 @@
                         <option value="p">본문</option>
                     </select>
                     
-                    <select onchange="format('fontSize', this.value); this.value=''; setTimeout(() => { if(window.editor) { window.editor.editor.focus(); window.editor.moveCaretToEnd(); } }, 10);">
-                        <option value="">글자 크기</option>
-                        <option value="1">매우 작게</option>
-                        <option value="3">작게</option>
-                        <option value="5">보통</option>
-                        <option value="6">크게</option>
-                        <option value="7">매우 크게</option>
-                    </select>
-                    
-                    <div class="separator"></div>
                     <button onclick="format('bold'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="굵게 (Ctrl+B)"><b>B</b></button>
                     <button onclick="format('italic'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="기울임 (Ctrl+I)"><i>I</i></button>
                     <button onclick="format('underline'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="밑줄 (Ctrl+U)"><u>U</u></button>
                     <button onclick="format('strikeThrough'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="취소선"><s>S</s></button>
-                    <div class="separator"></div>
+
                     <div class="color-button-wrapper">
                         <button class="color-button text-color-btn" onclick="document.getElementById('textColor').click()" title="글자 색">
                             <span class="color-letter">A</span>
@@ -130,38 +123,37 @@
                             <input type="color" id="textColor" onchange="changeTextColor(this.value)" style="display: none;">
                         </button>
                     </div>
-                    <div class="color-picker">
-                        <input type="color" id="bgColor" onchange="changeBgColor(this.value)" title="배경 색">
-                    </div>                        
                     
-                    <div class="separator"></div>
-                    
+                    <div class="highlight-wrapper">
+                        <button class="highlight-btn" onclick="toggleHighlight()" title="하이라이트">
+                            <div class="highlight-color-display" id="highlightColorDisplay"></div>
+                        </button>
+                        <div class="highlight-colors" id="highlightColors" style="display: none;">
+                            <button class="highlight-color" style="background-color: #ffff6b;" onclick="applyHighlight('#ffff6b')" title="노란색"></button>
+                            <button class="highlight-color" style="background-color: #93ff6b;" onclick="applyHighlight('#93ff6b')" title="연두색"></button>
+                            <button class="highlight-color" style="background-color: #b3fffa;" onclick="applyHighlight('#b3fffa')" title="하늘색"></button>
+                            <button class="highlight-color" style="background-color: #b3b5ff;" onclick="applyHighlight('#b3b5ff')" title="보라색"></button>
+                            <button class="highlight-color" style="background-color: #fbc7ff;" onclick="applyHighlight('#fbc7ff')" title="분홍색"></button>
+                            <button class="highlight-color" style="background-color: #ffc2c2;" onclick="applyHighlight('#ffc2c2')" title="빨간색"></button>
+                        </div>
+                    </div>
+
                     <button onclick="format('insertUnorderedList'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="글머리 기호">•</button>
                     <button onclick="format('insertOrderedList'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="번호 매기기">1.</button>
-                    
-                    <div class="separator"></div>
-                    
-                    <button onclick="format('justifyLeft'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="왼쪽 정렬">L</button>
-                    <button onclick="format('justifyCenter'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="가운데 정렬">C</button>
-                    <button onclick="format('justifyRight'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="오른쪽 정렬">R</button>
-                    <button onclick="format('justifyFull'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="양쪽 정렬">≡</button>
-                    
-                    
-                    
-                    <div class="separator"></div>
-                    
+                                        
+                    <button onclick="format('justifyLeft'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="왼쪽 정렬"><i class="fa-solid fa-align-left"></i></button>
+                    <button onclick="format('justifyCenter'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="가운데 정렬"><i class="fa-solid fa-align-center"></i></button>
+                    <button onclick="format('justifyRight'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="오른쪽 정렬"><i class="fa-solid fa-align-right"></i></button>
+                    <button onclick="format('justifyFull'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="양쪽 정렬"><i class="fa-solid fa-align-justify"></i></button>
+                                        
                     <button id="linkToggleBtn" onclick="toggleLink(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="링크">🔗</button>
                     
-                    <button id="imageUploadBtn" onclick="openImageUpload(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="이미지 업로드">📷</button>
-                    <button id="videoUploadBtn" onclick="openVideoUpload(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="비디오 업로드">🎥</button>
-                    
-                    <div class="separator"></div>
-                    
+                    <button id="imageUploadBtn" onclick="openImageUpload(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="이미지 업로드"><i class="fa-solid fa-image"></i></button>
+                    <button id="videoUploadBtn" onclick="openVideoUpload(); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="비디오 업로드"><i class="fa-solid fa-video"></i></button>
+                                        
                     <button onclick="format('undo'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="실행 취소">↶</button>
                     <button onclick="format('redo'); setTimeout(() => { if(window.editor) { window.editor.editor.focus(); } }, 10);" title="다시 실행">↷</button>
-                    
-                    <div class="separator"></div>
-                    
+                                        
                     <button id="codeViewToggle" onclick="toggleCodeView(); setTimeout(() => { if(window.editor && !window.editor.isCodeView) { window.editor.editor.focus(); } }, 10);" title="HTML 코드 보기">HTML</button>
                 </div>
             </div>

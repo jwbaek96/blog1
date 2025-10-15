@@ -24,6 +24,7 @@ class RichTextEditor {
         this.setupKeyboardShortcuts();
         this.setupDragAndDrop();
         this.setupAutoSave();
+        this.initializeHighlightButton();
         
         this.isInitialized = true;
         console.log('✅ Rich Text Editor initialized');
@@ -135,7 +136,7 @@ class RichTextEditor {
                 if (value) {
                     this.executeCommand('formatBlock', `<${value}>`);
                 } else {
-                    this.executeCommand('formatBlock', '<p>');
+                    this.executeCommand('formatBlock', '<div>');
                 }
             });
         }
@@ -294,12 +295,20 @@ class RichTextEditor {
                     range.deleteContents();
                     range.insertNode(newDiv);
                     
-                    // 커서를 새 div의 시작 부분으로 이동
+                    // 커서를 새 div 안의 br 뒤로 이동
                     const newRange = document.createRange();
-                    newRange.setStart(newDiv, 0);
+                    newRange.setStartAfter(newDiv.querySelector('br'));
                     newRange.collapse(true);
                     selection.removeAllRanges();
                     selection.addRange(newRange);
+                    
+                    // 스크롤을 새로 생성된 위치로 이동
+                    setTimeout(() => {
+                        newDiv.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'nearest' 
+                        });
+                    }, 10);
                 }
             }
         });
@@ -397,6 +406,103 @@ class RichTextEditor {
             this.editor.focus();
             this.moveCaretToEnd();
         }, 10);
+    }
+
+    /**
+     * Toggle highlight color picker
+     */
+    toggleHighlight() {
+        // 현재 하이라이트 색상 가져오기 (기본값: 노란색)
+        const currentColor = this.getCurrentHighlightColor() || '#ffff6b';
+        
+        // 현재 색상으로 하이라이트 적용
+        this.format('hiliteColor', currentColor);
+        
+        // 색상 선택 팝업 토글
+        const colorPicker = document.getElementById('highlightColors');
+        const highlightBtn = document.querySelector('.highlight-btn');
+        
+        if (colorPicker && highlightBtn) {
+            const isVisible = colorPicker.style.display !== 'none';
+            
+            if (isVisible) {
+                colorPicker.style.display = 'none';
+            } else {
+                // 버튼의 위치를 계산하여 팝업 위치 설정
+                const btnRect = highlightBtn.getBoundingClientRect();
+                
+                colorPicker.style.left = btnRect.left + 'px';
+                colorPicker.style.top = (btnRect.bottom + 5) + 'px';
+                colorPicker.style.display = 'flex';
+                
+                // 다른 곳 클릭시 닫기
+                setTimeout(() => {
+                    const closeHandler = (e) => {
+                        if (!e.target.closest('.highlight-wrapper')) {
+                            colorPicker.style.display = 'none';
+                            document.removeEventListener('click', closeHandler);
+                        }
+                    };
+                    document.addEventListener('click', closeHandler);
+                }, 100);
+            }
+        }
+        
+        // 에디터에 포커스를 다시 맞춤
+        setTimeout(() => {
+            this.editor.focus();
+        }, 10);
+    }
+
+    /**
+     * Apply specific highlight color
+     * @param {string} color - Color value
+     */
+    applyHighlight(color) {
+        this.format('hiliteColor', color);
+        
+        // 하이라이트 버튼 색상 업데이트
+        this.updateHighlightButtonColor(color);
+        
+        // 색상 선택 팝업 닫기
+        const colorPicker = document.getElementById('highlightColors');
+        if (colorPicker) {
+            colorPicker.style.display = 'none';
+        }
+        
+        // 에디터에 포커스를 다시 맞춤
+        setTimeout(() => {
+            this.editor.focus();
+        }, 10);
+    }
+
+    /**
+     * Update highlight button color
+     * @param {string} color - Color value
+     */
+    updateHighlightButtonColor(color) {
+        const colorDisplay = document.getElementById('highlightColorDisplay');
+        if (colorDisplay) {
+            colorDisplay.style.backgroundColor = color;
+        }
+        // 로컬 스토리지에 마지막 선택한 색상 저장
+        localStorage.setItem('lastHighlightColor', color);
+    }
+
+    /**
+     * Get current highlight color from localStorage
+     * @returns {string} Current highlight color
+     */
+    getCurrentHighlightColor() {
+        return localStorage.getItem('lastHighlightColor') || '#ffff6b';
+    }
+
+    /**
+     * Initialize highlight button with saved color
+     */
+    initializeHighlightButton() {
+        const savedColor = this.getCurrentHighlightColor();
+        this.updateHighlightButtonColor(savedColor);
     }
 
     /**
@@ -498,39 +604,65 @@ class RichTextEditor {
      */
     moveCaretToEnd() {
         try {
+            this.editor.focus();
+            
             const range = document.createRange();
             const sel = window.getSelection();
             
-            // 에디터의 마지막 텍스트 노드를 찾기
+            // 에디터의 모든 내용을 순회하여 마지막 위치 찾기
             const walker = document.createTreeWalker(
                 this.editor,
-                NodeFilter.SHOW_TEXT,
+                NodeFilter.SHOW_ALL,
                 null,
                 false
             );
             
-            let lastTextNode = null;
+            let lastNode = null;
             let node;
             while (node = walker.nextNode()) {
-                lastTextNode = node;
+                lastNode = node;
             }
             
-            if (lastTextNode) {
-                range.setStart(lastTextNode, lastTextNode.textContent.length);
-                range.collapse(true);
+            if (lastNode) {
+                if (lastNode.nodeType === Node.TEXT_NODE) {
+                    // 마지막이 텍스트 노드인 경우
+                    range.setStart(lastNode, lastNode.textContent.length);
+                    range.collapse(true);
+                } else if (lastNode.nodeType === Node.ELEMENT_NODE) {
+                    // 마지막이 요소 노드인 경우 (예: <br>, <div> 등)
+                    range.setStartAfter(lastNode);
+                    range.collapse(true);
+                }
+                
                 sel.removeAllRanges();
                 sel.addRange(range);
+                
+                // 스크롤을 마지막 위치로 이동
+                this.editor.scrollTop = this.editor.scrollHeight;
+                
             } else {
-                // 텍스트 노드가 없으면 에디터 끝에 포커스
+                // 빈 에디터인 경우
                 range.selectNodeContents(this.editor);
                 range.collapse(false);
                 sel.removeAllRanges();
                 sel.addRange(range);
             }
+            
         } catch (error) {
             console.error('Caret positioning error:', error);
-            // 폴백으로 단순 포커스
-            this.editor.focus();
+            // 폴백: 에디터 끝으로 이동
+            try {
+                const range = document.createRange();
+                const sel = window.getSelection();
+                range.selectNodeContents(this.editor);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+                this.editor.scrollTop = this.editor.scrollHeight;
+            } catch (fallbackError) {
+                console.error('Fallback caret positioning failed:', fallbackError);
+                this.editor.focus();
+            }
         }
     }
 
@@ -816,6 +948,18 @@ function setupGlobalFunctions() {
     window.changeBgColor = (color) => {
         if (editor) {
             editor.changeBgColor(color);
+        }
+    };
+    
+    window.toggleHighlight = () => {
+        if (editor) {
+            editor.toggleHighlight();
+        }
+    };
+    
+    window.applyHighlight = (color) => {
+        if (editor) {
+            editor.applyHighlight(color);
         }
     };
     
