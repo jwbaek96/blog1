@@ -453,26 +453,14 @@
         });
 
         // Google Drive Upload Functions
-        async function openImageUpload() {
-            try {
-                await ensureAuthBeforeUpload();
-                // 인증 완료 후 자동으로 파일 선택 다이얼로그 열기
-                document.getElementById('imageFileInput').click();
-            } catch (error) {
-                console.error('❌ Image upload preparation failed:', error);
-                // 인증 실패시 다이얼로그를 열지 않음
-            }
+        function openImageUpload() {
+            // 사용자 클릭 액션을 바로 파일 선택에 사용
+            document.getElementById('imageFileInput').click();
         }
 
-        async function openVideoUpload() {
-            try {
-                await ensureAuthBeforeUpload();
-                // 인증 완료 후 자동으로 파일 선택 다이얼로그 열기
-                document.getElementById('videoFileInput').click();
-            } catch (error) {
-                console.error('❌ Video upload preparation failed:', error);
-                // 인증 실패시 다이얼로그를 열지 않음
-            }
+        function openVideoUpload() {
+            // 사용자 클릭 액션을 바로 파일 선택에 사용
+            document.getElementById('videoFileInput').click();
         }
 
         // 파일 업로드 전 인증 확인 및 준비
@@ -499,17 +487,15 @@
                 
                 if (authResult && authResult.success) {
                     console.log('✅ Authentication successful');
-                    showToast('인증 완료! 파일을 선택해주세요.', 'success');
-                    // 짧은 지연 후 파일 다이얼로그가 자동으로 열림
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    showToast('인증 완료! 업로드를 시작합니다.', 'success');
                 } else {
                     throw new Error('Google Drive 인증에 실패했습니다');
                 }
                 
             } catch (error) {
-                console.error('❌ Pre-upload auth failed:', error);
+                console.error('❌ Auth failed:', error);
                 showToast(`인증 실패: ${error.message}`, 'error');
-                throw error; // 인증 실패시 파일 선택을 진행하지 않음
+                throw error;
             }
         }
 
@@ -559,17 +545,22 @@
             if (!files || files.length === 0) return;
 
             const file = files[0];
+            let placeholderId = null;
             
             try {
                 console.log('📤 Starting file upload:', file.name, fileType);
                 
-                // 인증은 이미 ensureAuthBeforeUpload에서 완료되었음
+                // 파일 선택 후 인증 확인 및 필요시 인증 진행
+                await ensureAuthBeforeUpload();
+                
                 if (!window.driveUploader || !window.driveUploader.isAuthenticated) {
-                    console.error('❌ Authentication not ready for upload');
-                    showToast('인증 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+                    console.error('❌ Authentication failed');
+                    showToast('Google Drive 인증에 실패했습니다.', 'error');
                     return;
                 }
                 
+                // 업로드 시작 - 로딩 스피너 삽입
+                placeholderId = insertUploadPlaceholder(file.name, fileType);
                 showToast('파일 업로드 중...', 'info');
                 
                 // 파일 업로드 실행
@@ -577,20 +568,175 @@
                 
                 console.log('✅ Upload successful:', publicUrl);
                 
-                // 에디터에 업로드된 파일 삽입
-                insertUploadedFile(publicUrl, file.name, fileType);
+                // 로딩 스피너를 실제 파일로 교체
+                replaceUploadPlaceholder(placeholderId, publicUrl, file.name, fileType);
                 
                 // 성공 메시지
                 showToast(`${fileType === 'image' ? '이미지' : '동영상'}가 업로드되었습니다!`, 'success');
                 
             } catch (error) {
                 console.error('❌ Upload error:', error);
+                
+                // 에러 발생 시 로딩 스피너 제거
+                if (placeholderId) {
+                    removeUploadPlaceholder(placeholderId);
+                }
+                
                 showToast(`업로드 실패: ${error.message}`, 'error');
             }
         }
 
         // Global variable to track uploaded files
         window.uploadedFiles = window.uploadedFiles || [];
+
+        // 업로드 로딩 스피너 삽입
+        function insertUploadPlaceholder(filename, fileType) {
+            const editorElement = document.getElementById('editor');
+            const placeholderId = 'upload-placeholder-' + Date.now();
+            
+            // 현재 커서 위치 저장
+            const selection = window.getSelection();
+            const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+            
+            // 로딩 스피너 HTML 생성
+            const placeholderHtml = `
+                <div id="${placeholderId}" class="image-upload-placeholder">
+                    <div class="upload-spinner"></div>
+                    <div class="upload-status">업로드 중...</div>
+                    <div class="upload-filename">${filename}</div>
+                </div>
+            `;
+            
+            // 에디터에 삽입
+            if (range) {
+                // 현재 커서가 있는 요소 확인
+                const currentElement = range.commonAncestorContainer;
+                const parentElement = currentElement.nodeType === Node.TEXT_NODE ? 
+                    currentElement.parentElement : currentElement;
+                
+                // 텍스트 블록(p, div 등) 내부에 있는지 확인
+                const textBlock = parentElement.closest('p, div:not(#editor)');
+                
+                if (textBlock && textBlock !== editorElement) {
+                    // 텍스트 블록 내부에 있는 경우, 블록을 분리
+                    console.log('📝 Inside text block, breaking it properly...');
+                    
+                    // execCommand를 사용하여 새 줄 추가 (블록 분리)
+                    document.execCommand('insertHTML', false, '<br><br>');
+                    
+                    // 새로운 선택 범위 생성
+                    const newSelection = window.getSelection();
+                    const newRange = document.createRange();
+                    
+                    // 플레이스홀더 요소 생성 및 삽입
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = placeholderHtml;
+                    const placeholderElement = tempDiv.firstElementChild;
+                    
+                    // 현재 커서 위치에 삽입
+                    if (newSelection.rangeCount > 0) {
+                        const currentRange = newSelection.getRangeAt(0);
+                        currentRange.insertNode(placeholderElement);
+                        
+                        // 커서를 플레이스홀더 다음에 새 줄로 이동
+                        const afterRange = document.createRange();
+                        afterRange.setStartAfter(placeholderElement);
+                        afterRange.collapse(true);
+                        
+                        // 플레이스홀더 다음에 새 줄 추가
+                        const newLineDiv = document.createElement('div');
+                        newLineDiv.innerHTML = '<br>';
+                        afterRange.insertNode(newLineDiv);
+                        
+                        // 커서를 새 줄로 이동
+                        afterRange.setStart(newLineDiv, 0);
+                        afterRange.collapse(true);
+                        
+                        newSelection.removeAllRanges();
+                        newSelection.addRange(afterRange);
+                    }
+                } else {
+                    // 일반적인 경우 (블록 외부 또는 에디터 최상위)
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = placeholderHtml;
+                    const placeholderElement = tempDiv.firstElementChild;
+                    
+                    range.deleteContents();
+                    range.insertNode(placeholderElement);
+                    
+                    // 커서를 플레이스홀더 다음으로 이동
+                    range.setStartAfter(placeholderElement);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            } else {
+                // 커서 위치가 없으면 끝에 추가
+                editorElement.insertAdjacentHTML('beforeend', placeholderHtml);
+            }
+            
+            // 에디터에 포커스
+            editorElement.focus();
+            
+            return placeholderId;
+        }
+
+        // 로딩 스피너를 실제 콘텐츠로 교체
+        function replaceUploadPlaceholder(placeholderId, url, filename, fileType) {
+            const placeholder = document.getElementById(placeholderId);
+            if (!placeholder) return;
+            
+            // 파일 정보 저장
+            const fileInfo = {
+                url: url,
+                filename: filename,
+                type: fileType,
+                uploadedAt: new Date().toISOString()
+            };
+            window.uploadedFiles.push(fileInfo);
+            
+            let contentHtml = '';
+            
+            if (fileType === 'image') {
+                // Google Drive URL을 직접 접근 가능한 형태로 변환
+                let imageUrl = url;
+                const fileIdMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch) {
+                    const fileId = fileIdMatch[1];
+                    imageUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+                }
+                
+                contentHtml = `
+                    <div style="margin: 20px 0; padding: 0; clear: both; display: block; text-align: center;">
+                        <img src="${imageUrl}" alt="${filename}" 
+                             style="max-width: 100%; height: auto; max-height: 500px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: block; margin: 0 auto;" 
+                             loading="lazy">
+                    </div>
+                `;
+            } else if (fileType === 'video') {
+                contentHtml = `
+                    <div style="margin: 20px 0; padding: 0; clear: both; display: block; text-align: center;">
+                        <video controls style="max-width: 100%; height: auto; max-height: 500px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: block; margin: 0 auto;">
+                            <source src="${url}" type="video/mp4">
+                            브라우저에서 비디오를 지원하지 않습니다.
+                        </video>
+                    </div>
+                `;
+            }
+            
+            // 플레이스홀더를 실제 콘텐츠로 교체
+            placeholder.outerHTML = contentHtml;
+            
+            console.log('🔄 Replaced placeholder with content:', { url, filename, fileType });
+        }
+
+        // 로딩 스피너 제거 (에러 시)
+        function removeUploadPlaceholder(placeholderId) {
+            const placeholder = document.getElementById(placeholderId);
+            if (placeholder) {
+                placeholder.remove();
+            }
+        }
 
         function insertUploadedFile(url, filename, fileType) {
             console.log('🔍 Checking editor availability...');
@@ -641,14 +787,10 @@
                 
                 const imageHtml = `<div style="margin: 16px 0; text-align: center;">
                     <img src="${imageUrl}" alt="${filename}" 
-                         style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" 
+                         style="max-width: 100%; height: 640px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" 
                          loading="lazy"
                          onerror="this.onerror=null; this.src='${url}'; console.log('🔄 Fallback to original URL:', '${url}');"
                          onload="console.log('✅ Image loaded successfully:', this.src);">
-                    <div style="font-size: 12px; color: #666; margin-top: 8px;">${filename}</div>
-                    <div style="font-size: 10px; color: #999; margin-top: 4px;">
-                        <a href="${url}" target="_blank" style="color: #999;">원본 링크</a>
-                    </div>
                 </div>`;
                 
                 // 방법 1: execCommand 사용
@@ -698,65 +840,21 @@
                     console.log('🆔 Video file ID:', fileId);
                     console.log('🎬 Creating Google Drive video card');
                     
-                    videoHtml = `<div style="margin: 20px 0; border: 2px solid #e1f5fe; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 600px;">
-                        <div style="padding: 20px 24px; background: linear-gradient(135deg, #2196f3 0%, #9c27b0 100%); color: white;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="font-size: 32px;">🎬</div>
-                                <div>
-                                    <h3 style="margin: 0; font-size: 18px; font-weight: 600;">비디오 첨부파일</h3>
-                                    <p style="margin: 4px 0 0 0; opacity: 0.9; font-size: 14px;">Google Drive에서 호스팅됨</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div style="padding: 24px; text-align: center;">
-                            <div style="position: relative; margin-bottom: 20px;">
-                                <iframe src="https://drive.google.com/file/d/${fileId}/preview" 
-                                        width="100%" height="300" 
-                                        style="border: none; border-radius: 12px; background: #f5f5f5;"
-                                        onload="console.log('✅ Video iframe loaded successfully');"
-                                        onerror="console.log('❌ Video iframe failed to load');">
-                                </iframe>
-                            </div>
-                            
-                            <div style="background: white; padding: 16px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
-                                <div style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;">${filename}</div>
-                                <div style="display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;">
-                                    <span style="background: #e3f2fd; padding: 4px 12px; border-radius: 16px; color: #1976d2; font-size: 12px; font-weight: 500;">MP4 비디오</span>
-                                    <span style="background: #f3e5f5; padding: 4px 12px; border-radius: 16px; color: #7b1fa2; font-size: 12px; font-weight: 500;">Google Drive</span>
-                                </div>
-                            </div>
-                            
-                            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                                <a href="https://drive.google.com/file/d/${fileId}/view" target="_blank" 
-                                   style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #4285f4; color: white; text-decoration: none; border-radius: 10px; font-weight: 500; transition: all 0.3s; box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);">
-                                   ▶️ Google Drive에서 재생
-                                </a>
-                                
-                                <button onclick="window.open('https://drive.google.com/uc?id=${fileId}&export=download', '_blank'); console.log('🔽 Download attempt for:', '${fileId}');" 
-                                        style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #34a853; color: white; border: none; border-radius: 10px; font-weight: 500; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(52, 168, 83, 0.3);">
-                                    💾 다운로드 시도
-                                </button>
-                                
-                                <button onclick="navigator.clipboard.writeText('https://drive.google.com/file/d/${fileId}/view').then(() => alert('링크가 복사되었습니다!')).catch(() => alert('복사 실패'));" 
-                                        style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #ff9800; color: white; border: none; border-radius: 10px; font-weight: 500; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);">
-                                    🔗 링크 복사
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div style="padding: 16px 24px; background: rgba(255,255,255,0.7); border-top: 1px solid rgba(255,255,255,0.3); font-size: 12px; color: #666; text-align: center;">
-                            💡 Google Drive 비디오는 보안상 직접 스트리밍이 제한됩니다. 위 버튼들로 재생하거나 다운로드하세요.
-                        </div>
+                    videoHtml = `<div style="margin: 16px 0; text-align: center;">
+                        <iframe src="https://drive.google.com/file/d/${fileId}/preview" 
+                                width="100%" height="400" 
+                                style="border: none; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                                onload="console.log('✅ Video iframe loaded successfully');"
+                                onerror="console.log('❌ Video iframe failed to load');">
+                        </iframe>
                     </div>`;
                 } else {
                     // 일반 비디오 URL인 경우
                     videoHtml = `<div style="margin: 16px 0; text-align: center;">
                         <video controls style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                             <source src="${url}" type="${getMimeType(filename)}">
-                            <p>브라우저가 동영상을 지원하지 않습니다. <a href="${url}" target="_blank">다운로드</a></p>
+                            <p>브라우저가 동영상을 지원하지 않습니다.</p>
                         </video>
-                        <div style="font-size: 12px; color: #666; margin-top: 8px;">${filename}</div>
                     </div>`;
                 }
                 
