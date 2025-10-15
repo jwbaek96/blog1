@@ -24,7 +24,7 @@ const CONFIG = {
     BLOG_TITLE: 'JW.BAEK - Blog',
     BLOG_DESCRIPTION: 'JW.BAEK의 블로그 - 창작 과정과 예술적 탐구를 공유합니다.',
     BLOG_AUTHOR: 'Your Name',
-    BLOG_URL: 'https://blog1-mu-two.vercel.app/',
+    BLOG_URL: 'https://jwbaek.kr/',
     
     // Development Settings
     DEV_MODE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
@@ -123,8 +123,8 @@ async function initializeConfig() {
                         const [key, ...valueParts] = line.split('=');
                         const value = valueParts.join('=').trim();
                         
-                        // GOOGLE_API를 우선으로 확인 (Vercel 환경변수명과 일치)
-                        if (key.trim() === 'GOOGLE_API') {
+                        // V_GOOGLE_APPSCRIPT_URL로 변경
+                        if (key.trim() === 'V_GOOGLE_APPSCRIPT_URL') {
                             CONFIG.APPS_SCRIPT_URL = value;
                             CONFIG.UPLOAD_API_URL = value;
                         }
@@ -145,6 +145,34 @@ async function initializeConfig() {
             console.warn('환경변수 로드 실패, 기본값 사용:', error);
             CONFIG.APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
             CONFIG.UPLOAD_API_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
+        }
+    } else {
+        // Vercel 환경: API 엔드포인트를 통해 환경변수 로드
+        try {
+            const response = await fetch('/api/config');
+            if (response.ok) {
+                const envConfig = await response.json();
+                
+                // Vercel 환경변수에서 설정 업데이트
+                if (envConfig.V_GOOGLE_APPSCRIPT_URL) {
+                    CONFIG.APPS_SCRIPT_URL = envConfig.V_GOOGLE_APPSCRIPT_URL;
+                    CONFIG.UPLOAD_API_URL = envConfig.V_GOOGLE_APPSCRIPT_URL;
+                }
+                if (envConfig.V_GOOGLE_DRIVE_FOLDER_ID) {
+                    CONFIG.GOOGLE_DRIVE_FOLDER_ID = envConfig.V_GOOGLE_DRIVE_FOLDER_ID;
+                }
+                if (envConfig.V_GOOGLE_DRIVE_API_KEY) {
+                    CONFIG.GOOGLE_DRIVE_API_KEY = envConfig.V_GOOGLE_DRIVE_API_KEY;
+                }
+                if (envConfig.V_GOOGLE_API_KEY) {
+                    CONFIG.GOOGLE_API_KEY = envConfig.V_GOOGLE_API_KEY;
+                }
+                if (envConfig.V_GOOGLE_CLIENT_ID) {
+                    CONFIG.GOOGLE_CLIENT_ID = envConfig.V_GOOGLE_CLIENT_ID;
+                }
+            }
+        } catch (error) {
+            console.warn('Vercel 환경변수 로드 실패, 기본값 사용:', error);
         }
     }
     
