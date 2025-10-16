@@ -708,13 +708,18 @@
                     imageUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
                 }
                 
-                contentHtml = `
-                    <div style="margin: 20px 0; padding: 0; clear: both; display: block; text-align: center;">
-                        <img src="${imageUrl}" alt="${escapeHtmlAttribute(filename)}" 
-                             style="max-width: 100%; height: auto; max-height: 500px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: block; margin: 0 auto;" 
-                             loading="lazy">
-                    </div>
-                `;
+                // DOM 요소로 안전하게 생성
+                const containerDiv = document.createElement('div');
+                containerDiv.style.cssText = 'margin: 20px 0; padding: 0; clear: both; display: block; text-align: center;';
+                
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = filename;
+                img.style.cssText = 'max-width: 100%; height: auto; max-height: 500px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: block; margin: 0 auto;';
+                img.loading = 'lazy';
+                
+                containerDiv.appendChild(img);
+                contentHtml = containerDiv.outerHTML;
             } else if (fileType === 'video') {
                 contentHtml = `
                     <div style="margin: 20px 0; padding: 0; clear: both; display: block; text-align: center;">
@@ -787,13 +792,26 @@
                     console.log('🔄 Converted to thumbnail URL:', imageUrl);
                 }
                 
-                const imageHtml = `<div style="margin: 16px 0; text-align: center;">
-                    <img src="${imageUrl}" alt="${escapeHtmlAttribute(filename)}" 
-                         style="max-width: 100%; height: 640px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" 
-                         loading="lazy"
-                         onerror="this.onerror=null; this.src='${url}'; console.log('🔄 Fallback to original URL:', '${url}');"
-                         onload="console.log('✅ Image loaded successfully:', this.src);">
-                </div>`;
+                // DOM 요소로 안전하게 생성
+                const containerDiv = document.createElement('div');
+                containerDiv.style.cssText = 'margin: 16px 0; text-align: center;';
+                
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = filename;
+                img.style.cssText = 'max-width: 100%; height: 640px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
+                img.loading = 'lazy';
+                img.onerror = function() {
+                    this.onerror = null;
+                    this.src = url;
+                    console.log('🔄 Fallback to original URL:', url);
+                };
+                img.onload = function() {
+                    console.log('✅ Image loaded successfully:', this.src);
+                };
+                
+                containerDiv.appendChild(img);
+                const imageHtml = containerDiv.outerHTML;
                 
                 // 방법 1: execCommand 사용
                 try {

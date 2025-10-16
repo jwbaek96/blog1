@@ -910,9 +910,9 @@ html {
     .latest-blog-section .section-header h2 {
         font-size: 1.75rem;
     }
-    
+    .blog-posts-grid{padding: 0 .5rem;}
     .blog-post-card {
-        padding: 1.25rem 0;
+        padding: 1.25rem .5rem;
     }
     
     .blog-post-title {
