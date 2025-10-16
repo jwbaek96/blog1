@@ -619,3 +619,72 @@ body.post-page .main {
         line-height: 1.4;
     }
 }
+
+/* Google Drive Video Thumbnail Styles */
+.google-drive-video {
+    position: relative;
+    display: inline-block;
+    margin: 20px auto;
+    text-align: center;
+}
+
+.google-drive-thumbnail {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.google-drive-thumbnail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.google-drive-thumbnail img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    max-height: 400px;
+}
+
+.play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.google-drive-thumbnail:hover .play-overlay {
+    background: rgba(0, 0, 0, 0.9);
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.google-drive-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    color: white;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Text center utility class */
+.text-center {
+    text-align: center;
+}

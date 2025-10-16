@@ -230,28 +230,28 @@ const FloatingActions = {
     },
 
     // 스크롤 위치에 따른 scroll to top 버튼 표시/숨김 설정
-    // setupScrollToTopVisibility: function() {
-    //     let scrollTimeout;
+    setupScrollToTopVisibility: function() {
+        let scrollTimeout;
         
-    //     const handleWindowScroll = () => {
-    //         clearTimeout(scrollTimeout);
-    //         scrollTimeout = setTimeout(() => {
-    //             const scrollTopBtn = document.querySelector('.floating-scroll-top-btn');
-    //             if (!scrollTopBtn) return;
+        const handleWindowScroll = () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                const scrollTopBtn = document.querySelector('.floating-scroll-top-btn');
+                if (!scrollTopBtn) return;
 
-    //             // 페이지 상단에서 300px 이상 스크롤했을 때 버튼 표시
-    //             if (window.scrollY > 300) {
-    //                 scrollTopBtn.classList.add('visible');
-    //             } else {
-    //                 scrollTopBtn.classList.remove('visible');
-    //             }
-    //         }, 100);
-    //     };
+                // 페이지 상단에서 300px 이상 스크롤했을 때 버튼 표시
+                if (window.scrollY > 300) {
+                    scrollTopBtn.classList.add('visible');
+                } else {
+                    scrollTopBtn.classList.remove('visible');
+                }
+            }, 100);
+        };
 
-    //     window.addEventListener('scroll', handleWindowScroll);
-    //     // 초기 상태 설정
-    //     handleWindowScroll();
-    // },
+        window.addEventListener('scroll', handleWindowScroll);
+        // 초기 상태 설정
+        handleWindowScroll();
+    },
 
     // 금지어 필터링
     validateInput: function(text, type = 'message') {

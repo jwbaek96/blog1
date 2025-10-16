@@ -556,7 +556,7 @@ body {
     animation: spin 1s linear infinite;
     margin-bottom: var(--spacing-md);
 }
-
+.empty-state{margin: auto; padding: 25vh 0; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;}
 /* Error Message */
 .error-message {
     text-align: center;

@@ -14,8 +14,6 @@ class PostApp {
      * Initialize the post app
      */
     async init() {
-        console.log('🚀 Initializing Post App...');
-        
         // Get post ID from URL
         this.postId = getUrlParameter('id');
         
@@ -24,9 +22,7 @@ class PostApp {
             return;
         }
 
-        console.log('📋 Loading post ID:', this.postId);
-        
-        this.setupEventListeners();
+                this.setupEventListeners();
         this.showLoading();
         
         try {
@@ -46,9 +42,7 @@ class PostApp {
      */
     async loadAllPosts() {
         try {
-            console.log('📡 Fetching all posts...');
             this.allPosts = await window.SheetsAPI.fetchPosts();
-            console.log(`✅ Loaded ${this.allPosts.length} posts`);
         } catch (error) {
             console.error('❌ Error loading all posts:', error);
             // Continue even if we can't load all posts
@@ -60,13 +54,6 @@ class PostApp {
      */
     async loadPost() {
         try {
-            console.log('🔍 Looking for post ID:', this.postId, '(type:', typeof this.postId, ')');
-            console.log('🔍 Available posts:', this.allPosts.map(p => ({
-                id: p.id, 
-                idType: typeof p.id,
-                title: p.title
-            })));
-            
             // Find post by ID (try both string and number comparison)
             this.post = this.allPosts.find(p => 
                 String(p.id) === String(this.postId) || 
@@ -74,17 +61,10 @@ class PostApp {
             );
             
             if (!this.post) {
-                console.error('❌ Post not found for ID:', this.postId);
-                console.error('❌ Available post IDs:', this.allPosts.map(p => p.id));
                 this.showError('포스트를 찾을 수 없습니다.');
                 return;
             }
 
-            console.log('✅ Post found:', {
-                id: this.post.id,
-                title: this.post.title,
-                contentLength: this.post.content ? this.post.content.length : 0
-            });
             this.renderPost();
             this.hideLoading();
             
@@ -115,10 +95,7 @@ class PostApp {
         // Render post content
         this.renderPostContent();
         
-        // Debug: Log raw content from sheets
-        console.log('Raw content from sheets:', this.post.content);
 
-        console.log('✅ Post rendered successfully');
     }
 
     /**
@@ -210,27 +187,15 @@ class PostApp {
         if (contentBody) {
             const content = this.post.content || this.post.excerpt;
             
-            console.log('🔍 Original content from sheets (first 500 chars):');
-            console.log(content ? content.substring(0, 500) : 'No content');
-            
             // HTML 콘텐츠인지 확인 (HTML 태그가 포함되어 있는지)
             if (content && content.includes('<')) {
                 // HTML 콘텐츠는 HTML 엔티티 디코딩 후 렌더링
                 const decodedContent = this.decodeHtmlEntities(content);
-                console.log('🔍 After decoding (first 500 chars):');
-                console.log(decodedContent ? decodedContent.substring(0, 500) : 'No decoded content');
-                
                 contentBody.innerHTML = decodedContent;
-                
-                console.log('🔍 Final rendered HTML (first 500 chars):');
-                console.log(contentBody.innerHTML ? contentBody.innerHTML.substring(0, 500) : 'No rendered HTML');
-                
-                console.log('📄 Rendering HTML content with entity decoding');
             } else {
                 // 플레인 텍스트는 처리해서 렌더링
                 const processedContent = this.processContent(content);
                 contentBody.innerHTML = processedContent;
-                console.log('📄 Processing plain text content');
             }
         }
     }
@@ -244,8 +209,55 @@ class PostApp {
         // First, fix common malformed attribute patterns before DOM parsing
         let fixedStr = str;
         
+        // Fix attributes without quotes first
+        // Handle specific case: style=text-align: center;
+        fixedStr = fixedStr.replace(
+            /\s+style=text-align:\s*center;/g,
+            ' style="text-align: center;"'
+        );
+        
+        // Handle broader case: style=value (without quotes)
+        fixedStr = fixedStr.replace(
+            /\s+style=([^">\s][^>\s]*)/g,
+            (match, styleValue) => {
+                const cleanStyle = styleValue.endsWith(';') ? styleValue : styleValue + ';';
+                return ` style="${cleanStyle}"`;
+            }
+        );
+        
+        // Fix other common unquoted attributes
+        fixedStr = fixedStr.replace(
+            /\s+(class|id|src|href|alt|title|width|height)=([^">\s][^>\s]*)/g,
+            (match, attrName, attrValue) => {
+                return ` ${attrName}="${attrValue}"`;
+            }
+        );
+        
+        // Fix malformed style attributes where colons get split
+        fixedStr = fixedStr.replace(
+            /style="([^"]*?):\s*"\s+([^=\s]+);?=""/g,
+            (match, property, value) => {
+                return `style="${property}: ${value};"`;
+            }
+        );
+        
+        // Fix the specific pattern: style="text-align:" center;=""
+        fixedStr = fixedStr.replace(
+            /style="([^"]*?):\s*"\s+([^=\s]+);=""/g,
+            (match, property, value) => {
+                return `style="${property}: ${value};"`;
+            }
+        );
+        
+        // Fix another variant: style="property:" value=""
+        fixedStr = fixedStr.replace(
+            /style="([^"]*?):\s*"\s+([^=\s]+)=""/g,
+            (match, property, value) => {
+                return `style="${property}: ${value};"`;
+            }
+        );
+        
         // Fix malformed attributes like: style="value" other="" content="" more=""
-        // Pattern: attribute="value" word="" -> merge back into the attribute value
         fixedStr = fixedStr.replace(
             /(\w+)="([^"]*?)"\s+([^=\s]+)=""/g,
             (match, attr, value, extra) => {
@@ -277,68 +289,324 @@ class PostApp {
             }
         );
         
+        // Final aggressive fix for the specific problematic pattern
+        // Handle: style="text-align:" center;=""
+        fixedStr = fixedStr.replace(
+            /style="text-align:\s*"\s+center;=""/g,
+            'style="text-align: center;"'
+        );
+        
+        // Handle: style="text-align:" center=""
+        fixedStr = fixedStr.replace(
+            /style="text-align:\s*"\s+center=""/g,
+            'style="text-align: center;"'
+        );
+        
+        // Handle any remaining pattern with center
+        fixedStr = fixedStr.replace(
+            /style="([^"]*text-align[^"]*):"\s+center[^>]*>/g,
+            'style="$1: center;">'
+        );
+        
         // Remove any remaining empty attributes
         fixedStr = fixedStr.replace(/\s+[^=\s]+=""/g, '');
         
-        // Convert legacy inline styles to CSS classes
-        fixedStr = this.convertInlineStylesToClasses(fixedStr);
-        
-        console.log('🔧 Fixed malformed attributes and converted styles:', fixedStr.substring(0, 200));
-        
-        // Simple HTML entity decoding
-        const textArea = document.createElement('textarea');
-        textArea.innerHTML = fixedStr;
-        let decodedStr = textArea.value;
+        // Enhanced HTML entity decoding with better tag preservation
+        let decodedStr = this.safeHtmlDecode(fixedStr);
         
         try {
-            // Use DOM parsing to safely reconstruct HTML
+            // Use DOM parsing to safely reconstruct HTML first
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = decodedStr;
             
-            // Let the browser parse and reconstruct the HTML properly
-            const reconstructedHTML = tempDiv.innerHTML;
+            // Preserve important HTML elements and their attributes
+            this.preserveHtmlElements(tempDiv);
             
-            console.log('🔧 HTML reconstructed by browser:', reconstructedHTML.substring(0, 200));
+            // Let the browser parse and reconstruct the HTML properly
+            let reconstructedHTML = tempDiv.innerHTML;
+            
+            // Now convert legacy inline styles to CSS classes on the properly parsed HTML
+            reconstructedHTML = this.convertInlineStylesToClasses(reconstructedHTML);
+            
             return reconstructedHTML;
             
         } catch (error) {
-            console.warn('HTML reconstruction failed, returning original decoded string:', error);
             return decodedStr;
         }
     }
 
     /**
-     * Convert legacy inline styles to CSS classes
+     * Safe HTML entity decoding that preserves HTML structure
+     */
+    safeHtmlDecode(str) {
+        if (!str) return '';
+        
+        // Create a temporary element for safe decoding
+        const tempElement = document.createElement('div');
+        
+        // Handle common HTML entities manually to avoid issues
+        let decodedStr = str
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&#x27;/g, "'")
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&hellip;/g, '...')
+            .replace(/&mdash;/g, '—')
+            .replace(/&ndash;/g, '–')
+            .replace(/&ldquo;/g, '"')
+            .replace(/&rdquo;/g, '"')
+            .replace(/&lsquo;/g, "'")
+            .replace(/&rsquo;/g, "'")
+            .replace(/&amp;/g, '&'); // Process & last to avoid double decoding
+        
+        // Use textarea method as fallback for remaining entities
+        try {
+            tempElement.innerHTML = decodedStr;
+            return tempElement.innerHTML;
+        } catch (error) {
+            return decodedStr;
+        }
+    }
+
+    /**
+     * Preserve important HTML elements and fix common issues
+     */
+    preserveHtmlElements(container) {
+        // Fix broken p tags
+        const brokenPTags = container.querySelectorAll('p[style*=""]');
+        brokenPTags.forEach(p => {
+            // Clean up malformed style attributes
+            const style = p.getAttribute('style');
+            if (style && style.includes('=""')) {
+                p.removeAttribute('style');
+            }
+        });
+
+        // Fix broken div tags with text-align issues
+        const brokenDivs = container.querySelectorAll('div[style*="text-align"]');
+        brokenDivs.forEach(div => {
+            const style = div.getAttribute('style');
+            if (style) {
+                // Handle various malformed text-align patterns
+                if (style.includes('text-align:')) {
+                    // Extract valid text-align value
+                    const match = style.match(/text-align:\s*(left|center|right|justify)/);
+                    if (match) {
+                        div.setAttribute('style', `text-align: ${match[1]};`);
+                    } else if (style.includes('center')) {
+                        div.setAttribute('style', 'text-align: center;');
+                    }
+                } else if (style.includes('text-align:')) {
+                    // Handle malformed patterns like 'text-align:' without value
+                    if (div.hasAttribute('center') || style.includes('center')) {
+                        div.setAttribute('style', 'text-align: center;');
+                        div.removeAttribute('center');
+                    }
+                }
+            }
+        });
+        
+        // Fix elements with malformed center attribute
+        const centerElements = container.querySelectorAll('[center=""]');
+        centerElements.forEach(element => {
+            element.removeAttribute('center');
+            const currentStyle = element.getAttribute('style') || '';
+            if (!currentStyle.includes('text-align')) {
+                element.setAttribute('style', currentStyle + ' text-align: center;');
+            }
+        });
+
+        // Fix broken links
+        const links = container.querySelectorAll('a');
+        links.forEach(link => {
+            // Ensure links have proper href attributes
+            if (!link.hasAttribute('href') || link.getAttribute('href') === '') {
+                // If no href, remove the link but keep the content
+                const textNode = document.createTextNode(link.textContent);
+                link.parentNode.replaceChild(textNode, link);
+            } else {
+                // Add target="_blank" for external links
+                const href = link.getAttribute('href');
+                if (href.startsWith('http') && !href.includes(window.location.hostname)) {
+                    link.setAttribute('target', '_blank');
+                    link.setAttribute('rel', 'noopener noreferrer');
+                }
+            }
+        });
+
+        // Fix code blocks and pre tags
+        const codeBlocks = container.querySelectorAll('pre, code');
+        codeBlocks.forEach(block => {
+            // Remove malformed attributes but preserve class and id
+            const attributes = [...block.attributes];
+            attributes.forEach(attr => {
+                if (!['class', 'id', 'style'].includes(attr.name)) {
+                    if (attr.value === '' || attr.value === '""') {
+                        block.removeAttribute(attr.name);
+                    }
+                }
+            });
+        });
+
+        // Fix heading tags
+        const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(heading => {
+            // Clean up malformed style attributes
+            const style = heading.getAttribute('style');
+            if (style && style.includes('=""')) {
+                heading.removeAttribute('style');
+            }
+        });
+
+        // Fix list items
+        const listItems = container.querySelectorAll('ul, ol, li');
+        listItems.forEach(item => {
+            // Remove empty attributes
+            const attributes = [...item.attributes];
+            attributes.forEach(attr => {
+                if (attr.value === '' || attr.value === '""') {
+                    item.removeAttribute(attr.name);
+                }
+            });
+        });
+
+        // Preserve iframe and video elements
+        const mediaElements = container.querySelectorAll('iframe, video, img');
+        mediaElements.forEach(element => {
+            // Ensure media elements have proper attributes
+            if (element.tagName === 'IFRAME') {
+                if (!element.hasAttribute('frameborder')) {
+                    element.setAttribute('frameborder', '0');
+                }
+                if (!element.hasAttribute('allowfullscreen') && element.src.includes('drive.google.com')) {
+                    element.setAttribute('allowfullscreen', '');
+                }
+            }
+        });
+
+        // Fix broken br tags
+        const brTags = container.querySelectorAll('br');
+        brTags.forEach(br => {
+            // Remove any malformed attributes from br tags
+            const attributes = [...br.attributes];
+            attributes.forEach(attr => {
+                if (attr.name !== 'class' && attr.name !== 'id') {
+                    br.removeAttribute(attr.name);
+                }
+            });
+        });
+    }
+
+    /**
+     * Convert legacy inline styles to CSS classes using DOM parsing
      */
     convertInlineStylesToClasses(html) {
         if (!html) return '';
         
-        // Convert wrapper div with inline styles to CSS class
-        html = html.replace(
-            /<div\s+style="[^"]*margin:\s*20px[^"]*padding:\s*0[^"]*clear:\s*both[^"]*display:\s*block[^"]*text-align:\s*center[^"]*"[^>]*>/gi,
-            '<div class="media-wrapper">'
-        );
-        
-        // Convert image with inline styles to CSS class
-        html = html.replace(
-            /<img([^>]*)\s+style="[^"]*max-width:\s*100%[^"]*height:\s*auto[^"]*max-height:\s*500px[^"]*border-radius:\s*8px[^"]*box-shadow:[^"]*display:\s*block[^"]*margin:[^"]*auto[^"]*"([^>]*)>/gi,
-            '<img$1 class="media-image"$2>'
-        );
-        
-        // Convert video with inline styles to CSS class
-        html = html.replace(
-            /<video([^>]*)\s+style="[^"]*max-width:\s*100%[^"]*height:\s*auto[^"]*max-height:\s*500px[^"]*border-radius:\s*8px[^"]*box-shadow:[^"]*display:\s*block[^"]*margin:[^"]*auto[^"]*"([^>]*)>/gi,
-            '<video$1 class="media-video"$2>'
-        );
-        
-        // Convert code blocks with inline styles to CSS class
-        html = html.replace(
-            /<pre\s+style="[^"]*margin:\s*0[^"]*padding:\s*20px[^"]*background:[^"]*border-radius:\s*8px[^"]*overflow-x:\s*auto[^"]*white-space:\s*pre-wrap[^"]*font-family:[^"]*font-size:[^"]*line-height:[^"]*"([^>]*)>/gi,
-            '<pre class="code-block"$1>'
-        );
-        
-        console.log('🔄 Converted inline styles to classes');
-        return html;
+        try {
+            // Create a temporary container to parse HTML safely
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Convert ALL divs with text-align: center to proper classes
+            const textAlignDivs = tempDiv.querySelectorAll('div[style*="text-align"]');
+            textAlignDivs.forEach(div => {
+                const style = div.getAttribute('style') || '';
+                if (style.includes('text-align') && style.includes('center')) {
+                    // If it has media wrapper characteristics, use media-wrapper class
+                    if (style.includes('margin') || div.querySelector('iframe, video, img')) {
+                        div.className = div.className ? div.className + ' media-wrapper' : 'media-wrapper';
+                    } else {
+                        // Otherwise, use a general text-center class
+                        div.className = div.className ? div.className + ' text-center' : 'text-center';
+                    }
+                    div.removeAttribute('style');
+                }
+            });
+            
+            // Convert images with media styling to media-image class
+            const mediaImages = tempDiv.querySelectorAll('img[style*="max-width"]');
+            mediaImages.forEach(img => {
+                const style = img.getAttribute('style') || '';
+                if (style.includes('max-width') && style.includes('border-radius')) {
+                    img.className = img.className ? img.className + ' media-image' : 'media-image';
+                    img.removeAttribute('style');
+                }
+            });
+            
+            // Convert videos with media styling to media-video class
+            const mediaVideos = tempDiv.querySelectorAll('video[style*="max-width"], iframe[style*="max-width"]');
+            mediaVideos.forEach(video => {
+                const style = video.getAttribute('style') || '';
+                if (style.includes('max-width') && (style.includes('border-radius') || video.tagName === 'IFRAME')) {
+                    video.className = video.className ? video.className + ' media-video' : 'media-video';
+                    video.removeAttribute('style');
+                }
+            });
+            
+            // Handle Google Drive iframes - convert to clickable thumbnails due to CSP restrictions
+            const googleDriveIframes = tempDiv.querySelectorAll('iframe[src*="drive.google.com/file"]');
+            googleDriveIframes.forEach(iframe => {
+                const src = iframe.getAttribute('src');
+                const fileIdMatch = src.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                
+                if (fileIdMatch) {
+                    const fileId = fileIdMatch[1];
+                    const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+                    const viewUrl = `https://drive.google.com/file/d/${fileId}/view`;
+                    
+                    // Create a clickable thumbnail replacement
+                    const replacement = document.createElement('div');
+                    replacement.className = 'media-wrapper google-drive-video';
+                    replacement.innerHTML = `
+                        <div class="google-drive-thumbnail" onclick="window.open('${viewUrl}', '_blank')">
+                            <img src="${thumbnailUrl}" alt="Google Drive Video" class="media-video" loading="lazy">
+                            <div class="play-overlay">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="white">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
+                            <div class="google-drive-label">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 2L3 7v13c0 1.1.9 2 2 2h14c0-1.1-.9-2-2-2H5V7l3-5z"/>
+                                </svg>
+                                Google Drive에서 보기
+                            </div>
+                        </div>
+                    `;
+                    
+                    iframe.parentNode.replaceChild(replacement, iframe);
+                }
+            });
+            
+            // Convert code blocks with specific styling to code-block class
+            const codeBlocks = tempDiv.querySelectorAll('pre[style*="padding"][style*="background"]');
+            codeBlocks.forEach(pre => {
+                const style = pre.getAttribute('style') || '';
+                if (style.includes('padding') && style.includes('background') && style.includes('border-radius')) {
+                    pre.className = pre.className ? pre.className + ' code-block' : 'code-block';
+                    pre.removeAttribute('style');
+                }
+            });
+            
+            // Clean up any remaining malformed style attributes
+            const elementsWithMalformedStyles = tempDiv.querySelectorAll('[style*=":"][style*=";"]:not([style*="::"])');
+            elementsWithMalformedStyles.forEach(element => {
+                const style = element.getAttribute('style') || '';
+                // Check for malformed attributes like 'style="text-align:" center;=""'
+                if (style.includes('":') || style.match(/[^:]+:\s*[^;]*;[^"]*=""/)) {
+                    element.removeAttribute('style');
+                }
+            });
+            
+            const result = tempDiv.innerHTML;
+            return result;
+            
+        } catch (error) {
+            return html;
+        }
     }
 
     /**

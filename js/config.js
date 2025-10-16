@@ -123,13 +123,18 @@ async function initializeConfig() {
                         const [key, ...valueParts] = line.split('=');
                         const value = valueParts.join('=').trim();
                         
-                        // V_GOOGLE_APPSCRIPT_URL로 변경
+                        // 다양한 환경변수명 지원
                         if (key.trim() === 'V_GOOGLE_APPSCRIPT_URL') {
                             CONFIG.APPS_SCRIPT_URL = value;
                             CONFIG.UPLOAD_API_URL = value;
                         }
                         if (key.trim() === 'APPS_SCRIPT_URL') {
                             CONFIG.APPS_SCRIPT_URL = value;
+                            CONFIG.UPLOAD_API_URL = value;
+                        }
+                        if (key.trim() === 'GOOGLE_API') {
+                            CONFIG.APPS_SCRIPT_URL = value;
+                            CONFIG.UPLOAD_API_URL = value;
                         }
                         if (key.trim() === 'UPLOAD_API_URL') {
                             CONFIG.UPLOAD_API_URL = value;

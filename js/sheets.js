@@ -13,12 +13,8 @@ class SheetsAPI {
      */
     async fetchPosts() {
         try {
-            console.log('🌐 Fetching posts from Apps Script API...');
-            
             // Use Apps Script Web App URL with getPosts action
             const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}?action=getPosts&t=${Date.now()}`;
-            
-            console.log('🔗 Apps Script URL:', appsScriptUrl);
             
             const response = await fetch(appsScriptUrl, {
                 method: 'GET',
@@ -34,8 +30,6 @@ class SheetsAPI {
             
             const result = await response.json();
             
-            console.log('📄 Apps Script response:', result);
-            
             if (!result.success) {
                 throw new Error(result.error || 'Apps Script returned error');
             }
@@ -45,13 +39,10 @@ class SheetsAPI {
             // Apps Script 데이터를 processPosts로 처리하여 excerpt 등 필요한 필드 추가
             const posts = this.processPosts(rawPosts);
             
-            console.log(`✅ Fetched ${posts.length} posts from Apps Script API`);
-            
             return posts;
             
         } catch (error) {
             console.error('❌ Apps Script fetch failed:', error);
-            console.log('🔄 Falling back to CSV method...');
             return this.fetchPostsFromCSV();
         }
     }
@@ -62,13 +53,9 @@ class SheetsAPI {
      */
     async fetchPostsFromCSV() {
         try {
-            console.log('🌐 Fetching posts from Google Sheets CSV...');
-            
             // Simple timestamp for cache busting
             const timestamp = Date.now();
             const urlWithTimestamp = `${this.sheetUrl}&t=${timestamp}`;
-            
-            console.log('🔗 CSV URL:', urlWithTimestamp);
             
             // Fetch from Google Sheets
             const response = await fetch(urlWithTimestamp);
@@ -79,9 +66,6 @@ class SheetsAPI {
             
             const csvText = await response.text();
             
-            console.log('📄 CSV response length:', csvText.length);
-            console.log('📄 CSV first 200 chars:', csvText.substring(0, 200));
-            
             if (!csvText.trim()) {
                 throw new Error('Empty response from Google Sheets');
             }
@@ -89,14 +73,8 @@ class SheetsAPI {
             // Parse CSV data
             const rawData = parseCSV(csvText);
             
-            // Debug: Show raw CSV data structure
-            console.log('🔍 Raw CSV data sample:', rawData.slice(0, 2));
-            console.log('🔍 CSV columns:', rawData.length > 0 ? Object.keys(rawData[0]) : 'No data');
-            
             // Process and validate posts
             const posts = this.processPosts(rawData);
-            
-            console.log(`✅ Fetched ${posts.length} posts from CSV fallback`);
             return posts;
             
         } catch (error) {
@@ -124,9 +102,6 @@ class SheetsAPI {
      */
     processPost(row) {
         try {
-            // Debug: Show raw row data
-            console.log('🔍 Raw row data:', row);
-            
             // Only skip completely empty rows or rows without ID
             if (!row.id || (!row.title && !row.content)) {
                 console.warn('⚠️ Skipping empty post row:', row);
@@ -138,14 +113,6 @@ class SheetsAPI {
             // Skip cleanContent to preserve HTML attributes and quotes
             const cleanedContent = rawContent.trim();
             const generatedExcerpt = createExcerpt(cleanedContent, 150);
-            
-            console.log('🔍 Excerpt generation debug:', {
-                hasCreateExcerpt: typeof createExcerpt,
-                rawContentLength: rawContent.length,
-                cleanedContentLength: cleanedContent.length,
-                generatedExcerpt: generatedExcerpt,
-                excerptType: typeof generatedExcerpt
-            });
 
             const post = {
                 id: parseInt(row.id) || Math.floor(Date.now() / 1000), // timestamp를 ID로 사용할 때는 초 단위로
@@ -163,19 +130,6 @@ class SheetsAPI {
                 readTime: this.calculateReadTime(row.content || '')
             };
             
-            console.log('✅ Processed post:', {
-                id: post.id,
-                title: post.title,
-                contentLength: post.content.length,
-                excerptLength: post.excerpt.length,
-                status: post.status
-            });
-
-            // Debug: Show processed tags
-            if (row.title === 'adfdasdf' || row.title === '모노') {
-                console.log('🐛 Processed tags:', post.tags);
-            }
-
             return post;
         } catch (error) {
             console.error('❌ Error processing post:', row, error);
@@ -466,8 +420,7 @@ class SheetsAPI {
      * @returns {Promise<Array>} Fresh posts data
      */
     async refreshPosts() {
-        console.log('🔄 Refreshing posts data...');
-        return await this.fetchPosts();
+        return this.fetchPosts();
     }
 
     /**
@@ -477,8 +430,6 @@ class SheetsAPI {
      */
     async deletePost(postId) {
         try {
-            console.log('🗑️ Deleting post ID:', postId);
-            
             const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}`;
             
             const response = await fetch(appsScriptUrl, {
@@ -498,7 +449,6 @@ class SheetsAPI {
                 throw new Error(result.error || 'Failed to delete post');
             }
             
-            console.log('✅ Post deleted successfully:', postId);
             return result;
             
         } catch (error) {

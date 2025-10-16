@@ -796,14 +796,13 @@ class RichTextEditor {
             }
         }
 
-        // Create HTML string with CSS classes instead of inline styles
+        // Create HTML string with CSS classes - iframe for Google Drive, video for others
         let videoHTML;
         if (fileId) {
-            // Google Drive video - use direct video tag with uc format for better compatibility
-            const directVideoUrl = `https://drive.google.com/uc?id=${fileId}`;
-            videoHTML = `<div class="media-wrapper"><video controls class="media-video"><source src="${directVideoUrl}" type="video/mp4">브라우저에서 비디오를 지원하지 않습니다.</video></div>`;
+            // Google Drive video - use iframe preview mode (구글 드라이브는 iframe으로만 재생 가능)
+            videoHTML = `<div class="media-wrapper"><iframe src="https://drive.google.com/file/d/${fileId}/preview" width="100%" height="400" class="media-video" frameborder="0" allowfullscreen></iframe></div>`;
         } else {
-            // Non-Google Drive video URLs
+            // Non-Google Drive video URLs - use video tag
             videoHTML = `<div class="media-wrapper"><video controls class="media-video"><source src="${videoUrl}" type="video/mp4">브라우저에서 비디오를 지원하지 않습니다.</video></div>`;
         }
 

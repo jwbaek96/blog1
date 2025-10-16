@@ -16,8 +16,6 @@ class BlogApp {
      * Initialize the blog app
      */
     async init() {
-        console.log('🚀 Initializing Blog App...');
-        
         this.setupEventListeners();
         this.showLoading();
         
@@ -37,7 +35,6 @@ class BlogApp {
      */
     async loadPosts() {
         try {
-            console.log('📡 Fetching posts from Google Sheets...');
             this.allPosts = await window.SheetsAPI.fetchPosts();
             
             // Process posts to generate excerpts if missing
@@ -50,23 +47,8 @@ class BlogApp {
             });
             
             this.filterPosts();
-            console.log(`✅ Loaded ${this.allPosts.length} posts`);
-            
-            // Debug: Show first few posts
-            if (this.allPosts.length > 0) {
-                console.log('📋 Loaded posts:', this.allPosts.slice(0, 3).map(p => ({
-                    id: p.id,
-                    title: p.title,
-                    idType: typeof p.id,
-                    content: p.content ? `${p.content.substring(0, 50)}...` : 'NO CONTENT',
-                    excerpt: p.excerpt ? `${p.excerpt.substring(0, 50)}...` : 'NO EXCERPT'
-                })));
-            } else {
-                console.warn('⚠️ No posts loaded! Check Google Sheets configuration.');
-            }
         } catch (error) {
             console.error('❌ Error loading posts:', error);
-            console.log('⚠️ Failed to load posts. Please check your Google Sheets configuration.');
         }
     }
 
@@ -266,16 +248,12 @@ class BlogApp {
      */
     async openPostDetail(postId) {
         try {
-            console.log('🔍 Opening post ID:', postId);
-            
             const post = this.allPosts.find(p => p.id === postId || String(p.id) === String(postId));
             if (!post) {
                 console.error('❌ Post not found:', postId);
                 showToast('포스트를 찾을 수 없습니다', 'error');
                 return;
             }
-
-            console.log('✅ Navigating to post:', post.title);
             // Navigate to post.html with post ID
             window.location.href = `post.html?id=${encodeURIComponent(postId)}`;
             
@@ -293,15 +271,6 @@ class BlogApp {
      * @returns {string} HTML string
      */
     renderPostCard(post) {
-        // Debug: Log post data
-        console.log('🃏 Rendering post card:', {
-            id: post.id,
-            title: post.title,
-            excerpt: post.excerpt || 'NO EXCERPT',
-            content: post.content ? `${post.content.substring(0, 50)}...` : 'NO CONTENT',
-            contentLength: post.content ? post.content.length : 0
-        });
-        
         const hasThumbnail = post.thumbnail && post.thumbnail.trim() !== '';
         
         // post.tags가 배열인지 확인하고 안전하게 처리
@@ -603,8 +572,6 @@ class BlogApp {
      * @param {string} postId - Post ID to edit
      */
     editPost(postId) {
-        console.log('✏️ Editing post:', postId);
-        
         // 인증 확인
         if (!window.AuthManager || !window.AuthManager.isLoggedIn()) {
             showToast('수정하려면 로그인이 필요합니다', 'error');
@@ -620,8 +587,6 @@ class BlogApp {
      * @param {string} postId - Post ID to delete
      */
     async deletePost(postId) {
-        console.log('🗑️ Deleting post:', postId);
-        
         // 인증 확인
         if (!window.AuthManager || !window.AuthManager.isLoggedIn()) {
             showToast('삭제하려면 로그인이 필요합니다', 'error');
