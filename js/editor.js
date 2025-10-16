@@ -516,7 +516,7 @@ class RichTextEditor {
             // 텍스트 모드에서 HTML 코드 모드로 전환
             this.originalContent = this.editor.innerHTML;
             const htmlCode = this.formatHTML(this.originalContent);
-            this.editor.innerHTML = `<pre style="margin: 0; padding: 20px; background: #f8f9fa; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5;">${this.escapeHtml(htmlCode)}</pre>`;
+            this.editor.innerHTML = `<pre class="code-block">${this.escapeHtml(htmlCode)}</pre>`;
             this.editor.contentEditable = false;
             
             // 버튼 상태 변경
@@ -742,8 +742,35 @@ class RichTextEditor {
      * @param {string} imageUrl - Image URL
      */
     insertImage(imageUrl) {
-        const img = `<img src="${imageUrl}" alt="업로드된 이미지" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;">`;
-        this.executeCommand('insertHTML', img);
+        // Create DOM elements safely with CSS classes
+        const wrapper = document.createElement('div');
+        wrapper.className = 'media-wrapper';
+        
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = '업로드된 이미지';
+        img.loading = 'lazy';
+        img.className = 'media-image';
+        
+        wrapper.appendChild(img);
+        
+        // Insert the wrapper element directly to avoid innerHTML issues
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(wrapper);
+            
+            // Move cursor after the inserted element
+            range.setStartAfter(wrapper);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } else {
+            // Fallback: append to editor
+            this.editor.appendChild(wrapper);
+        }
+        
         showToast('이미지가 삽입되었습니다', 'success');
     }
 
@@ -752,35 +779,37 @@ class RichTextEditor {
      * @param {string} videoUrl - Video URL
      */
     insertVideo(videoUrl) {
-        // Extract Google Drive file ID
-        const fileIdMatch = videoUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-        const fileId = fileIdMatch ? fileIdMatch[1] : null;
-
-        let videoEmbed;
-        if (fileId) {
-            // Google Drive video embed
-            videoEmbed = `
-                <div style="margin: 16px 0;">
-                    <iframe src="https://drive.google.com/file/d/${fileId}/preview" 
-                            width="100%" height="400" 
-                            style="border-radius: 8px; border: none;"
-                            allow="autoplay">
-                    </iframe>
-                </div>
-            `;
-        } else {
-            // Fallback video tag
-            videoEmbed = `
-                <div style="margin: 16px 0;">
-                    <video controls style="width: 100%; max-width: 100%; border-radius: 8px;">
-                        <source src="${videoUrl}" type="video/mp4">
-                        브라우저가 동영상을 지원하지 않습니다.
-                    </video>
-                </div>
-            `;
+        // Extract Google Drive file ID from various URL formats
+        let fileId = null;
+        
+        // Format 1: https://drive.google.com/uc?id=FILE_ID
+        let fileIdMatch = videoUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch) {
+            fileId = fileIdMatch[1];
+        }
+        
+        // Format 2: https://drive.google.com/file/d/FILE_ID/view
+        if (!fileId) {
+            fileIdMatch = videoUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch) {
+                fileId = fileIdMatch[1];
+            }
         }
 
-        this.executeCommand('insertHTML', videoEmbed);
+        // Create HTML string with CSS classes instead of inline styles
+        let videoHTML;
+        if (fileId) {
+            // Google Drive video - use direct video tag with uc format for better compatibility
+            const directVideoUrl = `https://drive.google.com/uc?id=${fileId}`;
+            videoHTML = `<div class="media-wrapper"><video controls class="media-video"><source src="${directVideoUrl}" type="video/mp4">브라우저에서 비디오를 지원하지 않습니다.</video></div>`;
+        } else {
+            // Non-Google Drive video URLs
+            videoHTML = `<div class="media-wrapper"><video controls class="media-video"><source src="${videoUrl}" type="video/mp4">브라우저에서 비디오를 지원하지 않습니다.</video></div>`;
+        }
+
+        // Insert using execCommand to ensure proper HTML
+        this.executeCommand('insertHTML', videoHTML);
+
         showToast('동영상이 삽입되었습니다', 'success');
     }
 
@@ -803,28 +832,68 @@ class RichTextEditor {
 
     /**
      * Get editor content as HTML
+     * @param {boolean} minify - Whether to minify the HTML
      * @returns {string} HTML content
      */
-    getHTML() {
-        // Get HTML and clean up formatting
+    getHTML(minify = false) {
+        // Get HTML without aggressive cleaning that removes quotes
         let html = this.editor.innerHTML;
         
-        // Remove excessive whitespace and line breaks
-        html = html.replace(/\s+/g, ' ').trim();
+        // Only do minimal cleaning to avoid breaking HTML attributes
+        html = html.trim();
         
-        // Clean up common formatting issues
-        html = html.replace(/>\s+</g, '><'); // Remove spaces between tags
-        html = html.replace(/\s+>/g, '>'); // Remove trailing spaces before closing tags
-        html = html.replace(/<\s+/g, '<'); // Remove leading spaces after opening tags
-        
-        // Replace multiple consecutive spaces with single space
-        html = html.replace(/\s{2,}/g, ' ');
-        
-        // Clean up empty paragraphs and divs
+        // Only clean up obvious empty elements
         html = html.replace(/<(p|div)>\s*<\/(p|div)>/gi, '');
         html = html.replace(/<(p|div)>\s*<br\s*\/?>\s*<\/(p|div)>/gi, '');
         
+        // Apply minification if requested
+        if (minify) {
+            html = this.minifyHTML(html);
+        }
+        
         return html;
+    }
+
+    /**
+     * Minify HTML content
+     * @param {string} html - HTML content to minify
+     * @returns {string} Minified HTML content
+     */
+    minifyHTML(html) {
+        if (!html) return '';
+        
+        let minified = html;
+        
+        // Remove HTML comments (but preserve conditional comments)
+        minified = minified.replace(/<!--(?!\[if)[\s\S]*?-->/g, '');
+        
+        // Remove excessive whitespace between tags (but preserve content whitespace)
+        minified = minified.replace(/>\s+</g, '><');
+        
+        // Remove leading/trailing whitespace in text nodes (but preserve single spaces)
+        minified = minified.replace(/>\s+([^<\s])/g, '>$1');
+        minified = minified.replace(/([^>\s])\s+</g, '$1<');
+        
+        // Remove multiple consecutive whitespace characters
+        minified = minified.replace(/\s{2,}/g, ' ');
+        
+        // Only do basic attribute cleanup (safer approach)
+        // Remove excessive whitespace but preserve attribute structure
+        minified = minified.replace(/\s*=\s*/g, '=');
+        
+        // Only remove truly empty attributes (more careful regex)
+        minified = minified.replace(/\s+(\w+)=""\s+/g, ' ');
+        
+        // Final cleanup
+        minified = minified.trim();
+        
+        console.log('📦 HTML minified:', {
+            originalSize: html.length,
+            minifiedSize: minified.length,
+            compression: `${((1 - minified.length / html.length) * 100).toFixed(1)}%`
+        });
+        
+        return minified;
     }
 
     /**
@@ -1045,9 +1114,17 @@ function setupEditorButtons() {
         // Get form data
         const title = document.getElementById('postTitle')?.value?.trim();
         const tags = window.tagsInput ? window.tagsInput.getTagsString() : '';
-        const content = editor.getHTML();
+        // Get minified HTML content for storage
+        const content = editor.getHTML(true); // Always minify
         const status = document.getElementById('statusSelect')?.value || 'published';
-        const currentDateTime = new Date().toISOString().replace('T', ' ').split('.')[0]; // YYYY-MM-DD HH:MM:SS format
+        // 로컬 시간 사용 (한국 사용자 기준)
+        const getKSTTime = () => {
+            // 사용자의 로컬 시간을 그대로 사용
+            // 한국에 있는 사용자라면 로컬 시간이 곧 한국 시간
+            return new Date();
+        };
+        
+        const currentDateTime = getKSTTime().toISOString().replace('T', ' ').split('.')[0]; // YYYY-MM-DD HH:MM:SS format
         
         // Validate required fields
         if (!title) {

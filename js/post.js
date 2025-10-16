@@ -114,6 +114,9 @@ class PostApp {
 
         // Render post content
         this.renderPostContent();
+        
+        // Debug: Log raw content from sheets
+        console.log('Raw content from sheets:', this.post.content);
 
         console.log('✅ Post rendered successfully');
     }
@@ -207,11 +210,22 @@ class PostApp {
         if (contentBody) {
             const content = this.post.content || this.post.excerpt;
             
+            console.log('🔍 Original content from sheets (first 500 chars):');
+            console.log(content ? content.substring(0, 500) : 'No content');
+            
             // HTML 콘텐츠인지 확인 (HTML 태그가 포함되어 있는지)
             if (content && content.includes('<')) {
-                // HTML 콘텐츠는 그대로 렌더링
-                contentBody.innerHTML = content;
-                console.log('📄 Rendering HTML content directly');
+                // HTML 콘텐츠는 HTML 엔티티 디코딩 후 렌더링
+                const decodedContent = this.decodeHtmlEntities(content);
+                console.log('🔍 After decoding (first 500 chars):');
+                console.log(decodedContent ? decodedContent.substring(0, 500) : 'No decoded content');
+                
+                contentBody.innerHTML = decodedContent;
+                
+                console.log('🔍 Final rendered HTML (first 500 chars):');
+                console.log(contentBody.innerHTML ? contentBody.innerHTML.substring(0, 500) : 'No rendered HTML');
+                
+                console.log('📄 Rendering HTML content with entity decoding');
             } else {
                 // 플레인 텍스트는 처리해서 렌더링
                 const processedContent = this.processContent(content);
@@ -219,6 +233,112 @@ class PostApp {
                 console.log('📄 Processing plain text content');
             }
         }
+    }
+
+    /**
+     * Decode HTML entities and fix malformed attributes
+     */
+    decodeHtmlEntities(str) {
+        if (!str) return '';
+        
+        // First, fix common malformed attribute patterns before DOM parsing
+        let fixedStr = str;
+        
+        // Fix malformed attributes like: style="value" other="" content="" more=""
+        // Pattern: attribute="value" word="" -> merge back into the attribute value
+        fixedStr = fixedStr.replace(
+            /(\w+)="([^"]*?)"\s+([^=\s]+)=""/g,
+            (match, attr, value, extra) => {
+                // If extra looks like it should be part of the value, merge it
+                if (extra.match(/^\d+px$|^\d+$|^auto$|^center$|^left$|^right$|^top$|^bottom$/)) {
+                    return `${attr}="${value} ${extra}"`;
+                }
+                return `${attr}="${value}"`;
+            }
+        );
+        
+        // Fix broken CSS values in style attributes
+        fixedStr = fixedStr.replace(
+            /style="([^"]*?)"\s+([^=\s;:]+)=""/g,
+            (match, styleValue, extra) => {
+                // If extra looks like CSS value, append it
+                if (extra.match(/^\d+px$|^\d+$|^auto$|^rgba\([^)]+\)$|^#[0-9a-fA-F]+$/)) {
+                    return `style="${styleValue} ${extra}"`;
+                }
+                return `style="${styleValue}"`;
+            }
+        );
+        
+        // Fix broken filename attributes
+        fixedStr = fixedStr.replace(
+            /alt="([^"]*?)"\s+([^=\s]+)\.([^=\s]+)=""/g,
+            (match, altValue, filename, ext) => {
+                return `alt="${altValue} ${filename}.${ext}"`;
+            }
+        );
+        
+        // Remove any remaining empty attributes
+        fixedStr = fixedStr.replace(/\s+[^=\s]+=""/g, '');
+        
+        // Convert legacy inline styles to CSS classes
+        fixedStr = this.convertInlineStylesToClasses(fixedStr);
+        
+        console.log('🔧 Fixed malformed attributes and converted styles:', fixedStr.substring(0, 200));
+        
+        // Simple HTML entity decoding
+        const textArea = document.createElement('textarea');
+        textArea.innerHTML = fixedStr;
+        let decodedStr = textArea.value;
+        
+        try {
+            // Use DOM parsing to safely reconstruct HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = decodedStr;
+            
+            // Let the browser parse and reconstruct the HTML properly
+            const reconstructedHTML = tempDiv.innerHTML;
+            
+            console.log('🔧 HTML reconstructed by browser:', reconstructedHTML.substring(0, 200));
+            return reconstructedHTML;
+            
+        } catch (error) {
+            console.warn('HTML reconstruction failed, returning original decoded string:', error);
+            return decodedStr;
+        }
+    }
+
+    /**
+     * Convert legacy inline styles to CSS classes
+     */
+    convertInlineStylesToClasses(html) {
+        if (!html) return '';
+        
+        // Convert wrapper div with inline styles to CSS class
+        html = html.replace(
+            /<div\s+style="[^"]*margin:\s*20px[^"]*padding:\s*0[^"]*clear:\s*both[^"]*display:\s*block[^"]*text-align:\s*center[^"]*"[^>]*>/gi,
+            '<div class="media-wrapper">'
+        );
+        
+        // Convert image with inline styles to CSS class
+        html = html.replace(
+            /<img([^>]*)\s+style="[^"]*max-width:\s*100%[^"]*height:\s*auto[^"]*max-height:\s*500px[^"]*border-radius:\s*8px[^"]*box-shadow:[^"]*display:\s*block[^"]*margin:[^"]*auto[^"]*"([^>]*)>/gi,
+            '<img$1 class="media-image"$2>'
+        );
+        
+        // Convert video with inline styles to CSS class
+        html = html.replace(
+            /<video([^>]*)\s+style="[^"]*max-width:\s*100%[^"]*height:\s*auto[^"]*max-height:\s*500px[^"]*border-radius:\s*8px[^"]*box-shadow:[^"]*display:\s*block[^"]*margin:[^"]*auto[^"]*"([^>]*)>/gi,
+            '<video$1 class="media-video"$2>'
+        );
+        
+        // Convert code blocks with inline styles to CSS class
+        html = html.replace(
+            /<pre\s+style="[^"]*margin:\s*0[^"]*padding:\s*20px[^"]*background:[^"]*border-radius:\s*8px[^"]*overflow-x:\s*auto[^"]*white-space:\s*pre-wrap[^"]*font-family:[^"]*font-size:[^"]*line-height:[^"]*"([^>]*)>/gi,
+            '<pre class="code-block"$1>'
+        );
+        
+        console.log('🔄 Converted inline styles to classes');
+        return html;
     }
 
     /**

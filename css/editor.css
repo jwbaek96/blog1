@@ -805,3 +805,64 @@ input[type="color"] {
     max-width: 300px;
     word-break: break-all;
 }
+
+/* Media Elements (Images and Videos) - 에디터에서도 동일한 스타일 적용 */
+#editor .media-wrapper,
+.simple-editor .media-wrapper,
+.media-wrapper {
+    margin: 20px 0;
+    padding: 0;
+    clear: both;
+    display: block;
+    text-align: center;
+}
+
+#editor .media-image,
+#editor .media-video,
+.simple-editor .media-image,
+.simple-editor .media-video,
+.media-image,
+.media-video {
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 500px !important;
+    border-radius: 8px !important;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 8px !important;
+    display: block !important;
+    margin: 0px auto !important;
+}
+
+/* 에디터 내부 이미지와 비디오 요소들이 확실히 보이도록 */
+#editor img,
+.simple-editor img {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin: 10px auto !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+#editor video,
+.simple-editor video {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin: 10px auto !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+/* Code block styles - 에디터에서도 동일한 스타일 적용 */
+.editor-content .code-block,
+.code-block {
+    margin: 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}

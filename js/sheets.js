@@ -135,7 +135,8 @@ class SheetsAPI {
 
             // Debug: Check createExcerpt function and content
             const rawContent = row.content || '';
-            const cleanedContent = this.cleanContent(rawContent);
+            // Skip cleanContent to preserve HTML attributes and quotes
+            const cleanedContent = rawContent.trim();
             const generatedExcerpt = createExcerpt(cleanedContent, 150);
             
             console.log('🔍 Excerpt generation debug:', {
@@ -301,7 +302,7 @@ class SheetsAPI {
     }
 
     /**
-     * Clean HTML content by removing excessive whitespace
+     * Clean HTML content by removing excessive whitespace (safely)
      * @param {string} content - Raw HTML content
      * @returns {string} Cleaned HTML content
      */
@@ -310,15 +311,13 @@ class SheetsAPI {
         
         let cleaned = content.trim();
         
-        // Remove excessive whitespace between and within tags
-        cleaned = cleaned.replace(/\s+/g, ' '); // Multiple spaces to single space
-        cleaned = cleaned.replace(/>\s+</g, '><'); // Remove spaces between tags
-        cleaned = cleaned.replace(/\s+>/g, '>'); // Remove trailing spaces before closing tags
-        cleaned = cleaned.replace(/<\s+/g, '<'); // Remove leading spaces after opening tags
+        // Only do very minimal cleaning to avoid breaking HTML attributes
+        // Remove only excessive line breaks and multiple consecutive spaces outside of HTML tags
+        cleaned = cleaned.replace(/\n\s*\n/g, '\n'); // Multiple line breaks to single
         
-        // Clean up empty elements
-        cleaned = cleaned.replace(/<(p|div|span)>\s*<\/(p|div|span)>/gi, '');
-        cleaned = cleaned.replace(/<(p|div|span)>\s*<br\s*\/?>\s*<\/(p|div|span)>/gi, '');
+        // Clean up empty elements (only safe ones)
+        cleaned = cleaned.replace(/<(p|div)>\s*<\/(p|div)>/gi, '');
+        cleaned = cleaned.replace(/<(p|div)>\s*<br\s*\/?>\s*<\/(p|div)>/gi, '');
         
         return cleaned;
     }
@@ -330,18 +329,36 @@ class SheetsAPI {
      */
     calculateReadTime(content) {
         try {
-            // Remove HTML tags
-            const div = document.createElement('div');
-            div.innerHTML = content;
-            const text = div.textContent || div.innerText || '';
+            if (!content || typeof content !== 'string') {
+                return 1;
+            }
+            
+            // Safely remove HTML tags
+            let text = '';
+            try {
+                const div = document.createElement('div');
+                // Use a copy to avoid modifying original content
+                div.innerHTML = content.toString();
+                text = div.textContent || div.innerText || '';
+            } catch (e) {
+                // Fallback: use regex to remove basic HTML tags
+                text = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+            }
             
             // Average reading speed: 200 words per minute (Korean)
             const wordsPerMinute = 200;
-            const wordCount = text.trim().split(/\s+/).length;
+            const trimmedText = text.trim();
+            
+            if (!trimmedText) {
+                return 1;
+            }
+            
+            const wordCount = trimmedText.split(/\s+/).filter(word => word.length > 0).length;
             const readTime = Math.ceil(wordCount / wordsPerMinute);
             
             return Math.max(1, readTime); // Minimum 1 minute
-        } catch {
+        } catch (error) {
+            console.warn('Read time calculation error:', error);
             return 1;
         }
     }

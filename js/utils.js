@@ -101,10 +101,24 @@ function sanitizeHTML(html) {
  */
 function createExcerpt(html, maxLength = 150) {
     try {
-        // Remove HTML tags
+        if (!html || typeof html !== 'string') {
+            return '';
+        }
+        
+        // Safely remove HTML tags using DOM parsing
         const div = document.createElement('div');
-        div.innerHTML = html;
-        const text = div.textContent || div.innerText || '';
+        // Use a copy to avoid modifying original content
+        const htmlCopy = html.toString();
+        div.innerHTML = htmlCopy;
+        
+        // Extract text content safely
+        let text = '';
+        try {
+            text = div.textContent || div.innerText || '';
+        } catch (e) {
+            // Fallback: use regex to remove basic HTML tags
+            text = htmlCopy.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+        }
         
         // Trim and truncate
         const trimmed = text.trim();
@@ -123,6 +137,10 @@ function createExcerpt(html, maxLength = 150) {
         return truncated + '...';
     } catch (error) {
         console.error('Excerpt creation error:', error);
+        // Return a safe fallback
+        if (typeof html === 'string' && html.length > 0) {
+            return html.substring(0, Math.min(maxLength, html.length)) + '...';
+        }
         return '';
     }
 }
@@ -137,7 +155,14 @@ function parseCSV(csvText) {
         const lines = csvText.split('\n').filter(line => line.trim());
         if (lines.length < 2) return [];
         
-        const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
+        const headers = lines[0].split(',').map(header => {
+            const trimmed = header.trim();
+            // Only remove outer quotes, preserve inner quotes
+            if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+                return trimmed.slice(1, -1);
+            }
+            return trimmed;
+        });
         const data = [];
         
         for (let i = 1; i < lines.length; i++) {
@@ -151,7 +176,16 @@ function parseCSV(csvText) {
                 if (char === '"') {
                     inQuotes = !inQuotes;
                 } else if (char === ',' && !inQuotes) {
-                    values.push(current.trim().replace(/"/g, ''));
+                    const trimmed = current.trim();
+                    // Only remove outer quotes, preserve inner quotes
+                    if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+                        // Handle double-escaped quotes in CSV
+                        const unquoted = trimmed.slice(1, -1);
+                        const unescaped = unquoted.replace(/""/g, '"'); // Convert "" back to "
+                        values.push(unescaped);
+                    } else {
+                        values.push(trimmed);
+                    }
                     current = '';
                 } else {
                     current += char;
@@ -159,7 +193,15 @@ function parseCSV(csvText) {
             }
             
             // Push the last value
-            values.push(current.trim().replace(/"/g, ''));
+            const trimmed = current.trim();
+            if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+                // Handle double-escaped quotes in CSV
+                const unquoted = trimmed.slice(1, -1);
+                const unescaped = unquoted.replace(/""/g, '"'); // Convert "" back to "
+                values.push(unescaped);
+            } else {
+                values.push(trimmed);
+            }
             
             // Create object from headers and values
             const obj = {};

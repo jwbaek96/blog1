@@ -286,6 +286,39 @@ body.post-page .main {
     padding: 0;
 }
 
+/* Media Elements (Images and Videos) */
+.post-content .media-wrapper {
+    margin: 20px 0;
+    padding: 0;
+    clear: both;
+    display: block;
+    text-align: center;
+}
+
+.post-content .media-image,
+.post-content .media-video {
+    max-width: 100%;
+    height: auto;
+    max-height: 500px;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 8px;
+    display: block;
+    margin: 0px auto;
+}
+
+/* Code block styles */
+.post-content .code-block {
+    margin: 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
 /* Post Footer */
 /* .post-footer {
     padding-top: 3rem;
