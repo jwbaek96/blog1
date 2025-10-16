@@ -554,30 +554,17 @@ class PostApp {
                 
                 if (fileIdMatch) {
                     const fileId = fileIdMatch[1];
-                    const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
-                    const viewUrl = `https://drive.google.com/file/d/${fileId}/view`;
+                    const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
                     
-                    // Create a clickable thumbnail replacement
-                    const replacement = document.createElement('div');
-                    replacement.className = 'media-wrapper google-drive-video';
-                    replacement.innerHTML = `
-                        <div class="google-drive-thumbnail" onclick="window.open('${viewUrl}', '_blank')">
-                            <img src="${thumbnailUrl}" alt="Google Drive Video" class="media-video" loading="lazy">
-                            <div class="play-overlay">
-                                <svg width="64" height="64" viewBox="0 0 24 24" fill="white">
-                                    <path d="M8 5v14l11-7z"/>
-                                </svg>
-                            </div>
-                            <div class="google-drive-label">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M6 2L3 7v13c0 1.1.9 2 2 2h14c0-1.1-.9-2-2-2H5V7l3-5z"/>
-                                </svg>
-                                Google Drive에서 보기
-                            </div>
-                        </div>
-                    `;
+                    // Update iframe to use preview URL
+                    iframe.src = embedUrl;
+                    iframe.className = 'media-video';
                     
-                    iframe.parentNode.replaceChild(replacement, iframe);
+                    // Wrap in media wrapper
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'media-wrapper';
+                    iframe.parentNode.insertBefore(wrapper, iframe);
+                    wrapper.appendChild(iframe);
                 }
             });
             
