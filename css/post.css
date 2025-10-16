@@ -298,13 +298,13 @@ body.post-page .main {
 .post-content .media-image,
 .post-content .media-video {
     max-width: 100%;
-    aspect-ratio: 16/11;
-    /* max-height: 200px; */
+    max-height: 580px;
     border-radius: 8px;
     box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 8px;
     display: block;
     margin: 0px auto;
 }
+.post-content .media-video {aspect-ratio: 16/11;}
 
 /* Code block styles */
 .post-content .code-block {
