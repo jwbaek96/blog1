@@ -148,7 +148,7 @@ class SheetsAPI {
             });
 
             const post = {
-                id: parseInt(row.id) || Date.now(),
+                id: parseInt(row.id) || Math.floor(Date.now() / 1000), // timestamp를 ID로 사용할 때는 초 단위로
                 title: (row.title || '').trim() || 'Untitled',
                 date: this.parseDate(row.date),
                 author: CONFIG.BLOG_AUTHOR, // Google Sheets에 author 컬럼이 없으므로 기본값 사용

@@ -1124,7 +1124,22 @@ function setupEditorButtons() {
             return new Date();
         };
         
-        const currentDateTime = getKSTTime().toISOString().replace('T', ' ').split('.')[0]; // YYYY-MM-DD HH:MM:SS format
+        // 로컬 시간을 YYYY-MM-DD HH:MM:SS 형식으로 변환 (UTC 아님)
+        const kstTime = getKSTTime();
+        const year = kstTime.getFullYear();
+        const month = String(kstTime.getMonth() + 1).padStart(2, '0');
+        const day = String(kstTime.getDate()).padStart(2, '0');
+        const hours = String(kstTime.getHours()).padStart(2, '0');
+        const minutes = String(kstTime.getMinutes()).padStart(2, '0');
+        const seconds = String(kstTime.getSeconds()).padStart(2, '0');
+        const currentDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        
+        console.log('🕐 ===== 포스트 저장 시간 정보 =====');
+        console.log('📅 로컬 시간 (getKSTTime()):', kstTime);
+        console.log('📝 전송할 날짜 문자열:', currentDateTime);
+        console.log('🌍 로컬 시간 toString():', kstTime.toString());
+        console.log('🌐 UTC 비교 (toISOString()):', kstTime.toISOString());
+        console.log('==========================================');
         
         // Validate required fields
         if (!title) {
