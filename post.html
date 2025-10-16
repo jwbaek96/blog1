@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/blog.css">
     <link rel="stylesheet" href="css/post.css">
+    <link rel="stylesheet" href="css/comments.css">
     <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/floating-actions.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -174,6 +175,58 @@
             </div>
         </article>
 
+        <!-- Comments Section -->
+        <section id="commentsSection" class="comments-section">
+            <div class="container">
+                <!-- 댓글 헤더 -->
+                <div class="comments-header">
+                    <h3>댓글 <span class="comment-count" id="commentCount">(0)</span></h3>
+                </div>
+                
+                <!-- 댓글 목록 -->
+                <div class="comments-list" id="commentsList">
+                    <!-- 댓글들이 동적으로 추가됩니다 -->
+                </div>
+                
+                <!-- 댓글 작성 폼 -->
+                <div class="comment-form">
+                    <!-- <div class="anti-spam-notice">
+                        <i class="fas fa-shield-alt"></i>
+                        건전한 댓글 문화를 위해 부적절한 언어나 스팸성 내용은 자동으로 차단됩니다.
+                    </div> -->
+                    <div class="form-row">
+                        <input type="text" id="commentAuthor" placeholder="닉네임 (2-20자)" maxlength="20" required>
+                        <input type="password" id="commentPassword" placeholder="비밀번호 (숫자 4자리)" maxlength="4" minlength="4" pattern="[0-9]{4}" required>
+                    </div>
+                    <textarea id="commentContent" placeholder="댓글을 입력하세요... (HTML 태그 사용 불가)" maxlength="500" required></textarea>
+                    <div class="form-actions">
+                        <button id="submitComment" class="btn btn-primary">댓글 작성</button>
+                        <span class="char-count">0/500</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 삭제 확인 모달 -->
+        <div class="delete-modal" id="deleteModal" style="display: none;">
+            <div class="modal-backdrop" onclick="closeDeleteModal()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>댓글 삭제</h3>
+                    <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>삭제하려면 비밀번호를 입력하세요</p>
+                    <input type="password" id="deletePassword" placeholder="숫자 4자리" maxlength="4" pattern="[0-9]{4}">
+                    <div class="error-message" id="deleteError" style="display: none;"></div>
+                </div>
+                <div class="modal-actions">
+                    <button id="confirmDelete" class="btn btn-danger">삭제</button>
+                    <button onclick="closeDeleteModal()" class="btn btn-secondary">취소</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Related Posts -->
         <section id="relatedPosts" class="related-posts" style="display: none;">
             <div class="container">
@@ -251,6 +304,7 @@
     <script src="js/floating-actions.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/sheets.js"></script>
+    <script src="js/comments.js"></script>
     <script src="js/post.js"></script>
 </body>
 </html>

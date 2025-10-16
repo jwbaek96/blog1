@@ -9,7 +9,7 @@ class HeaderComponent {
         
         // 기본 네비게이션 아이템 설정
         this.navigationItems = [
-            { href: '/index.html#home', text: 'HOME', type: 'anchor' },
+            // { href: '/index.html#home', text: 'HOME', type: 'anchor' },
             { href: '/index.html#about', text: 'ABOUT', type: 'anchor' },
             { href: '/index.html#skills', text: 'SKILLS', type: 'anchor' },
             { href: 'article.html', text: 'ARTICLE', type: 'link' },

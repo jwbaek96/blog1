@@ -3,6 +3,11 @@
 Thumbs.db
 *.log
 
+# 로컬 설정 파일 (민감한 정보 포함)
+config.local.json
+config.local.txt
+*.local.json
+
 # 로컬 개발 환경
 .vscode/
 .idea/

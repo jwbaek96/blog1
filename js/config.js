@@ -6,19 +6,19 @@ const isLocal = window.location.hostname === 'localhost' ||
                window.location.hostname === '';
 
 const CONFIG = {
-    // API URLs - 환경에 따라 다르게 설정
-    APPS_SCRIPT_URL: isLocal ? null : '/api/sheets', // 로컬에서는 나중에 .env에서 로드
+    // API URLs - 환경에 따라 다르게 설정 (config.local.json에서 로드됨)
+    APPS_SCRIPT_URL: isLocal ? null : '/api/sheets', // 로컬에서는 config.local.json에서 로드
     UPLOAD_API_URL: isLocal ? null : '/api/sheets',  // 배포환경에서는 Vercel API Routes 사용
     
-    // Google Sheets
-    GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 실제 Google 스프레드시트 ID
-    GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXRuG3cRUqGABTludaX-ddVgqUCsfJ0EV37n3IifaAbREUxSqa4rJYp64evCH15v9hC8O-YSNMtPMc/pub?output=csv', // 실제 공개된 시트 CSV URL
+    // Google Sheets (공개된 시트는 노출되어도 상관없음)
+    GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 공개된 Google 스프레드시트 ID
+    GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXRuG3cRUqGABTludaX-ddVgqUCsfJ0EV37n3IifaAbREUxSqa4rJYp64evCH15v9hC8O-YSNMtPMc/pub?output=csv', // 공개된 시트 CSV URL
     
-    // Google Drive Settings
-    GOOGLE_DRIVE_FOLDER_ID: '1gei84cTcsgRheWIyhGuqPLX4DZcXTJkb', // "Blog Data" 폴더 ID - 위에서 복사한 폴더 ID로 교체
-    GOOGLE_DRIVE_API_KEY: 'AIzaSyAY4DHjJkDmVklkxXT3TXtorayCd3XPccI', // Google Drive API 키 - 위에서 생성한 API 키로 교체
-    GOOGLE_API_KEY: 'AIzaSyAY4DHjJkDmVklkxXT3TXtorayCd3XPccI', // 테스트 파일 호환용 (GOOGLE_DRIVE_API_KEY와 동일)
-    GOOGLE_CLIENT_ID: '201175895307-8au0ct74b8d78mlae58mdm7noddabjvm.apps.googleusercontent.com', // Google OAuth Client ID - 위에서 생성한 클라이언트 ID로 교체
+    // Google Drive Settings (config.local.json에서 로드됨)
+    GOOGLE_DRIVE_FOLDER_ID: null, // config.local.json에서 로드
+    GOOGLE_DRIVE_API_KEY: null, // config.local.json에서 로드  
+    GOOGLE_API_KEY: null, // config.local.json에서 로드
+    GOOGLE_CLIENT_ID: null, // config.local.json에서 로드
     
     // Blog Settings
     BLOG_TITLE: 'JW.BAEK - Blog',
@@ -30,8 +30,8 @@ const CONFIG = {
     DEV_MODE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
     DEV_PORT: 5500, // 로컬 개발 서버 포트
     
-    // Local Admin Settings (로컬 개발용 - 실제 비밀번호로 변경하세요)
-    LOCAL_ADMIN_KEY: '9632', // 로컬 개발용 관리자 비밀번호
+    // Local Admin Settings (config.local.json에서 로드됨)
+    LOCAL_ADMIN_KEY: null, // config.local.json에서 로드
     
     // Pagination
     POSTS_PER_PAGE: 10,
@@ -110,46 +110,57 @@ function validateConfig() {
 // 환경변수 초기화 함수
 async function initializeConfig() {
     if (isLocal) {
-        // 로컬 환경: .env 파일에서 환경변수 로드
+        // 로컬 환경: config.local.json에서 설정 로드
         try {
-            const response = await fetch('/.env');
+            const response = await fetch('/config.local.json');
             if (response.ok) {
-                const envText = await response.text();
-                const envLines = envText.split('\n');
+                const localConfig = await response.json();
                 
-                envLines.forEach(line => {
-                    line = line.trim();
-                    if (line && !line.startsWith('#') && line.includes('=')) {
-                        const [key, ...valueParts] = line.split('=');
-                        const value = valueParts.join('=').trim();
-                        
-                        // 다양한 환경변수명 지원
-                        if (key.trim() === 'V_GOOGLE_APPSCRIPT_URL') {
-                            CONFIG.APPS_SCRIPT_URL = value;
-                            CONFIG.UPLOAD_API_URL = value;
-                        }
-                        if (key.trim() === 'APPS_SCRIPT_URL') {
-                            CONFIG.APPS_SCRIPT_URL = value;
-                            CONFIG.UPLOAD_API_URL = value;
-                        }
-                        if (key.trim() === 'GOOGLE_API') {
-                            CONFIG.APPS_SCRIPT_URL = value;
-                            CONFIG.UPLOAD_API_URL = value;
-                        }
-                        if (key.trim() === 'UPLOAD_API_URL') {
-                            CONFIG.UPLOAD_API_URL = value;
-                        }
-                    }
-                });
+                // 로컬 설정으로 CONFIG 업데이트
+                if (localConfig.APPS_SCRIPT_URL) {
+                    CONFIG.APPS_SCRIPT_URL = localConfig.APPS_SCRIPT_URL;
+                }
+                if (localConfig.UPLOAD_API_URL) {
+                    CONFIG.UPLOAD_API_URL = localConfig.UPLOAD_API_URL;
+                }
+                if (localConfig.LOCAL_ADMIN_KEY) {
+                    CONFIG.LOCAL_ADMIN_KEY = localConfig.LOCAL_ADMIN_KEY;
+                }
+                if (localConfig.GOOGLE_DRIVE_FOLDER_ID) {
+                    CONFIG.GOOGLE_DRIVE_FOLDER_ID = localConfig.GOOGLE_DRIVE_FOLDER_ID;
+                }
+                if (localConfig.GOOGLE_DRIVE_API_KEY) {
+                    CONFIG.GOOGLE_DRIVE_API_KEY = localConfig.GOOGLE_DRIVE_API_KEY;
+                    CONFIG.GOOGLE_API_KEY = localConfig.GOOGLE_DRIVE_API_KEY;
+                }
+                if (localConfig.GOOGLE_CLIENT_ID) {
+                    CONFIG.GOOGLE_CLIENT_ID = localConfig.GOOGLE_CLIENT_ID;
+                }
+                
+                console.log('✅ 로컬 설정 파일 로드 완료');
+                
+                // 설정 로딩 완료 이벤트 발생
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
+                }
             } else {
-                // .env 파일이 없으면 기본값 사용
-                CONFIG.APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
-                CONFIG.UPLOAD_API_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
+                // config.local.json 파일이 없으면 오류 표시
+                console.error('❌ config.local.json 파일을 찾을 수 없습니다!');
+                console.info('💡 config.local.json.example을 복사하여 config.local.json을 생성하세요.');
+                
+                // 오류 상태로도 이벤트 발생 (기본값 사용)
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
+                }
             }
         } catch (error) {
-            console.warn('환경변수 로드 실패, 기본값 사용:', error);
-            CONFIG.APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
-            CONFIG.UPLOAD_API_URL = 'https://script.google.com/macros/s/AKfycbwFtHyW15uKbJWygQFFuKLA6rTs8Ph9bfYazcKgfz8gz8tWpGAKXHhpiuHNaDafKj8O/exec';
+            console.error('❌ 로컬 설정 파일 로드 실패:', error);
+            console.info('💡 config.local.json.example을 복사하여 config.local.json을 생성하세요.');
+            
+            // 오류 상태로도 이벤트 발생 (기본값 사용)
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
+            }
         }
     } else {
         // Vercel 환경: API 엔드포인트를 통해 환경변수 로드
@@ -178,6 +189,11 @@ async function initializeConfig() {
             }
         } catch (error) {
             console.warn('Vercel 환경변수 로드 실패, 기본값 사용:', error);
+        }
+        
+        // Vercel 환경에서도 설정 로딩 완료 이벤트 발생
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
         }
     }
     

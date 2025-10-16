@@ -142,8 +142,8 @@ body.post-page .main {
 /* Post Header */
 .post-header {
     text-align: center;
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0rem;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -565,9 +565,9 @@ body.post-page .main {
 
 @media (max-width: 480px) {
     body.post-page {padding-top: 57px;}
-    .main .container {
-        padding: 0 1rem;
-    }
+    .main .container {padding: 0;}
+
+    .back-to-blog{padding: 1rem .5rem 0;}
     .post-header{margin-bottom: 1.5rem; padding-bottom: 1.5rem;}
     .post-article{padding: 0;}
     .post-meta{margin-bottom: 0;}

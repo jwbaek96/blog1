@@ -20,6 +20,31 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov'];
 
+// Comments System Configuration
+const SHEET_NAME = '시트1';
+const ADMIN_KEY = '9632'; // 관리자 인증 키
+
+// 보안 설정
+const SECURITY_CONFIG = {
+    maxCommentLength: 500,
+    maxAuthorLength: 20,
+    minPasswordLength: 4,
+    maxPasswordLength: 20,
+    maxCommentsPerHour: 10, // 시간당 최대 댓글 수
+    bannedWords: [
+        '바보', '멍청이', '욕설', 'spam', 'advertisement',
+        '광고', '홍보', '도박', '대출', '성인', '불법',
+        '카지노', '바카라', '토토', '먹튀', '성인용품'
+    ],
+    spamPatterns: [
+        /(.)\1{4,}/g, // 같은 문자 5번 이상 반복
+        /[^\w\s가-힣]{5,}/g, // 특수문자 5개 이상 연속
+        /(http|https|www\.|\.com|\.kr|\.net|\.org)/i, // URL 패턴
+        /(\d{2,3}-?\d{3,4}-?\d{4})/g, // 전화번호 패턴
+        /(카톡|텔레그램|위챗|라인)\s*[:：]\s*\w+/i // 메신저 ID 패턴
+    ]
+};
+
 /**
  * Handle GET requests (data retrieval)
  */
@@ -44,6 +69,32 @@ function doGet(e) {
       const offset = parseInt(e.parameter.offset) || 0;
       const limit = parseInt(e.parameter.limit) || 10;
       return handleGetGuestbook(offset, limit);
+    } else if (action === 'getComments') {
+      // Handle comment retrieval
+      const postId = e.parameter.postId;
+      return getComments(postId);
+    } else if (action === 'init') {
+      // Handle comments system initialization
+      return initializeCommentsSystem();
+    } else if (action === 'addComment') {
+      // Handle comment addition
+      const requestData = {
+        postId: e.parameter.postId,
+        author: e.parameter.author,
+        password: e.parameter.password,
+        content: e.parameter.content,
+        parentId: e.parameter.parentId
+      };
+      return addComment(requestData);
+    } else if (action === 'deleteComment') {
+      // Handle comment deletion
+      const requestData = {
+        postId: e.parameter.postId,
+        commentId: e.parameter.commentId,
+        password: e.parameter.password,
+        isAdmin: e.parameter.isAdmin === 'true'
+      };
+      return deleteComment(requestData);
     } else {
       throw new Error('Invalid action: ' + action);
     }
@@ -116,7 +167,8 @@ function handleGetPosts() {
         tags: row[5] || '',              // F: Tags
         images: row[6] || '',            // G: Images
         videos: row[7] || '',            // H: Videos
-        status: row[8] || 'published'    // I: Status
+        status: row[8] || 'published',   // I: Status
+        comment: row[9] || ''            // J: Comment (댓글 데이터)
       };
       
       console.log(`✅ Valid post found: ID=${post.id}, Title="${post.title}"`);
@@ -183,6 +235,12 @@ function doPost(e) {
       return handleAddGuestbook(requestData);
     } else if (requestData.action === 'deleteGuestbook') {
       return handleDeleteGuestbook(requestData);
+    } else if (requestData.action === 'init') {
+      return initializeCommentsSystem();
+    } else if (requestData.action === 'addComment') {
+      return addComment(requestData);
+    } else if (requestData.action === 'deleteComment') {
+      return deleteComment(requestData);
     } else if (requestData.file) {
       return handleFileUpload(requestData);
     } else {
@@ -307,7 +365,7 @@ function handlePostSave(requestData) {
     // Use ROW()-1 formula for auto-incrementing ID
     const currentDateTime = new Date().toISOString().replace('T', ' ').split('.')[0]; // YYYY-MM-DD HH:MM:SS format
     
-    // Prepare row data matching required structure: [id, title, date, thumbnail, content, tags, images, videos, status]
+    // Prepare row data matching required structure: [id, title, date, thumbnail, content, tags, images, videos, status, comment]
     const rowData = [
       '=ROW()-1',                       // A: ID (자동 증가 공식)
       postData.title || 'Untitled',    // B: Title  
@@ -317,7 +375,8 @@ function handlePostSave(requestData) {
       postData.tags || '',             // F: Tags
       postData.images || '',           // G: Images
       postData.videos || '',           // H: Videos
-      postData.status || 'published'   // I: Status
+      postData.status || 'published',  // I: Status
+      ''                               // J: Comment (댓글 데이터 - 빈 문자열로 초기화)
     ];
     
     console.log('📊 Saving data structure:');
@@ -330,7 +389,8 @@ function handlePostSave(requestData) {
     console.log('📷 Images:', postData.images || '(empty)');
     console.log('🎥 Videos:', postData.videos || '(empty)');
     console.log('📊 Status:', postData.status || 'published');
-    console.log('📋 Row data array:', rowData);
+    console.log('� Comment: (empty - initialized)');
+    console.log('�📋 Row data array:', rowData);
     
     // Add row to sheet
     sheet.appendRow(rowData);
@@ -784,8 +844,17 @@ function createJsonResponse(data) {
     .createTextOutput(JSON.stringify(data, null, 2))
     .setMimeType(ContentService.MimeType.JSON);
   
-  // Note: setHeader is not available in all Apps Script versions
-  // CORS is handled by Apps Script automatically for web apps
+  // CORS 헤더 추가
+  try {
+    output.setHeaders({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
+  } catch (e) {
+    console.log('⚠️ Could not set headers (older Apps Script version)');
+  }
+  
   return output;
 }
 
@@ -797,4 +866,620 @@ function doOptions(e) {
     success: true,
     message: 'CORS preflight response'
   });
+}
+
+// ==================== 댓글 시스템 함수들 ====================
+
+/**
+ * 시트 초기화 및 검증
+ */
+function initializeCommentsSystem() {
+    try {
+        const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+        if (!spreadsheet) {
+            throw new Error('Spreadsheet not found');
+        }
+        
+        const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+        if (!sheet) {
+            throw new Error(`Sheet "${SHEET_NAME}" not found`);
+        }
+        
+        const dataRange = sheet.getDataRange();
+        if (!dataRange || dataRange.getNumRows() === 0) {
+            throw new Error('No data in sheet');
+        }
+        
+        const headers = dataRange.getValues()[0];
+        
+        // comment 컬럼이 있는지 확인
+        const commentColumnIndex = headers.indexOf('comment');
+        if (commentColumnIndex === -1) {
+            // comment 컬럼 추가
+            headers.push('comment');
+            sheet.getRange(1, headers.length).setValue('comment');
+            console.log('✅ Added comment column to sheet');
+        }
+        
+        return createJsonResponse({ 
+            success: true, 
+            message: 'Comments system initialized successfully' 
+        });
+        
+    } catch (error) {
+        console.error('❌ Error initializing comments system:', error);
+        return createJsonResponse({ 
+            success: false, 
+            error: error.toString() 
+        });
+    }
+}
+
+/**
+ * 댓글 조회
+ */
+function getComments(postId) {
+    try {
+        console.log('💬 Getting comments for post:', postId);
+        
+        if (!postId) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Post ID is required' 
+            });
+        }
+        
+        const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+        if (!spreadsheet) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Spreadsheet not found' 
+            });
+        }
+        
+        const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+        if (!sheet) {
+            return createJsonResponse({ 
+                success: false, 
+                error: `Sheet "${SHEET_NAME}" not found` 
+            });
+        }
+        
+        const dataRange = sheet.getDataRange();
+        if (!dataRange) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'No data found in sheet' 
+            });
+        }
+        
+        const data = dataRange.getValues();
+        const headers = data[0];
+        
+        // postId로 해당 행 찾기 (타입 변환 추가)
+        console.log('🔍 Looking for postId:', postId, 'Type:', typeof postId);
+        console.log('📋 Available headers:', headers);
+        
+        let postRow = null;
+        for (let i = 1; i < data.length; i++) {
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = data[i][index];
+            });
+            
+            // 타입을 맞춰서 비교 (숫자/문자열 모두 처리)
+            const rowId = String(row.id || row.ID || row.Id);
+            const searchId = String(postId);
+            
+            console.log(`📝 Row ${i}: id="${rowId}", searching for "${searchId}"`);
+            
+            if (rowId === searchId) {
+                postRow = row;
+                console.log('✅ Found matching post row:', postRow);
+                break;
+            }
+        }
+        
+        if (!postRow) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Post not found' 
+            });
+        }
+        
+        // 댓글 데이터 파싱
+        let comments = [];
+        if (postRow.comment) {
+            try {
+                comments = JSON.parse(postRow.comment);
+                if (!Array.isArray(comments)) {
+                    comments = [];
+                }
+            } catch (parseError) {
+                console.warn('⚠️ Failed to parse comments, initializing empty array:', parseError);
+                comments = [];
+            }
+        }
+        
+        console.log('✅ Retrieved comments:', comments.length);
+        return createJsonResponse({ 
+            success: true, 
+            data: comments 
+        });
+        
+    } catch (error) {
+        console.error('❌ Error getting comments:', error);
+        return createJsonResponse({ 
+            success: false, 
+            error: error.toString() 
+        });
+    }
+}
+
+/**
+ * 댓글 작성
+ */
+function addComment(requestData) {
+    try {
+        console.log('✏️ Adding comment:', requestData);
+        
+        const { postId, author, password, content, parentId } = requestData;
+        
+        // 보안 검증
+        const securityCheck = validateCommentSecurity(author, password, content);
+        if (!securityCheck.isValid) {
+            return createJsonResponse({ 
+                success: false, 
+                error: securityCheck.error 
+            });
+        }
+        
+        // 스팸 방지 검사
+        const spamCheck = checkForSpam(content, author);
+        if (!spamCheck.isValid) {
+            return createJsonResponse({ 
+                success: false, 
+                error: spamCheck.error 
+            });
+        }
+        
+        // 사용자별 댓글 빈도 체크
+        const rateLimit = checkRateLimit(author);
+        if (!rateLimit.isValid) {
+            return createJsonResponse({ 
+                success: false, 
+                error: rateLimit.error 
+            });
+        }
+        
+        const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+        if (!spreadsheet) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Spreadsheet not found' 
+            });
+        }
+        
+        const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+        if (!sheet) {
+            return createJsonResponse({ 
+                success: false, 
+                error: `Sheet "${SHEET_NAME}" not found` 
+            });
+        }
+        
+        const dataRange = sheet.getDataRange();
+        if (!dataRange) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'No data found in sheet' 
+            });
+        }
+        
+        const data = dataRange.getValues();
+        const headers = data[0];
+        
+        // postId로 해당 행 찾기
+        let postRowIndex = -1;
+        let postRow = null;
+        
+        for (let i = 1; i < data.length; i++) {
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = data[i][index];
+            });
+            
+            // 타입을 맞춰서 비교 (숫자/문자열 모두 처리)
+            const rowId = String(row.id || row.ID || row.Id);
+            const searchId = String(postId);
+            
+            if (rowId === searchId) {
+                postRowIndex = i + 1; // 1-based index for sheets
+                postRow = row;
+                break;
+            }
+        }
+        
+        if (!postRow) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Post not found' 
+            });
+        }
+        
+        // 기존 댓글 데이터 가져오기
+        let comments = [];
+        if (postRow.comment && postRow.comment.trim()) {
+            try {
+                comments = JSON.parse(postRow.comment);
+            } catch (parseError) {
+                console.warn('⚠️ Failed to parse existing comments:', parseError);
+                comments = [];
+            }
+        }
+        
+        // 새 댓글 ID 생성
+        const newCommentId = generateCommentId(parentId, comments);
+        
+        // 새 댓글 객체 생성
+        const newComment = {
+            id: newCommentId,
+            type: parentId ? 'reply' : 'comment',
+            parentId: parentId,
+            depth: parentId ? 1 : 0,
+            author: author,
+            password: hashPassword(password), // 비밀번호 해싱
+            content: content,
+            createdAt: new Date().toISOString(),
+            isDeleted: false
+        };
+        
+        // 댓글 배열에 추가
+        comments.push(newComment);
+        
+        // 스프레드시트 업데이트
+        const commentColumnIndex = headers.indexOf('comment') + 1; // 1-based
+        if (commentColumnIndex === 0) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Comment column not found in sheet' 
+            });
+        }
+        
+        sheet.getRange(postRowIndex, commentColumnIndex).setValue(JSON.stringify(comments));
+        
+        console.log('✅ Comment added successfully:', newCommentId);
+        return createJsonResponse({ 
+            success: true, 
+            commentId: newCommentId,
+            message: 'Comment added successfully' 
+        });
+        
+    } catch (error) {
+        console.error('❌ Error adding comment:', error);
+        return createJsonResponse({ 
+            success: false, 
+            error: error.toString() 
+        });
+    }
+}
+
+/**
+ * 댓글 삭제
+ */
+function deleteComment(requestData) {
+    try {
+        console.log('🗑️ Deleting comment:', requestData);
+        
+        const { postId, commentId, password, isAdmin } = requestData;
+        
+        if (!postId || !commentId) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Post ID and Comment ID are required' 
+            });
+        }
+        
+        const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+        if (!spreadsheet) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Spreadsheet not found' 
+            });
+        }
+        
+        const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+        if (!sheet) {
+            return createJsonResponse({ 
+                success: false, 
+                error: `Sheet "${SHEET_NAME}" not found` 
+            });
+        }
+        
+        const dataRange = sheet.getDataRange();
+        if (!dataRange) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'No data found in sheet' 
+            });
+        }
+        
+        const data = dataRange.getValues();
+        const headers = data[0];
+        
+        // postId로 해당 행 찾기
+        let postRowIndex = -1;
+        let postRow = null;
+        
+        for (let i = 1; i < data.length; i++) {
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = data[i][index];
+            });
+            
+            // 타입을 맞춰서 비교 (숫자/문자열 모두 처리)
+            const rowId = String(row.id || row.ID || row.Id);
+            const searchId = String(postId);
+            
+            if (rowId === searchId) {
+                postRowIndex = i + 1;
+                postRow = row;
+                break;
+            }
+        }
+        
+        if (!postRow) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Post not found' 
+            });
+        }
+        
+        // 기존 댓글 데이터 가져오기
+        let comments = [];
+        if (postRow.comment && postRow.comment.trim()) {
+            try {
+                comments = JSON.parse(postRow.comment);
+            } catch (parseError) {
+                return createJsonResponse({ 
+                    success: false, 
+                    error: 'Failed to parse comments data' 
+                });
+            }
+        }
+        
+        // 삭제할 댓글 찾기
+        const commentIndex = comments.findIndex(c => c.id === commentId);
+        if (commentIndex === -1) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Comment not found' 
+            });
+        }
+        
+        const comment = comments[commentIndex];
+        
+        // 이미 삭제된 댓글인지 확인
+        if (comment.isDeleted) {
+            return createJsonResponse({ 
+                success: false, 
+                error: 'Comment already deleted' 
+            });
+        }
+        
+        // 권한 확인
+        if (!isAdmin) {
+            // 일반 사용자는 비밀번호 확인
+            if (!password) {
+                return createJsonResponse({ 
+                    success: false, 
+                    error: 'Password is required' 
+                });
+            }
+            
+            if (!verifyPassword(password, comment.password)) {
+                return createJsonResponse({ 
+                    success: false, 
+                    error: 'Incorrect password' 
+                });
+            }
+        } else {
+            console.log('🔑 Admin deletion requested');
+        }
+        
+        // 댓글을 삭제됨으로 표시
+        comments[commentIndex].isDeleted = true;
+        comments[commentIndex].content = ''; // 내용 제거
+        
+        // 스프레드시트 업데이트
+        const commentColumnIndex = headers.indexOf('comment') + 1;
+        sheet.getRange(postRowIndex, commentColumnIndex).setValue(JSON.stringify(comments));
+        
+        console.log('✅ Comment deleted successfully:', commentId);
+        return createJsonResponse({ 
+            success: true, 
+            message: 'Comment deleted successfully' 
+        });
+        
+    } catch (error) {
+        console.error('❌ Error deleting comment:', error);
+        return createJsonResponse({ 
+            success: false, 
+            error: error.toString() 
+        });
+    }
+}
+
+// ==================== 댓글 유틸리티 함수들 ====================
+
+/**
+ * 댓글 ID 생성 (2단계 계층 구조)
+ */
+function generateCommentId(parentId, existingComments) {
+    if (!parentId) {
+        // 최상위 댓글: 1, 2, 3, ...
+        const topLevelIds = existingComments
+            .filter(c => !c.parentId)
+            .map(c => parseInt(c.id))
+            .filter(id => !isNaN(id));
+        
+        const maxId = topLevelIds.length > 0 ? Math.max(...topLevelIds) : 0;
+        return String(maxId + 1);
+    } else {
+        // 답글: 1-1, 1-2, 1-3, ...
+        // 2단계 제한 확인
+        if (parentId.includes('-')) {
+            throw new Error('Cannot reply to replies (2-level limit)');
+        }
+        
+        const siblings = existingComments.filter(c => c.parentId === parentId);
+        const siblingNumbers = siblings
+            .map(c => {
+                const parts = c.id.split('-');
+                if (parts.length === 2 && parts[1] !== 'admin') {
+                    return parseInt(parts[1]);
+                }
+                return 0;
+            })
+            .filter(num => !isNaN(num));
+        
+        const maxSibling = siblingNumbers.length > 0 ? Math.max(...siblingNumbers) : 0;
+        return `${parentId}-${maxSibling + 1}`;
+    }
+}
+
+/**
+ * 비밀번호 해싱
+ */
+function hashPassword(password) {
+    return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, password + 'blog_salt_2024'));
+}
+
+/**
+ * 비밀번호 검증
+ */
+function verifyPassword(inputPassword, hashedPassword) {
+    return hashPassword(inputPassword) === hashedPassword;
+}
+
+// ==================== 보안 검증 함수들 ====================
+
+/**
+ * 댓글 보안 검증
+ */
+function validateCommentSecurity(author, password, content) {
+    // 필수 필드 검증
+    if (!author || !password || !content) {
+        return { isValid: false, error: '필수 필드가 누락되었습니다.' };
+    }
+    
+    // 길이 제한 검증
+    if (author.length > 20) {
+        return { isValid: false, error: '작성자명이 너무 깁니다. (최대 20자)' };
+    }
+    
+    if (password.length !== 4) {
+        return { isValid: false, error: '비밀번호는 숫자 4자리여야 합니다.' };
+    }
+    
+    // 숫자만 허용 검사
+    if (!/^\d{4}$/.test(password)) {
+        return { isValid: false, error: '비밀번호는 숫자만 입력 가능합니다.' };
+    }
+    
+    if (content.length > 500) {
+        return { isValid: false, error: '댓글이 너무 깁니다. (최대 500자)' };
+    }
+    
+    // 금지어 검사
+    const bannedCheck = checkBannedWords(content + ' ' + author);
+    if (!bannedCheck.isValid) {
+        return bannedCheck;
+    }
+    
+    // HTML 태그 검사
+    if (content.includes('<') || content.includes('>')) {
+        return { isValid: false, error: 'HTML 태그는 사용할 수 없습니다.' };
+    }
+    
+    // 특수문자 남용 검사
+    const specialCharPattern = /[!@#$%^&*()_+=\[\]{}|;':",./<>?~`]{5,}/;
+    if (specialCharPattern.test(content)) {
+        return { isValid: false, error: '특수문자를 과도하게 사용할 수 없습니다.' };
+    }
+    
+    return { isValid: true };
+}
+
+/**
+ * 금지어 검사
+ */
+function checkBannedWords(text) {
+    const lowerText = text.toLowerCase();
+    
+    for (const word of SECURITY_CONFIG.bannedWords) {
+        if (lowerText.includes(word.toLowerCase())) {
+            return { isValid: false, error: '부적절한 내용이 포함되어 있습니다.' };
+        }
+    }
+    
+    return { isValid: true };
+}
+
+/**
+ * 스팸 검사
+ */
+function checkForSpam(content, author) {
+    // 반복 문자 검사
+    if (/(.)\1{4,}/.test(content)) {
+        return { isValid: false, error: '동일한 문자의 과도한 반복은 허용되지 않습니다.' };
+    }
+    
+    // URL 패턴 검사
+    const urlPattern = /(https?:\/\/|www\.|\.com|\.net|\.org|\.kr)/i;
+    if (urlPattern.test(content)) {
+        return { isValid: false, error: 'URL이나 링크는 포함할 수 없습니다.' };
+    }
+    
+    // 전화번호 패턴 검사
+    const phonePattern = /\d{3}[-\s]?\d{3,4}[-\s]?\d{4}/;
+    if (phonePattern.test(content)) {
+        return { isValid: false, error: '전화번호는 포함할 수 없습니다.' };
+    }
+    
+    // 이메일 패턴 검사
+    const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    if (emailPattern.test(content)) {
+        return { isValid: false, error: '이메일 주소는 포함할 수 없습니다.' };
+    }
+    
+    // 스팸 키워드 검사
+    for (const pattern of SECURITY_CONFIG.spamPatterns) {
+        if (new RegExp(pattern, 'i').test(content)) {
+            return { isValid: false, error: '스팸으로 의심되는 내용입니다.' };
+        }
+    }
+    
+    return { isValid: true };
+}
+
+/**
+ * 사용량 제한 검사
+ */
+function checkRateLimit(author) {
+    // 기본적인 검증만 수행
+    // 실제로는 PropertiesService나 외부 저장소를 사용하여 
+    // 사용자별 댓글 작성 빈도를 추적해야 함
+    
+    // 작성자명이 너무 짧거나 의심스러운 패턴 검사
+    if (author.length < 2) {
+        return { isValid: false, error: '작성자명이 너무 짧습니다. (최소 2자)' };
+    }
+    
+    // 숫자만으로 이루어진 작성자명 검사
+    if (/^\d+$/.test(author)) {
+        return { isValid: false, error: '작성자명은 숫자만으로 구성될 수 없습니다.' };
+    }
+    
+    return { isValid: true };
 }
