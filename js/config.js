@@ -138,6 +138,12 @@ async function initializeConfig() {
                 }
                 
                 console.log('✅ 로컬 설정 파일 로드 완료');
+                console.log('🔍 Config Source: config.local.json (Local Development)');
+                console.log('📋 Loaded configs:', {
+                    APPS_SCRIPT_URL: localConfig.APPS_SCRIPT_URL ? '✅' : '❌',
+                    GOOGLE_DRIVE_API_KEY: localConfig.GOOGLE_DRIVE_API_KEY ? '✅' : '❌',
+                    GOOGLE_CLIENT_ID: localConfig.GOOGLE_CLIENT_ID ? '✅' : '❌'
+                });
                 
                 // 설정 로딩 완료 이벤트 발생
                 if (typeof window !== 'undefined') {
@@ -169,6 +175,13 @@ async function initializeConfig() {
             if (response.ok) {
                 const envConfig = await response.json();
                 
+                console.log('🔍 Config Source: Vercel Environment Variables');
+                console.log('📋 Available configs:', {
+                    V_GOOGLE_APPSCRIPT_URL: envConfig.V_GOOGLE_APPSCRIPT_URL ? '✅' : '❌',
+                    V_GOOGLE_DRIVE_API_KEY: envConfig.V_GOOGLE_DRIVE_API_KEY ? '✅' : '❌',
+                    V_GOOGLE_CLIENT_ID: envConfig.V_GOOGLE_CLIENT_ID ? '✅' : '❌'
+                });
+                
                 // Vercel 환경변수에서 설정 업데이트
                 if (envConfig.V_GOOGLE_APPSCRIPT_URL) {
                     CONFIG.APPS_SCRIPT_URL = envConfig.V_GOOGLE_APPSCRIPT_URL;
@@ -186,6 +199,9 @@ async function initializeConfig() {
                 if (envConfig.V_GOOGLE_CLIENT_ID) {
                     CONFIG.GOOGLE_CLIENT_ID = envConfig.V_GOOGLE_CLIENT_ID;
                 }
+                
+                console.log('✅ Vercel 환경변수 로드 완료');
+                console.log('🔗 Apps Script URL Preview:', CONFIG.APPS_SCRIPT_URL ? `${CONFIG.APPS_SCRIPT_URL.substring(0, 50)}...` : 'Not set');
             }
         } catch (error) {
             console.warn('Vercel 환경변수 로드 실패, 기본값 사용:', error);
