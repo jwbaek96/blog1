@@ -21,11 +21,16 @@
 
     <!-- Icon meta js -->
     <script src="js/head-meta.js"></script>
+    <!-- Debug Logger -->
+    <script src="js/debug-logger.js"></script>
     <!-- Auth js -->
     <script src="js/auth.js"></script>
 
     <!-- FontAwesome -->
     <script src="https://kit.fontawesome.com/0470599ade.js" crossorigin="anonymous"></script>
+    
+    <!-- Simple Tags Input -->
+    <script src="js/tags-input-simple.js"></script>
     
     <style>
         .backBtn:hover {
@@ -203,7 +208,7 @@
         <div class="tags-container">
             <div class="tags-wrapper" id="tagsWrapper">
                 <!-- 태그들이 여기에 동적으로 추가됩니다 -->
-                <input type="text" id="tagInput" class="tag-input" placeholder="#태그입력">
+                <input type="text" id="tagInput" class="tag-input" placeholder="태그 입력 (쉼표나 엔터로 구분)">
             </div>
         </div>
         <div class="container">
@@ -227,6 +232,7 @@
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/sheets.js"></script>
     <script src="js/drive-uploader.js"></script>
     <script src="js/upload.js"></script>
     <script src="js/editor.js"></script>
@@ -256,87 +262,6 @@
     
     <!-- Tags Input Script -->
     <script>
-        // Tags functionality
-        class TagsInput {
-            constructor() {
-                this.tags = [];
-                this.tagInput = document.getElementById('tagInput');
-                this.tagsWrapper = document.getElementById('tagsWrapper');
-                
-                this.init();
-            }
-            
-            init() {
-                this.tagInput.addEventListener('keydown', (e) => {
-                    if (e.key === ',' || e.key === 'Enter') {
-                        e.preventDefault();
-                        this.addTag();
-                    } else if (e.key === 'Backspace' && this.tagInput.value === '') {
-                        this.removeLastTag();
-                    }
-                });
-                
-                this.tagInput.addEventListener('blur', () => {
-                    if (this.tagInput.value.trim()) {
-                        this.addTag();
-                    }
-                });
-            }
-            
-            addTag() {
-                const value = this.tagInput.value.trim();
-                if (value && !this.tags.includes(value)) {
-                    this.tags.push(value);
-                    this.renderTags();
-                    this.tagInput.value = '';
-                }
-            }
-            
-            removeTag(tagToRemove) {
-                this.tags = this.tags.filter(tag => tag !== tagToRemove);
-                this.renderTags();
-            }
-            
-            removeLastTag() {
-                if (this.tags.length > 0) {
-                    this.tags.pop();
-                    this.renderTags();
-                }
-            }
-            
-            renderTags() {
-                // 기존 태그들 제거 (input 제외)
-                const existingTags = this.tagsWrapper.querySelectorAll('.tag');
-                existingTags.forEach(tag => tag.remove());
-                
-                // 새 태그들 추가
-                this.tags.forEach(tagText => {
-                    const tagElement = document.createElement('div');
-                    tagElement.className = 'tag';
-                    tagElement.innerHTML = `
-                        <span>${tagText}</span>
-                        <button type="button" class="tag-remove" onclick="tagsInput.removeTag('${tagText}')">&times;</button>
-                    `;
-                    
-                    // input 앞에 삽입
-                    this.tagsWrapper.insertBefore(tagElement, this.tagInput);
-                });
-            }
-            
-            getTags() {
-                return this.tags;
-            }
-            
-            setTags(tags) {
-                this.tags = tags || [];
-                this.renderTags();
-            }
-            
-            getTagsString() {
-                return this.tags.join(', ');
-            }
-        }
-        
         // 간소화된 링크 토글 (editor.js 함수 사용)
         function toggleLink() {
             const selection = window.getSelection();
@@ -358,16 +283,6 @@
                 alert('링크를 추가할 텍스트를 먼저 선택해주세요.');
             }
         }
-
-        // Initialize tags input when DOM is ready
-        let tagsInput;
-        document.addEventListener('DOMContentLoaded', () => {
-            tagsInput = new TagsInput();
-            window.tagsInput = tagsInput; // 전역 접근 가능하도록
-            
-            // Initialize uploaded files list for new post
-            resetUploadedFiles();
-        });
 
         // Google Drive Upload Functions
         function openImageUpload() {

@@ -27,7 +27,7 @@ class RichTextEditor {
         this.initializeHighlightButton();
         
         this.isInitialized = true;
-        console.log('✅ Rich Text Editor initialized');
+        window.debugLog?.success('editor', 'Rich Text Editor initialized');
     }
 
     /**
@@ -356,6 +356,28 @@ class RichTextEditor {
         } catch (error) {
             console.error('Command execution error:', error);
         }
+    }
+
+    /**
+     * Set content to editor
+     * @param {string} content - HTML content to set
+     */
+    setContent(content) {
+        if (this.editor && content) {
+            this.editor.innerHTML = content;
+            console.log('📝 Content set to editor');
+        }
+    }
+
+    /**
+     * Get content from editor
+     * @returns {string} HTML content
+     */
+    getContent() {
+        if (this.editor) {
+            return this.editor.innerHTML;
+        }
+        return '';
     }
 
     /**
@@ -987,8 +1009,272 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Setup global functions for HTML compatibility
         setupGlobalFunctions();
+        
+        // 수정 모드 처리 - URL 파라미터 확인
+        checkAndLoadEditMode();
     }
 });
+
+// 전역 변수: 현재 편집 중인 포스트 ID
+let currentEditingPostId = null;
+
+/**
+ * 수정 모드인지 확인하고 기존 포스트 데이터 로드
+ */
+async function checkAndLoadEditMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editPostId = urlParams.get('edit');
+    
+    console.log('🔍 Checking edit mode. URL params:', Object.fromEntries(urlParams.entries()));
+    
+    if (editPostId) {
+        window.debugLog?.editor('Edit mode detected for post ID:', editPostId);
+        currentEditingPostId = editPostId; // 전역 변수에 저장
+        
+        // 에디터 초기화 대기
+        let retries = 0;
+        const maxRetries = 10;
+        
+        const waitForEditor = async () => {
+            while (retries < maxRetries && !editor) {
+                console.log(`⏳ Waiting for editor initialization... (${retries + 1}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                retries++;
+            }
+            
+            if (!editor) {
+                console.error('❌ Editor not initialized after waiting');
+                return false;
+            }
+            
+            console.log('✅ Editor is ready');
+            return true;
+        };
+        
+        const editorReady = await waitForEditor();
+        if (editorReady) {
+            await loadPostForEditing(editPostId);
+        } else {
+            alert('에디터 초기화에 실패했습니다.');
+        }
+    } else {
+        console.log('📝 New post mode');
+        // 새 포스트 모드 - 업로드된 파일 목록 초기화
+        if (typeof resetUploadedFiles === 'function') {
+            resetUploadedFiles();
+        }
+    }
+}
+
+/**
+ * 수정할 포스트 데이터 로드
+ */
+async function loadPostForEditing(postId) {
+    try {
+        console.log('📥 Loading post for editing:', postId);
+        
+        // 로딩 상태 표시
+        showLoadingState();
+        
+        // SheetsAPI 존재 여부 확인
+        if (!window.SheetsAPI) {
+            throw new Error('SheetsAPI가 로드되지 않았습니다. sheets.js 파일을 확인하세요.');
+        }
+        
+        console.log('🔗 SheetsAPI available, fetching posts...');
+        
+        // SheetsAPI를 통해 포스트 데이터 가져오기
+        const posts = await window.SheetsAPI.fetchPosts();
+        console.log('📊 Total posts loaded:', posts.length);
+        
+        const post = posts.find(p => String(p.id) === String(postId));
+        
+        if (!post) {
+            console.log('❌ Post not found. Available post IDs:', posts.map(p => p.id));
+            throw new Error(`포스트를 찾을 수 없습니다. (ID: ${postId})`);
+        }
+        
+        console.log('📄 Post data loaded:', post);
+        
+        // 폼 필드에 데이터 채우기
+        populateFormFields(post);
+        
+        // 에디터에 내용 로드
+        if (editor && post.content) {
+            console.log('📝 Setting content to editor:', post.content.substring(0, 100) + '...');
+            editor.setContent(post.content);
+        } else {
+            console.warn('⚠️ Editor not ready or no content:', {
+                editorExists: !!editor,
+                contentExists: !!post.content
+            });
+        }
+        
+        // 업로드된 파일 목록 로드
+        if (typeof loadUploadedFiles === 'function') {
+            loadUploadedFiles(post);
+        } else {
+            console.warn('⚠️ loadUploadedFiles function not available');
+        }
+        
+        // 페이지 제목 변경
+        document.title = `수정: ${post.title} - 리치 텍스트 에디터`;
+        
+        hideLoadingState();
+        
+        console.log('✅ Post loaded successfully for editing');
+        
+    } catch (error) {
+        console.error('❌ Error loading post for editing:', error);
+        console.error('Error stack:', error.stack);
+        hideLoadingState();
+        alert('포스트를 불러오는데 실패했습니다: ' + error.message);
+        
+        // 에러 발생 시 블로그 페이지로 돌아가기
+        // window.location.href = 'blog.html';
+    }
+}
+
+/**
+ * 폼 필드에 포스트 데이터 채우기
+ */
+function populateFormFields(post) {
+    console.log('📝 Populating form fields with post data:', post);
+    
+    // 제목 (실제 HTML의 ID 사용)
+    const titleInput = document.getElementById('postTitle');
+    if (titleInput && post.title) {
+        titleInput.value = post.title;
+        console.log('✅ Title set:', post.title);
+    } else {
+        console.warn('⚠️ Title not set:', { inputExists: !!titleInput, titleValue: post.title });
+    }
+    
+    // 썸네일 - 에디터에는 없을 수 있음
+    const thumbnailInput = document.getElementById('thumbnail');
+    if (thumbnailInput && post.thumbnail) {
+        thumbnailInput.value = post.thumbnail;
+        console.log('✅ Thumbnail set:', post.thumbnail);
+    } else {
+        console.log('ℹ️ Thumbnail field not found (normal for this editor)');
+    }
+    
+    // 태그 - TagsInput 클래스 사용 (안전하게 처리)
+    const setTags = () => {
+        if (window.tagsInput && post.tags) {
+            console.log('🏷️ 편집 모드 태그 설정 시작:', post.tags);
+            
+            // 태그가 문자열인 경우 배열로 변환
+            let tagsArray = [];
+            if (typeof post.tags === 'string') {
+                tagsArray = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+            } else if (Array.isArray(post.tags)) {
+                tagsArray = post.tags.filter(tag => tag && tag.trim());
+            }
+            
+            console.log('🏷️ 처리된 태그 배열:', tagsArray);
+            
+            // TagsInput에 태그 설정
+            if (typeof window.tagsInput.setTags === 'function') {
+                window.tagsInput.setTags(tagsArray);
+                console.log('✅ setTags 메서드로 태그 설정 완료');
+            } else {
+                // fallback: 직접 설정
+                window.tagsInput.tags = tagsArray;
+                if (typeof window.tagsInput.renderTags === 'function') {
+                    window.tagsInput.renderTags();
+                }
+                console.log('✅ 직접 태그 설정 완료');
+            }
+        } else {
+            console.log('ℹ️ 태그 설정 불가:', { 
+                tagsInputExists: !!window.tagsInput, 
+                tagsValue: post.tags,
+                tagsType: typeof post.tags
+            });
+        }
+    };
+    
+    // TagsInput이 아직 초기화되지 않은 경우 잠시 대기 후 재시도
+    if (!window.tagsInput) {
+        console.log('⏳ TagsInput 대기 중...');
+        let retryCount = 0;
+        const retrySetTags = () => {
+            retryCount++;
+            if (window.tagsInput) {
+                console.log('✅ TagsInput 준비됨, 태그 설정 시도');
+                setTags();
+            } else if (retryCount < 10) {
+                console.log(`⏳ TagsInput 대기 중... (${retryCount}/10)`);
+                setTimeout(retrySetTags, 200);
+            } else {
+                console.error('❌ TagsInput 초기화 시간 초과');
+            }
+        };
+        setTimeout(retrySetTags, 100);
+    } else {
+        setTags();
+    }
+    
+    // 상태 - 에디터에는 없을 수 있음
+    const statusSelect = document.getElementById('status');
+    if (statusSelect && post.status) {
+        statusSelect.value = post.status;
+        console.log('✅ Status set:', post.status);
+    } else {
+        console.log('ℹ️ Status field not found (normal for this editor)');
+    }
+    
+    console.log('📝 Form fields population completed');
+}
+
+/**
+ * 로딩 상태 표시
+ */
+function showLoadingState() {
+    const editorContainer = document.querySelector('.editor-container');
+    if (editorContainer) {
+        editorContainer.style.opacity = '0.5';
+        editorContainer.style.pointerEvents = 'none';
+    }
+    
+    // 로딩 메시지 표시
+    const loadingMessage = document.createElement('div');
+    loadingMessage.id = 'loading-message';
+    loadingMessage.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        text-align: center;
+    `;
+    loadingMessage.innerHTML = `
+        <div style="margin-bottom: 10px;">📥</div>
+        <div>포스트 데이터를 불러오는 중...</div>
+    `;
+    document.body.appendChild(loadingMessage);
+}
+
+/**
+ * 로딩 상태 숨기기
+ */
+function hideLoadingState() {
+    const editorContainer = document.querySelector('.editor-container');
+    if (editorContainer) {
+        editorContainer.style.opacity = '1';
+        editorContainer.style.pointerEvents = 'auto';
+    }
+    
+    const loadingMessage = document.getElementById('loading-message');
+    if (loadingMessage) {
+        loadingMessage.remove();
+    }
+}
 
 /**
  * Setup global functions for HTML inline script compatibility
@@ -1161,10 +1447,13 @@ function setupEditorButtons() {
         }
         
         try {
+            // 편집 모드인지 확인
+            const isEditMode = !!currentEditingPostId;
+            
             // 저장할 데이터 구조 (Google Sheets 컬럼 순서에 맞춤)
             // [id, title, date, thumbnail, content, tags, images, videos, status]
             const postData = {
-                // id는 Apps Script에서 생성
+                id: isEditMode ? currentEditingPostId : undefined, // 편집 모드면 기존 ID 사용
                 title: title,
                 author: CONFIG.BLOG_AUTHOR || 'Admin',  // 작성자 (사용 안함)
                 date: currentDateTime,
@@ -1180,7 +1469,7 @@ function setupEditorButtons() {
             
             // 저장할 전체 요청 데이터
             const requestData = {
-                action: 'savePost',
+                action: isEditMode ? 'updatePost' : 'savePost', // 편집 모드면 updatePost 액션 사용
                 postData: postData
             };
             
@@ -1207,13 +1496,16 @@ function setupEditorButtons() {
             // Send to Google Apps Script
             console.log('🚀 Sending request to Google Apps Script...');
             
-            // POST 방식으로 데이터 전송 (URL 길이 제한 해결)
-            const formData = new FormData();
-            formData.append('data', JSON.stringify(requestData)); // 전체 requestData 객체 전송
+            // GET 방식으로 데이터 전송 (Apps Script 호환성 개선)
+            const urlParams = new URLSearchParams();
+            urlParams.append('action', requestData.action);
+            urlParams.append('data', JSON.stringify(requestData.postData));
             
-            const response = await fetch(CONFIG.UPLOAD_API_URL, {
-                method: 'POST',
-                body: formData
+            const requestUrl = `${CONFIG.UPLOAD_API_URL}?${urlParams.toString()}`;
+            console.log('🔗 Request URL 길이:', requestUrl.length);
+            
+            const response = await fetch(requestUrl, {
+                method: 'GET'
             });
             
             console.log('📡 Response received!');
@@ -1233,7 +1525,12 @@ function setupEditorButtons() {
             console.log('📋 Parsed result:', result);
             
             if (result.success) {
-                showToast(`포스트가 성공적으로 저장되었습니다! (ID: ${result.postId})`, 'success', 5000);
+                // 편집 모드였는지 확인하여 메시지 변경
+                const successMessage = isEditMode ? 
+                    `포스트가 성공적으로 수정되었습니다! (ID: ${result.postId})` : 
+                    `포스트가 성공적으로 저장되었습니다! (ID: ${result.postId})`;
+                
+                showToast(successMessage, 'success', 5000);
                 
                 // No cache to clear - posts will always be fresh on next page load
                 console.log('✅ Post saved! Next page load will show fresh data.');
@@ -1241,10 +1538,17 @@ function setupEditorButtons() {
                 // Clear saved draft
                 editor.clearDraft();
                 
+                // 편집 모드 해제
+                if (isEditMode) {
+                    currentEditingPostId = null;
+                }
+                
                 // 저장 완료 후 2초 뒤에 뒤로가기
                 setTimeout(() => {
-                    // 이전 페이지가 있으면 뒤로가기, 없으면 블로그 메인으로
-                    if (window.history.length > 1) {
+                    // 편집 모드였다면 해당 포스트 페이지로, 아니면 뒤로가기
+                    if (isEditMode && result.postId) {
+                        window.location.href = `post.html?id=${result.postId}`;
+                    } else if (window.history.length > 1) {
                         window.history.back();
                     } else {
                         window.location.href = 'blog.html';
@@ -1322,17 +1626,39 @@ function loadUploadedFiles(postData) {
     try {
         window.uploadedFiles = [];
         
-        if (postData.images) {
-            const images = JSON.parse(postData.images);
-            window.uploadedFiles.push(...images);
+        console.log('📁 Loading uploaded files from post data:', {
+            images: postData.images,
+            videos: postData.videos
+        });
+        
+        if (postData.images && postData.images.trim()) {
+            try {
+                const images = JSON.parse(postData.images);
+                if (Array.isArray(images)) {
+                    window.uploadedFiles.push(...images);
+                    console.log('✅ Images loaded:', images.length);
+                }
+            } catch (e) {
+                console.warn('⚠️ Failed to parse images JSON:', postData.images);
+            }
         }
         
-        if (postData.videos) {
-            const videos = JSON.parse(postData.videos);
-            window.uploadedFiles.push(...videos);
+        if (postData.videos && postData.videos.trim()) {
+            try {
+                const videos = JSON.parse(postData.videos);
+                if (Array.isArray(videos)) {
+                    window.uploadedFiles.push(...videos);
+                    console.log('✅ Videos loaded:', videos.length);
+                }
+            } catch (e) {
+                console.warn('⚠️ Failed to parse videos JSON:', postData.videos);
+            }
         }
+        
+        console.log('📁 Total uploaded files loaded:', window.uploadedFiles.length);
+        
     } catch (error) {
-        console.warn('Failed to load uploaded files:', error);
+        console.warn('❌ Failed to load uploaded files:', error);
         window.uploadedFiles = [];
     }
 }

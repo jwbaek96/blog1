@@ -430,18 +430,14 @@ class SheetsAPI {
      */
     async deletePost(postId) {
         try {
-            const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}`;
-            
-            const response = await fetch(appsScriptUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'deletePost',
-                    postId: postId
-                })
+            // GET 방식으로 변경 (CORS 문제 해결)
+            const params = new URLSearchParams({
+                action: 'deletePost',
+                postId: postId,
+                timestamp: Date.now()
             });
+            
+            const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?${params.toString()}`);
             
             const result = await response.json();
             

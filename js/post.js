@@ -905,3 +905,102 @@ function scrollToTop() {
         behavior: 'smooth'
     });
 }
+
+// Admin Actions Functions
+function toggleAdminActions(button) {
+    const wrapper = button.closest('.admin-actions-wrapper');
+    const isActive = wrapper.classList.contains('active');
+    
+    // Close all other menus
+    document.querySelectorAll('.admin-actions-wrapper.active').forEach(w => {
+        w.classList.remove('active');
+    });
+    
+    // Toggle current menu
+    if (!isActive) {
+        wrapper.classList.add('active');
+    }
+}
+
+function editCurrentPost() {
+    if (!window.Auth || !window.Auth.isLoggedIn()) {
+        alert('수정하려면 로그인이 필요합니다.');
+        return;
+    }
+    
+    if (postApp && postApp.postId) {
+        window.location.href = `editor.html?edit=${encodeURIComponent(postApp.postId)}`;
+    } else {
+        alert('포스트 정보를 찾을 수 없습니다.');
+    }
+}
+
+async function deleteCurrentPost() {
+    if (!window.Auth || !window.Auth.isLoggedIn()) {
+        alert('삭제하려면 로그인이 필요합니다.');
+        return;
+    }
+    
+    if (!postApp || !postApp.post || !postApp.postId) {
+        alert('포스트 정보를 찾을 수 없습니다.');
+        return;
+    }
+    
+    const confirmed = confirm(`"${postApp.post.title}" 포스트를 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`);
+    if (!confirmed) {
+        return;
+    }
+    
+    try {
+        // 삭제 중 표시
+        const deleteBtn = document.querySelector('.admin-action-btn.delete-btn');
+        const originalText = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<span style="opacity: 0.6;">삭제 중...</span>';
+        deleteBtn.disabled = true;
+        
+        // Google Sheets에서 삭제
+        await window.SheetsAPI.deletePost(postApp.postId);
+        
+        alert('포스트가 삭제되었습니다.');
+        
+        // 블로그 페이지로 이동
+        window.location.href = 'blog.html';
+        
+    } catch (error) {
+        console.error('❌ Delete error:', error);
+        alert('포스트 삭제에 실패했습니다.');
+        
+        // 버튼 상태 복원
+        const deleteBtn = document.querySelector('.admin-action-btn.delete-btn');
+        if (deleteBtn) {
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
+        }
+    }
+}
+
+// Close admin menu when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.admin-actions-wrapper')) {
+        document.querySelectorAll('.admin-actions-wrapper.active').forEach(wrapper => {
+            wrapper.classList.remove('active');
+        });
+    }
+});
+
+// Show admin actions if logged in
+function checkAndShowAdminActions() {
+    const adminActions = document.getElementById('postAdminActions');
+    if (adminActions && window.Auth && window.Auth.isLoggedIn()) {
+        adminActions.style.display = 'block';
+    }
+}
+
+// Initialize admin actions after auth is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(checkAndShowAdminActions, 100);
+    });
+} else {
+    setTimeout(checkAndShowAdminActions, 100);
+}

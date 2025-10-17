@@ -113,7 +113,37 @@
                         <span class="post-read-time" id="postReadTime"></span>
                     </div>
                     
-                    <h1 class="post-title" id="postTitle"></h1>
+                    <div class="post-title-section">
+                        <h1 class="post-title" id="postTitle"></h1>
+                        
+                        <!-- Admin Actions (관리자만 표시) -->
+                        <div class="post-admin-actions" id="postAdminActions" style="display: none;">
+                            <div class="admin-actions-wrapper">
+                                <button class="admin-more-btn" onclick="toggleAdminActions(this)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="1"></circle>
+                                        <circle cx="12" cy="5" r="1"></circle>
+                                        <circle cx="12" cy="19" r="1"></circle>
+                                    </svg>
+                                </button>
+                                <div class="admin-actions-menu">
+                                    <button class="admin-action-btn edit-btn" onclick="editCurrentPost()">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="m18 2 4 4-14 14H4v-4L18 2z"></path>
+                                        </svg>
+                                        수정
+                                    </button>
+                                    <button class="admin-action-btn delete-btn" onclick="deleteCurrentPost()">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3,6 5,6 21,6"></polyline>
+                                            <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1 2,2v2"></path>
+                                        </svg>
+                                        삭제
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                 </div>
                 
