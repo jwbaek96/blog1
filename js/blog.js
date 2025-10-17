@@ -280,14 +280,14 @@ class BlogApp {
         ).join('');
 
         // 더보기 버튼과 액션 메뉴 HTML (로그인 상태에서만 표시)
-        const isLoggedIn = window.AuthManager && window.AuthManager.isLoggedIn();
+        const isLoggedIn = window.Auth && window.Auth.isLoggedIn();
         const actionsHTML = isLoggedIn ? `
             <div class="post-actions">
                 <button class="post-more-btn" onclick="event.stopPropagation(); this.parentElement.classList.toggle('active'); this.parentElement.querySelector('.post-actions-menu').classList.toggle('active')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="1"></circle>
-                        <circle cx="12" cy="5" r="1"></circle>
-                        <circle cx="12" cy="19" r="1"></circle>
+                        <circle cx="12" cy="12" r=".5"></circle>
+                        <circle cx="12" cy="6" r=".5"></circle>
+                        <circle cx="12" cy="18" r=".5"></circle>
                     </svg>
                 </button>
                 <div class="post-actions-menu">
@@ -573,7 +573,7 @@ class BlogApp {
      */
     editPost(postId) {
         // 인증 확인
-        if (!window.AuthManager || !window.AuthManager.isLoggedIn()) {
+        if (!window.Auth || !window.Auth.isLoggedIn()) {
             showToast('수정하려면 로그인이 필요합니다', 'error');
             return;
         }
@@ -588,7 +588,7 @@ class BlogApp {
      */
     async deletePost(postId) {
         // 인증 확인
-        if (!window.AuthManager || !window.AuthManager.isLoggedIn()) {
+        if (!window.Auth || !window.Auth.isLoggedIn()) {
             showToast('삭제하려면 로그인이 필요합니다', 'error');
             return;
         }

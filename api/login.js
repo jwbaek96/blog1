@@ -17,9 +17,11 @@ export default async function handler(req, res) {
     
     try {
         const { password } = req.body;
-        const ADMIN_KEY = process.env.ADMIN_KEY;
+        // 로컬 개발과 배포 환경에서 다른 키 사용
+        const ADMIN_KEY = process.env.ADMIN_KEY || process.env.LOCAL_ADMIN_KEY;
         
         if (!ADMIN_KEY) {
+            console.error('❌ Admin key not configured. Set ADMIN_KEY or LOCAL_ADMIN_KEY environment variable.');
             return res.status(500).json({ 
                 success: false, 
                 error: 'Admin key not configured' 

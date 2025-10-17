@@ -844,23 +844,23 @@ body {
     height: 32px;
     border: none;
     background: none;
-    color: var(--text-secondary);
+    color: #ababab;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    opacity: 0;
-    transform: scale(0.8);
+    opacity: 1;
+    transform: scale(1);
 }
 .post-more-btn:hover svg{transition: all 0.2s ease;}
 .post-more-btn:hover svg {transform: scale(1.08);}
 
 .post-card:hover .post-more-btn,
 .post-actions.active .post-more-btn {
-    opacity: 1;
-    transform: scale(1);
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
 }
 
 .post-actions-menu {
