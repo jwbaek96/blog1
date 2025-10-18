@@ -89,9 +89,6 @@ class PostApp {
         // Render post header
         this.renderPostHeader();
 
-        // Render post thumbnail
-        this.renderPostThumbnail();
-
         // Render post content
         this.renderPostContent();
         
@@ -162,20 +159,6 @@ class PostApp {
                 `<a href="blog.html?tag=${encodeURIComponent(tag)}" class="post-tag">${tag}</a>`
             ).join('');
             postTags.innerHTML = tagsHTML;
-        }
-    }
-
-    /**
-     * Render post thumbnail
-     */
-    renderPostThumbnail() {
-        const thumbnailContainer = document.getElementById('postThumbnail');
-        const thumbnailImage = document.getElementById('thumbnailImage');
-
-        if (this.post.thumbnail && thumbnailContainer && thumbnailImage) {
-            thumbnailImage.src = this.post.thumbnail;
-            thumbnailImage.alt = this.post.title;
-            thumbnailContainer.style.display = 'block';
         }
     }
 
@@ -725,7 +708,13 @@ class PostApp {
      */
     findRelatedPosts() {
         const currentTags = this.post.tags || [];
-        const otherPosts = this.allPosts.filter(p => String(p.id) !== String(this.postId));
+        let otherPosts = this.allPosts.filter(p => String(p.id) !== String(this.postId));
+        
+        // 비공개 포스트 필터링 (로그인하지 않은 경우)
+        const isLoggedIn = window.Auth && window.Auth.isLoggedIn();
+        if (!isLoggedIn) {
+            otherPosts = otherPosts.filter(post => post.status !== 'private');
+        }
         
         // Score posts based on common tags
         const scoredPosts = otherPosts.map(post => {
@@ -780,19 +769,26 @@ class PostApp {
     setupNavigation() {
         if (!this.allPosts || this.allPosts.length <= 1) return;
 
-        const currentIndex = this.allPosts.findIndex(p => String(p.id) === String(this.postId));
+        // 비공개 포스트 필터링 (로그인하지 않은 경우)
+        const isLoggedIn = window.Auth && window.Auth.isLoggedIn();
+        let visiblePosts = this.allPosts;
+        if (!isLoggedIn) {
+            visiblePosts = this.allPosts.filter(post => post.status !== 'private');
+        }
+
+        const currentIndex = visiblePosts.findIndex(p => String(p.id) === String(this.postId));
         
         if (currentIndex === -1) return;
 
         // Previous post
-        if (currentIndex < this.allPosts.length - 1) {
-            const prevPost = this.allPosts[currentIndex + 1];
+        if (currentIndex < visiblePosts.length - 1) {
+            const prevPost = visiblePosts[currentIndex + 1];
             this.setupNavigationLink('prevPost', prevPost);
         }
 
         // Next post
         if (currentIndex > 0) {
-            const nextPost = this.allPosts[currentIndex - 1];
+            const nextPost = visiblePosts[currentIndex - 1];
             this.setupNavigationLink('nextPost', nextPost);
         }
     }
