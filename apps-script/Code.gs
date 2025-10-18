@@ -493,6 +493,105 @@ function handlePostUpdate(requestData) {
 }
 
 /**
+ * Handle post update requests
+ */
+function handlePostUpdate(requestData) {
+  try {
+    console.log('🔄 ===== POST UPDATE REQUEST RECEIVED =====');
+    console.log('📥 Full request data:', JSON.stringify(requestData, null, 2));
+    
+    // Validate post data
+    const postData = requestData.postData;
+    console.log('📋 Post data received:', JSON.stringify(postData, null, 2));
+    
+    if (!postData || !postData.title || !postData.id) {
+      throw new Error('Invalid post data: title and id are required for update');
+    }
+    
+    // Get spreadsheet
+    const spreadsheet = getSpreadsheet();
+    const sheet = spreadsheet.getActiveSheet();
+    
+    // Find the post by ID
+    const dataRange = sheet.getDataRange();
+    const values = dataRange.getValues();
+    
+    let targetRowIndex = -1;
+    for (let i = 1; i < values.length; i++) { // Skip header row
+      const row = values[i];
+      const rowId = row[0];
+      
+      // Check if this is the target post
+      if (rowId == postData.id) {
+        targetRowIndex = i + 1; // Convert to 1-based index for Google Sheets
+        break;
+      }
+    }
+    
+    if (targetRowIndex === -1) {
+      throw new Error('Post not found with ID: ' + postData.id);
+    }
+    
+    const currentDateTime = new Date().toISOString().replace('T', ' ').split('.')[0]; // YYYY-MM-DD HH:MM:SS format
+    
+    // Update row data (keeping existing ID and preserving comment data)
+    const existingCommentData = values[targetRowIndex - 1][9] || ''; // J column (comments)
+    
+    const updatedRowData = [
+      postData.id,                        // A: ID (keep existing)
+      postData.title || 'Untitled',      // B: Title  
+      postData.date || currentDateTime,   // C: Date
+      postData.thumbnail || '',          // D: Thumbnail
+      postData.content || '',            // E: Content
+      postData.tags || '',               // F: Tags
+      postData.images || '',             // G: Images
+      postData.videos || '',             // H: Videos
+      postData.status || 'published',    // I: Status
+      existingCommentData                // J: Comment (preserve existing comments)
+    ];
+    
+    console.log('📊 Updating post data:');
+    console.log('🆔 ID:', postData.id, '(preserving existing)');
+    console.log('📝 Title:', postData.title);
+    console.log('📅 Date:', postData.date || currentDateTime);
+    console.log('🖼️ Thumbnail:', postData.thumbnail || '(empty)');
+    console.log('📄 Content length:', (postData.content || '').length);
+    console.log('🏷️ Tags:', postData.tags || '(empty)');
+    console.log('📷 Images:', postData.images || '(empty)');
+    console.log('🎥 Videos:', postData.videos || '(empty)');
+    console.log('📊 Status:', postData.status || 'published');
+    console.log('💬 Comments: preserved existing data');
+    
+    // Update the entire row
+    const range = sheet.getRange(targetRowIndex, 1, 1, updatedRowData.length);
+    range.setValues([updatedRowData]);
+    
+    console.log(`✅ Post updated successfully: ${postData.title} (ID: ${postData.id})`);
+    
+    const response = {
+      success: true,
+      postId: postData.id,
+      title: postData.title,
+      message: 'Post updated successfully',
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(response);
+    
+  } catch (error) {
+    console.error('❌ Post update error:', error.toString());
+    
+    const errorResponse = {
+      success: false,
+      error: error.toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    return createJsonResponse(errorResponse);
+  }
+}
+
+/**
  * Handle post delete requests
  */
 function handleDeletePost(requestData) {

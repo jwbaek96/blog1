@@ -1467,9 +1467,9 @@ function setupEditorButtons() {
                 status: status
             };
             
-            // 저장할 전체 요청 데이터 (임시로 모든 경우에 savePost 사용)
+            // 저장할 전체 요청 데이터 (수정 모드와 새 포스트 구분)
             const requestData = {
-                action: 'savePost', // 배포 환경 호환성을 위해 항상 savePost 사용
+                action: isEditMode ? 'updatePost' : 'savePost',
                 postData: postData
             };
             
@@ -1498,36 +1498,45 @@ function setupEditorButtons() {
                 throw new Error('Google Apps Script URL이 설정되지 않았습니다. config.js를 확인해주세요.');
             }
             
-            // Send to Google Apps Script
+            // Send to Google Apps Script (수정 모드에 따라 다른 API 호출)
             console.log('🚀 Sending request to Google Apps Script...');
             
-            // GET 방식으로 데이터 전송 (Apps Script 호환성 개선)
-            const urlParams = new URLSearchParams();
-            urlParams.append('action', requestData.action);
-            urlParams.append('data', JSON.stringify(requestData.postData));
+            let result;
             
-            const requestUrl = `${CONFIG.UPLOAD_API_URL}?${urlParams.toString()}`;
-            console.log('🔗 Request URL 길이:', requestUrl.length);
-            
-            const response = await fetch(requestUrl, {
-                method: 'GET'
-            });
-            
-            console.log('📡 Response received!');
-            console.log('📡 Response status:', response.status);
-            console.log('📡 Response statusText:', response.statusText);
-            console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ Response not OK - Status:', response.status);
-                console.error('❌ Response error text:', errorText);
-                throw new Error(`HTTP ${response.status}: ${response.statusText}\n응답: ${errorText}`);
+            if (isEditMode) {
+                console.log('🔄 Update mode: calling updatePost via SheetsAPI');
+                result = await window.SheetsAPI.updatePost(postData);
+            } else {
+                console.log('➕ Create mode: calling savePost via direct fetch');
+                
+                // GET 방식으로 데이터 전송 (Apps Script 호환성 개선)
+                const urlParams = new URLSearchParams();
+                urlParams.append('action', requestData.action);
+                urlParams.append('data', JSON.stringify(requestData.postData));
+                
+                const requestUrl = `${CONFIG.UPLOAD_API_URL}?${urlParams.toString()}`;
+                console.log('🔗 Request URL 길이:', requestUrl.length);
+                
+                const response = await fetch(requestUrl, {
+                    method: 'GET'
+                });
+                
+                console.log('📡 Response received!');
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response statusText:', response.statusText);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Response not OK - Status:', response.status);
+                    console.error('❌ Response error text:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}\n응답: ${errorText}`);
+                }
+                
+                console.log('✅ Response OK, parsing JSON...');
+                result = await response.json();
             }
             
-            console.log('✅ Response OK, parsing JSON...');
-            const result = await response.json();
-            console.log('📋 Parsed result:', result);
+            console.log('📋 Final result:', result);
             
             if (result.success) {
                 // 편집 모드였는지 확인하여 메시지 변경

@@ -482,6 +482,40 @@ class SheetsAPI {
     }
 
     /**
+     * Update an existing post
+     * @param {Object} postData - Post data to update
+     * @returns {Promise<Object>} Update result
+     */
+    async updatePost(postData) {
+        try {
+            const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}`;
+            
+            const response = await fetch(appsScriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'updatePost',
+                    postData: postData
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to update post');
+            }
+            
+            return result;
+            
+        } catch (error) {
+            console.error('❌ Error updating post:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Get posts statistics  
      * @param {Array} posts - Array of posts
      * @returns {Object} Statistics object
