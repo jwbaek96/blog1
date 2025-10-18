@@ -279,49 +279,64 @@ body {
     cursor: pointer;
 }
 
-.post-card:hover {
-    /* transform: translateY(-2px); */
-}
+/* .post-card:hover {
+    transform: translateY(-2px);
+} */
 
 .post-card p,
 .post-card h2 {
     margin-bottom: 0;
 }
 
-/* Post Card with Background Image - Horizontal Layout */
+/* Post Card with Image - Horizontal Layout */
 .post-card-with-image {
     position: relative;
     height: 170px;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    /* border-radius: 12px; */
-    /* margin-bottom: 1rem; */
     overflow: hidden;
-    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); */
     transition: all 0.3s ease;
 }
 
-/* .post-card-with-image:hover {box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);} */
+/* Post Card Image Container */
+.post-card-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.post-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    filter: brightness(.8);
+}
+
+/* Image Error Fallback */
+.post-card.image-error .post-card-image {
+    background-color: var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-card.image-error .post-card-image::after {
+    content: '📷';
+    font-size: 2rem;
+    color: var(--text-secondary);
+}
+
 
 /* Post Card without Image - Horizontal Layout */
 .post-card-no-image {
     background-color: var(--bg-primary);
-    /* border: 1px solid var(--border-color); */
-    /* border-radius: 12px; */
-    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); */
-    /* padding: 1.5rem; */
-    /* margin-bottom: 1rem; */
     display: flex;
     flex-direction: column;
     transition: all 0.3s ease;
 }
 
-.post-card-no-image:hover {
-    /* box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); */
-    /* border-color: var(--accent-color, #007bff); */
-    border-color: var(--accent-color, #007bff);
-}
 
 /* Overlay for image cards */
 .post-card-with-image .post-card-overlay {
@@ -333,23 +348,15 @@ body {
     background: linear-gradient(
         to bottom,
         rgba(0, 0, 0, 0.1) 0%,
-        rgba(0, 0, 0, 0.3) 50%,
-        rgba(0, 0, 0, 0.8) 100%
+        rgba(0, 0, 0, 0.5) 50%,
+        rgba(0, 0, 0, 0.6) 100%
     );
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     padding: var(--spacing-md);
-    transition: var(--transition);
-}
-
-.post-card-with-image:hover .post-card-overlay {
-    background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.2) 0%,
-        rgba(0, 0, 0, 0.4) 50%,
-        rgba(0, 0, 0, 0.9) 100%
-    );
+    transition: all 0.3s ease;
+    z-index: 2; /* 이미지 위에 표시 */
 }
 
 /* Content styling for both types */

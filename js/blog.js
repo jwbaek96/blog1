@@ -321,10 +321,18 @@ class BlogApp {
         ` : '';
 
         if (hasThumbnail) {
-            // 썸네일이 있는 경우: 배경 이미지 카드
+            // 썸네일이 있는 경우: 이미지 카드
             const thumbnailUrl = convertGoogleDriveUrl(post.thumbnail);
+            const fallbackUrls = getGoogleDriveFallbackUrls(post.thumbnail);
+            
             return `
-                <article class="post-card post-card-with-image ${isPrivate ? 'post-private' : ''}" data-post-id="${post.id}" style="background-image: url('${thumbnailUrl}')">
+                <article class="post-card post-card-with-image ${isPrivate ? 'post-private' : ''}" data-post-id="${post.id}">
+                    <div class="post-card-image">
+                        <img src="${thumbnailUrl}" alt="${post.title}" loading="lazy" 
+                             data-fallback-urls='${JSON.stringify(fallbackUrls)}'
+                             data-current-index="0"
+                             onerror="tryFallbackImage(this);">
+                    </div>
                     ${actionsHTML}
                     <div class="post-card-overlay">
                         <div class="post-card-content">

@@ -102,25 +102,53 @@ class IndexBlog {
 
     renderPostCard(post) {
         const postDate = this.formatDate(post.date);
+        const hasThumbnail = post.thumbnail && post.thumbnail.trim() !== '';
         
         // 비공개 포스트 상태 표시
         const isPrivate = post.status === 'private';
         const privateLabel = isPrivate ? '<span class="post-private-label">🔒</span>' : '';
         const privateClass = isPrivate ? 'post-private' : '';
 
-        return `
-            <article class="blog-post-card ${privateClass}" onclick="window.navigateToPost('${post.id}')" data-post-id="${post.id}">
-                <div class="blog-post-content">
-                    <div class="blog-post-info">
-                        <h3 class="blog-post-title">${this.escapeHtml(post.title)}</h3>
-                        <div class="blog-post-meta">
-                            <div class="blog-post-date">${postDate}</div>
-                            ${privateLabel}
+        if (hasThumbnail) {
+            // 썸네일이 있는 경우: 이미지 카드
+            const thumbnailUrl = convertGoogleDriveUrl(post.thumbnail);
+            const fallbackUrls = getGoogleDriveFallbackUrls(post.thumbnail);
+            
+            return `
+                <article class="blog-post-card blog-post-card-with-image ${privateClass}" onclick="window.navigateToPost('${post.id}')" data-post-id="${post.id}">
+                    <div class="blog-post-image">
+                        <img src="${thumbnailUrl}" alt="${this.escapeHtml(post.title)}" loading="lazy" 
+                             data-fallback-urls='${JSON.stringify(fallbackUrls)}'
+                             data-current-index="0"
+                             onerror="tryFallbackImage(this);">
+                    </div>
+                    <div class="blog-post-content">
+                        <div class="blog-post-info">
+                            <h3 class="blog-post-title">${this.escapeHtml(post.title)}</h3>
+                            <div class="blog-post-meta">
+                                <div class="blog-post-date">${postDate}</div>
+                                ${privateLabel}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </article>
-        `;
+                </article>
+            `;
+        } else {
+            // 썸네일이 없는 경우: 기본 카드
+            return `
+                <article class="blog-post-card ${privateClass}" onclick="window.navigateToPost('${post.id}')" data-post-id="${post.id}">
+                    <div class="blog-post-content">
+                        <div class="blog-post-info">
+                            <h3 class="blog-post-title">${this.escapeHtml(post.title)}</h3>
+                            <div class="blog-post-meta">
+                                <div class="blog-post-date">${postDate}</div>
+                                ${privateLabel}
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
     }
 
     createExcerpt(content, maxLength = 120) {

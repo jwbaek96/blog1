@@ -16,12 +16,6 @@ export default async function handler(req, res) {
         // 환경변수에서 실제 Google Apps Script URL 가져오기
         const APPS_SCRIPT_URL = process.env.V_GOOGLE_APPSCRIPT_URL;
         
-        // 환경변수 소스 확인을 위한 로깅
-        console.log('🔍 Environment Variable Source Check:');
-        console.log('- V_GOOGLE_APPSCRIPT_URL:', APPS_SCRIPT_URL ? '✅ Found' : '❌ Missing');
-        console.log('- Source: Vercel Environment Variables');
-        console.log('- URL Preview:', APPS_SCRIPT_URL ? `${APPS_SCRIPT_URL.substring(0, 50)}...` : 'N/A');
-        
         if (!APPS_SCRIPT_URL) {
             console.error('❌ V_GOOGLE_APPSCRIPT_URL environment variable not configured');
             
@@ -60,7 +54,6 @@ export default async function handler(req, res) {
         }
         
         // Google Apps Script에 요청 전달
-        console.log('🔗 Forwarding request to:', targetUrl);
         const response = await fetch(targetUrl, options);
         
         if (!response.ok) {

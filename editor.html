@@ -300,14 +300,12 @@
             try {
                 // DriveUploader 인스턴스 확인 및 초기화
                 if (!window.driveUploader) {
-                    console.log('🚀 Initializing DriveUploader...');
                     showToast('Google Drive 준비 중...', 'info');
                     await initializeDriveUploader();
                 }
                 
                 // 이미 인증된 경우 바로 리턴
                 if (window.driveUploader.isAuthenticated) {
-                    console.log('✅ Already authenticated, ready for upload');
                     return;
                 }
                 

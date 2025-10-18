@@ -50,17 +50,6 @@ class ArticleApp {
             
             this.filterPosts();
             console.log(`✅ Loaded ${this.allPosts.length} article posts`);
-            
-            // Debug: Show first few posts
-            if (this.allPosts.length > 0) {
-                console.log('📋 Loaded article posts:', this.allPosts.slice(0, 3).map(p => ({
-                    id: p.id,
-                    title: p.title,
-                    tags: p.tags
-                })));
-            } else {
-                console.warn('⚠️ No article posts found! Make sure posts have "article" tag.');
-            }
         } catch (error) {
             console.error('❌ Error loading article posts:', error);
             console.log('⚠️ Failed to load articles. Please check your Google Sheets configuration.');

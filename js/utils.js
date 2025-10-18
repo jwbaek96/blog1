@@ -83,7 +83,7 @@ function formatDate(dateInput) {
 }
 
 /**
- * Convert Google Drive URL to direct access URL
+ * Convert Google Drive URL to direct access URL with fallbacks
  * @param {string} url - Google Drive URL
  * @returns {string} Direct access URL
  */
@@ -110,12 +110,75 @@ function convertGoogleDriveUrl(url) {
     }
     
     if (fileId) {
-        // 직접 접근 가능한 URL로 변환
-        return `https://drive.google.com/uc?export=view&id=${fileId}`;
+        // 여러 형식 시도를 위한 URL 반환 (첫 번째 형식)
+        return `https://lh3.googleusercontent.com/d/${fileId}=s1600`;
     }
     
     // Google Drive URL이 아니거나 파일 ID를 찾을 수 없으면 원본 반환
     return url;
+}
+
+/**
+ * Get fallback Google Drive URLs for error handling
+ * @param {string} url - Original Google Drive URL
+ * @returns {Array} Array of fallback URLs
+ */
+function getGoogleDriveFallbackUrls(url) {
+    if (!url) return [];
+    
+    // Google Drive file ID 추출
+    let fileId = null;
+    const patterns = [
+        /[?&]id=([a-zA-Z0-9_-]+)/,
+        /\/file\/d\/([a-zA-Z0-9_-]+)/,
+        /\/open\?id=([a-zA-Z0-9_-]+)/,
+        /drive\.google\.com.*\/([a-zA-Z0-9_-]+)/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) {
+            fileId = match[1];
+            break;
+        }
+    }
+    
+    if (!fileId) return [];
+    
+    // 여러 형식의 URL 반환
+    return [
+        `https://lh3.googleusercontent.com/d/${fileId}=s1600`,
+        `https://drive.google.com/uc?export=view&id=${fileId}`,
+        `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`,
+        `https://drive.google.com/file/d/${fileId}/view`
+    ];
+}
+
+/**
+ * Try fallback images when the current image fails to load
+ * @param {HTMLImageElement} imgElement - The img element that failed to load
+ */
+function tryFallbackImage(imgElement) {
+    try {
+        const fallbackUrls = JSON.parse(imgElement.dataset.fallbackUrls || '[]');
+        let currentIndex = parseInt(imgElement.dataset.currentIndex || '0');
+        
+        // 다음 fallback URL 시도
+        currentIndex++;
+        
+        if (currentIndex < fallbackUrls.length) {
+            imgElement.dataset.currentIndex = currentIndex.toString();
+            imgElement.src = fallbackUrls[currentIndex];
+        } else {
+            // 모든 fallback URL 실패 시 에러 상태로 설정
+            imgElement.parentElement.parentElement.classList.add('image-error');
+            imgElement.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error in tryFallbackImage:', error);
+        imgElement.parentElement.parentElement.classList.add('image-error');
+        imgElement.style.display = 'none';
+    }
 }
 
 /**
@@ -490,6 +553,16 @@ if (typeof window !== 'undefined') {
         setUrlParameter,
         scrollToElement,
         copyToClipboard,
-        loadScript
+        loadScript,
+        convertGoogleDriveUrl,
+        getGoogleDriveFallbackUrls,
+        tryFallbackImage
     };
+}
+
+// Export functions globally for HTML onerror handlers
+if (typeof window !== 'undefined') {
+    window.tryFallbackImage = tryFallbackImage;
+    window.convertGoogleDriveUrl = convertGoogleDriveUrl;
+    window.getGoogleDriveFallbackUrls = getGoogleDriveFallbackUrls;
 }

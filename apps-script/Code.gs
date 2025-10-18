@@ -50,17 +50,11 @@ const SECURITY_CONFIG = {
  */
 function doGet(e) {
   try {
-    console.log('📥 GET request received');
-    console.log('📋 Parameters:', e.parameter);
-    
     const action = e.parameter.action || 'getPosts';
-    console.log('🎬 Action detected:', action);
     
     if (action === 'getPosts') {
-      console.log('➡️ Handling getPosts');
       return handleGetPosts();
     } else if (action === 'savePost') {
-      console.log('➡️ Handling savePost');
       // Handle post save via GET request (from editor)
       const postData = JSON.parse(e.parameter.data || '{}');
       const requestData = {
@@ -69,7 +63,6 @@ function doGet(e) {
       };
       return handlePostSave(requestData);
     } else if (action === 'updatePost') {
-      console.log('➡️ Handling updatePost');
       // Handle post update via GET request (from editor)
       const postData = JSON.parse(e.parameter.data || '{}');
       const requestData = {
@@ -78,7 +71,6 @@ function doGet(e) {
       };
       return handlePostUpdate(requestData);
     } else if (action === 'deletePost') {
-      console.log('➡️ Handling deletePost');
       // Handle post delete via GET request
       const requestData = {
         postId: e.parameter.postId
@@ -136,8 +128,6 @@ function doGet(e) {
  */
 function handleGetPosts() {
   try {
-    console.log('📊 Getting posts data from spreadsheet');
-    
     const spreadsheet = getSpreadsheet();
     const sheet = spreadsheet.getActiveSheet();
     
@@ -146,7 +136,6 @@ function handleGetPosts() {
     const values = dataRange.getValues();
     
     if (values.length <= 1) {
-      console.log('📋 No posts found');
       return createJsonResponse({
         success: true,
         posts: [],
@@ -156,24 +145,18 @@ function handleGetPosts() {
     
     // Skip header row and process data
     const posts = [];
-    console.log(`🔍 Processing ${values.length - 1} rows from spreadsheet`);
     
     for (let i = 1; i < values.length; i++) {
       const row = values[i];
       
-      // Debug: Show row data
-      console.log(`📋 Row ${i}: Title="${row[1]}" | Content="${row[4] ? row[4].substring(0, 50) + '...' : 'EMPTY'}"`);
-      
       // Skip empty rows - check both title and content
       if (!row[1] || row[1].toString().trim() === '') {
-        console.log(`⏭️ Skipping row ${i}: Empty title`);
         continue;
       }
       
       // Skip rows that look like fragmented HTML content (no proper title)
       const title = row[1].toString().trim();
       if (title.includes('<div>') || title.includes('</div>') || title.match(/^\d+$/)) {
-        console.log(`⏭️ Skipping row ${i}: Looks like fragmented content - "${title}"`);
         continue;
       }
       
@@ -190,11 +173,8 @@ function handleGetPosts() {
         comment: row[9] || ''            // J: Comment (댓글 데이터)
       };
       
-      console.log(`✅ Valid post found: ID=${post.id}, Title="${post.title}"`);
       posts.push(post);
     }
-    
-    console.log(`✅ Found ${posts.length} posts`);
     
     const response = {
       success: true,
@@ -223,27 +203,19 @@ function handleGetPosts() {
  */
 function doPost(e) {
   try {
-    console.log('📥 POST request received');
-    console.log('📋 Request parameters:', e.parameters);
-    console.log('📋 Post data type:', e.postData ? e.postData.type : 'no postData');
-    
     let requestData;
     
     // Handle FormData (from form submission)
     if (e.parameters && e.parameters.data) {
-      console.log('📝 Processing FormData request');
       requestData = JSON.parse(e.parameters.data[0]); // FormData values are arrays
     }
     // Handle direct JSON (fallback)
     else if (e.postData && e.postData.contents) {
-      console.log('📝 Processing JSON request');
       requestData = JSON.parse(e.postData.contents);
     }
     else {
       throw new Error('No valid request data found');
     }
-    
-    console.log('📋 Parsed request data:', requestData);
     
     // Check request type
     if (requestData.action === 'savePost') {
@@ -286,8 +258,6 @@ function doPost(e) {
  */
 function handleFileUpload(requestData) {
   try {
-    console.log('📁 File upload request received');
-    
     const fileData = requestData.file;
     
     // Validate request
@@ -308,8 +278,6 @@ function handleFileUpload(requestData) {
     if (!isImage && !isVideo) {
       throw new Error(`File type ${fileData.mimeType} is not supported`);
     }
-    
-    console.log(`📄 Processing ${isImage ? 'image' : 'video'}: ${fileData.name} (${Math.round(fileSize / 1024)}KB)`);
     
     // Get or create blog folder
     const blogFolder = getBlogFolder();
@@ -368,12 +336,8 @@ function handleFileUpload(requestData) {
  */
 function handlePostSave(requestData) {
   try {
-    console.log('💾 ===== POST SAVE REQUEST RECEIVED =====');
-    console.log('📥 Full request data:', JSON.stringify(requestData, null, 2));
-    
     // Validate post data
     const postData = requestData.postData;
-    console.log('📋 Post data received:', JSON.stringify(postData, null, 2));
     
     if (!postData || !postData.title) {
       throw new Error('Invalid post data: title is required');
@@ -400,27 +364,12 @@ function handlePostSave(requestData) {
       ''                               // J: Comment (댓글 데이터 - 빈 문자열로 초기화)
     ];
     
-    console.log('📊 Saving data structure:');
-    console.log('🆔 ID: =ROW()-1 (자동 증가)');
-    console.log('📝 Title:', postData.title);
-    console.log('📅 Date:', postData.date || currentDateTime);
-    console.log('🖼️ Thumbnail:', postData.thumbnail || '(empty)');
-    console.log('📄 Content length:', (postData.content || '').length);
-    console.log('🏷️ Tags:', postData.tags || '(empty)');
-    console.log('📷 Images:', postData.images || '(empty)');
-    console.log('🎥 Videos:', postData.videos || '(empty)');
-    console.log('📊 Status:', postData.status || 'published');
-    console.log('� Comment: (empty - initialized)');
-    console.log('�📋 Row data array:', rowData);
-    
     // Add row to sheet
     sheet.appendRow(rowData);
     
     // Get the row number to determine the actual ID that will be generated
     const lastRow = sheet.getLastRow();
     const calculatedId = lastRow - 1;
-    
-    console.log(`✅ Post saved successfully: ${postData.title} (ID will be: ${calculatedId})`);
     
     const response = {
       success: true,

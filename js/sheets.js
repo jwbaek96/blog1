@@ -137,7 +137,6 @@ class SheetsAPI {
                 return null;
             }
 
-            // Debug: Check createExcerpt function and content
             const rawContent = row.content || '';
             // Skip cleanContent to preserve HTML attributes and quotes
             const cleanedContent = rawContent.trim();
