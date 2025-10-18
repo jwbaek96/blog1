@@ -139,6 +139,16 @@ class PostApp {
             postDate.textContent = formatDate(this.post.date);
         }
 
+        // Private label (비공개 포스트 표시)
+        const postPrivateLabel = document.getElementById('postPrivateLabel');
+        if (postPrivateLabel) {
+            if (this.post.status === 'private') {
+                postPrivateLabel.style.display = 'inline-flex';
+            } else {
+                postPrivateLabel.style.display = 'none';
+            }
+        }
+
         // Read time (estimate based on content length)
         // const postReadTime = document.getElementById('postReadTime');
         // if (postReadTime) {
