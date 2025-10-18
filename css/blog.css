@@ -291,12 +291,12 @@ body {
 /* Post Card with Background Image - Horizontal Layout */
 .post-card-with-image {
     position: relative;
-    height: 200px;
+    height: 170px;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    border-radius: 12px;
-    margin-bottom: 1rem;
+    /* border-radius: 12px; */
+    /* margin-bottom: 1rem; */
     overflow: hidden;
     /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); */
     transition: all 0.3s ease;
@@ -339,7 +339,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     transition: var(--transition);
 }
 
@@ -370,7 +370,7 @@ body {
 /* Meta styling for image cards */
 .post-card-with-image .post-card-meta {
     display: flex;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     font-size: var(--font-size-xs);
     color: rgba(255, 255, 255, 0.8);
 }
@@ -384,7 +384,7 @@ body {
 /* Meta styling for no-image cards */
 .post-card-no-image .post-card-meta {
     display: flex;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     font-size: var(--font-size-xs);
     color: var(--text-muted);
 }
@@ -918,7 +918,6 @@ body {
 
 /* 썸네일이 있는 카드의 액션 버튼 스타일 조정 */
 .post-card-with-image .post-more-btn {
-    background: rgba(0, 0, 0, 0.6);
     color: white;
 }
 
@@ -938,5 +937,43 @@ body {
         right: -0.5rem;
         min-width: 140px;
     }
+}
+
+/* 비공개 포스트 스타일 */
+.post-private-label {
+    display: inline-flex;
+    align-items: center;
+    /* gap: 0.25rem; */
+    background: rgba(255, 193, 7, 0.1);
+    color: #856404;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    /* padding: 0.125rem 0.5rem; */
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+}
+
+.post-card.post-private {
+    /* border: 2px solid rgba(255, 193, 7, 0.3); */
+    position: relative;
+}
+
+.post-card.post-private::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* background: rgba(255, 193, 7, 0.05); */
+    pointer-events: none;
+    z-index: 1;
+}
+
+.post-card-with-image.post-private .post-private-label {
+    background: rgba(0, 0, 0, 0.7);
+    /* color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.5); */
 }
 

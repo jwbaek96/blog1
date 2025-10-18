@@ -71,8 +71,16 @@ class IndexBlog {
                 return;
             }
 
+            // 비공개 포스트 필터링 (로그인하지 않은 경우 private 포스트 제외)
+            const isLoggedIn = window.Auth && window.Auth.isLoggedIn();
+            let filteredPosts = posts;
+            if (!isLoggedIn) {
+                filteredPosts = posts.filter(post => post.status !== 'private');
+                console.log('IndexBlog: Filtered out private posts. Remaining:', filteredPosts.length);
+            }
+
             // 날짜 순으로 정렬하고 최대 개수만큼 제한
-            const latestPosts = posts
+            const latestPosts = filteredPosts
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, this.maxPosts);
 
@@ -94,13 +102,21 @@ class IndexBlog {
 
     renderPostCard(post) {
         const postDate = this.formatDate(post.date);
+        
+        // 비공개 포스트 상태 표시
+        const isPrivate = post.status === 'private';
+        const privateLabel = isPrivate ? '<span class="post-private-label">🔒</span>' : '';
+        const privateClass = isPrivate ? 'post-private' : '';
 
         return `
-            <article class="blog-post-card" onclick="window.navigateToPost('${post.id}')" data-post-id="${post.id}">
+            <article class="blog-post-card ${privateClass}" onclick="window.navigateToPost('${post.id}')" data-post-id="${post.id}">
                 <div class="blog-post-content">
                     <div class="blog-post-info">
                         <h3 class="blog-post-title">${this.escapeHtml(post.title)}</h3>
-                        <div class="blog-post-date">${postDate}</div>
+                        <div class="blog-post-meta">
+                            <div class="blog-post-date">${postDate}</div>
+                            ${privateLabel}
+                        </div>
                     </div>
                 </div>
             </article>
@@ -199,6 +215,12 @@ class IndexBlog {
             });
         });
     }
+
+    // 로그인 상태 변경 시 블로그 포스트 새로고침
+    refreshPosts() {
+        console.log('IndexBlog: Refreshing posts due to auth state change');
+        this.loadLatestPosts();
+    }
 }
 
 // 카드 클릭 네비게이션을 전역 함수로 등록
@@ -215,5 +237,12 @@ window.indexBlog = new IndexBlog();
 window.retryLoadPosts = function() {
     if (window.indexBlog) {
         window.indexBlog.loadLatestPosts();
+    }
+};
+
+// 로그인 상태 변경 시 블로그 포스트 새로고침
+window.refreshIndexBlog = function() {
+    if (window.indexBlog) {
+        window.indexBlog.refreshPosts();
     }
 };

@@ -358,6 +358,9 @@
             
             window.driveUploader = new DriveUploader();
             
+            // 명시적으로 초기화 실행
+            await window.driveUploader.init();
+            
             // 초기화 완료 대기
             await window.driveUploader.waitForInitialization();
             
@@ -382,6 +385,11 @@
             try {
                 console.log('📤 Starting file upload:', file.name, fileType);
                 
+                // 업로드 시작 시 현재 커서 위치 저장 및 상태 설정
+                const savedCursorPosition = saveCursorPosition();
+                isUploadInProgress = true;
+                setUploadButtonsEnabled(false);
+                
                 // 파일 선택 후 인증 확인 및 필요시 인증 진행
                 await ensureAuthBeforeUpload();
                 
@@ -391,8 +399,8 @@
                     return;
                 }
                 
-                // 업로드 시작 - 로딩 스피너 삽입
-                placeholderId = insertUploadPlaceholder(file.name, fileType);
+                // 업로드 시작 - 로딩 스피너 삽입 (저장된 커서 위치 사용)
+                placeholderId = insertUploadPlaceholder(file.name, fileType, savedCursorPosition);
                 showToast('파일 업로드 중...', 'info');
                 
                 // 파일 업로드 실행
@@ -406,6 +414,10 @@
                 // 성공 메시지
                 showToast(`${fileType === 'image' ? '이미지' : '동영상'}가 업로드되었습니다!`, 'success');
                 
+                // 업로드 완료 상태 리셋
+                isUploadInProgress = false;
+                setUploadButtonsEnabled(true);
+                
             } catch (error) {
                 console.error('❌ Upload error:', error);
                 
@@ -415,11 +427,90 @@
                 }
                 
                 showToast(`업로드 실패: ${error.message}`, 'error');
+                
+                // 업로드 실패 상태 리셋
+                isUploadInProgress = false;
+                setUploadButtonsEnabled(true);
             }
         }
 
         // Global variable to track uploaded files
         window.uploadedFiles = window.uploadedFiles || [];
+        
+        // 업로드 상태 관리
+        let isUploadInProgress = false;
+        
+        // 업로드 버튼 상태 관리
+        function setUploadButtonsEnabled(enabled) {
+            const imageBtn = document.getElementById('imageUploadBtn');
+            const videoBtn = document.getElementById('videoUploadBtn');
+            
+            if (imageBtn) {
+                imageBtn.disabled = !enabled;
+                imageBtn.style.opacity = enabled ? '1' : '0.5';
+                imageBtn.style.pointerEvents = enabled ? 'auto' : 'none';
+            }
+            
+            if (videoBtn) {
+                videoBtn.disabled = !enabled;
+                videoBtn.style.opacity = enabled ? '1' : '0.5';
+                videoBtn.style.pointerEvents = enabled ? 'auto' : 'none';
+            }
+        }
+
+        // 커서 위치 저장/복원 함수들
+        function saveCursorPosition() {
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0) {
+                console.log('💾 No cursor position to save');
+                return null;
+            }
+            
+            const range = selection.getRangeAt(0);
+            const editorElement = document.getElementById('editor');
+            
+            // 저장할 위치 정보 생성
+            const savedPosition = {
+                startContainer: range.startContainer,
+                startOffset: range.startOffset,
+                endContainer: range.endContainer,
+                endOffset: range.endOffset,
+                timestamp: Date.now()
+            };
+            
+            console.log('💾 Cursor position saved at:', {
+                startContainer: range.startContainer.nodeName,
+                startOffset: range.startOffset,
+                containerText: range.startContainer.textContent?.substring(0, 50) + '...'
+            });
+            
+            return savedPosition;
+        }
+        
+        function restoreCursorPosition(savedPosition) {
+            if (!savedPosition) {
+                console.log('📍 No saved cursor position to restore');
+                return false;
+            }
+            
+            try {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                
+                // 저장된 위치로 커서 복원
+                range.setStart(savedPosition.startContainer, savedPosition.startOffset);
+                range.setEnd(savedPosition.endContainer, savedPosition.endOffset);
+                
+                selection.removeAllRanges();
+                selection.addRange(range);
+                
+                console.log('📍 Cursor position restored');
+                return true;
+            } catch (error) {
+                console.warn('⚠️ Failed to restore cursor position:', error);
+                return false;
+            }
+        }
 
         // 로컬 시간 사용 (한국 사용자 기준)
         function getKSTTime() {
@@ -428,14 +519,22 @@
             return new Date();
         }
 
-        // 업로드 로딩 스피너 삽입
-        function insertUploadPlaceholder(filename, fileType) {
+        // 업로드 로딩 스피너 삽입 (저장된 커서 위치 사용)
+        function insertUploadPlaceholder(filename, fileType, savedCursorPosition = null) {
             const editorElement = document.getElementById('editor');
             const placeholderId = 'upload-placeholder-' + Date.now();
             
-            // 현재 커서 위치 저장
-            const selection = window.getSelection();
-            const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+            // 저장된 커서 위치가 있으면 복원, 없으면 현재 위치 사용
+            let range = null;
+            if (savedCursorPosition && restoreCursorPosition(savedCursorPosition)) {
+                const selection = window.getSelection();
+                range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+                console.log('📍 Using saved cursor position for placeholder');
+            } else {
+                const selection = window.getSelection();
+                range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+                console.log('📍 Using current cursor position for placeholder');
+            }
             
             // 로딩 스피너 HTML 생성
             const placeholderHtml = `
@@ -798,8 +897,41 @@
             
             initializeDragAndDrop();
             
-            // Initialize DriveUploader with auto-login
-            await initializeDriveUploader();
+            // 에디터 클릭 차단 (업로드 중)
+            const editorElement = document.getElementById('editor');
+            if (editorElement) {
+                editorElement.addEventListener('mousedown', (e) => {
+                    if (isUploadInProgress) {
+                        console.log('🚫 Upload in progress - preventing cursor movement');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showToast('파일 업로드 중입니다. 잠시만 기다려주세요.', 'info');
+                        return false;
+                    }
+                });
+                
+                editorElement.addEventListener('click', (e) => {
+                    if (isUploadInProgress) {
+                        console.log('🚫 Upload in progress - preventing cursor movement');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                });
+            }
+            
+            // Config 로딩 완료 이벤트 리스너 등록
+            window.addEventListener('configLoaded', async () => {
+                console.log('📋 Config loaded, initializing DriveUploader...');
+                // Initialize DriveUploader with auto-login
+                await initializeDriveUploader();
+            });
+            
+            // 이미 config가 로드된 경우 즉시 초기화
+            if (CONFIG.GOOGLE_CLIENT_ID) {
+                console.log('📋 Config already loaded, initializing DriveUploader...');
+                await initializeDriveUploader();
+            }
             
             // Editor 초기화 대기 및 확인
             setTimeout(() => {

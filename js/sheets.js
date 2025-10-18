@@ -5,6 +5,26 @@ class SheetsAPI {
         this.sheetUrl = CONFIG.GOOGLE_SHEET_URL;
         this.cacheKey = CONFIG.CACHE_KEY;
         this.cacheDuration = CONFIG.CACHE_DURATION;
+        this.configReady = false;
+        
+        // Config 로딩 완료 대기
+        this.waitForConfig();
+    }
+    
+    async waitForConfig() {
+        return new Promise((resolve) => {
+            if (CONFIG.APPS_SCRIPT_URL && CONFIG.APPS_SCRIPT_URL !== 'null') {
+                this.configReady = true;
+                resolve();
+                return;
+            }
+            
+            // Config 로딩 이벤트 리스너
+            window.addEventListener('configLoaded', () => {
+                this.configReady = true;
+                resolve();
+            });
+        });
     }
 
     /**
@@ -13,6 +33,15 @@ class SheetsAPI {
      */
     async fetchPosts() {
         try {
+            // Config 로딩 완료 대기
+            await this.waitForConfig();
+            
+            // CONFIG.APPS_SCRIPT_URL이 설정되어 있는지 확인
+            if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL === 'null') {
+                console.warn('⚠️ Apps Script URL not configured, using CSV method');
+                return this.fetchPostsFromCSV();
+            }
+            
             // Use Apps Script Web App URL with getPosts action
             const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}?action=getPosts&t=${Date.now()}`;
             

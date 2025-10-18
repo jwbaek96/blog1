@@ -6,15 +6,33 @@ class DriveUploader {
         this.isInitialized = false;
         this.isAuthenticated = false;
         this.accessToken = null;
-        this.rootFolderId = CONFIG.GOOGLE_DRIVE_FOLDER_ID;
-        this.apiKey = CONFIG.GOOGLE_DRIVE_API_KEY;
-        this.clientId = CONFIG.GOOGLE_CLIENT_ID;
+        this.rootFolderId = null;
+        this.apiKey = null;
+        this.clientId = null;
         this.tokenClient = null;
         
         // 자동 로그인을 위한 저장소 키
         this.STORAGE_KEY = 'blog_google_auth';
         
-        this.init();
+        // Config 값들을 초기화 시점에 설정
+        this.updateConfigValues();
+        
+        console.log('📦 DriveUploader instance created');
+    }
+    
+    /**
+     * Update config values from CONFIG object
+     */
+    updateConfigValues() {
+        this.rootFolderId = CONFIG.GOOGLE_DRIVE_FOLDER_ID;
+        this.apiKey = CONFIG.GOOGLE_DRIVE_API_KEY;
+        this.clientId = CONFIG.GOOGLE_CLIENT_ID;
+        
+        console.log('🔧 DriveUploader config values:', {
+            rootFolderId: this.rootFolderId ? '✅' : '❌',
+            apiKey: this.apiKey ? '✅' : '❌',
+            clientId: this.clientId ? '✅' : '❌'
+        });
     }
 
     /**
@@ -23,6 +41,18 @@ class DriveUploader {
     async init() {
         try {
             console.log('🚀 Initializing Google Drive API with GIS...');
+            
+            // 필수 설정 값 체크
+            this.updateConfigValues();
+            if (!this.clientId || !this.apiKey) {
+                console.warn('⏳ Waiting for config to load...');
+                console.log('Missing values:', {
+                    clientId: !!this.clientId,
+                    apiKey: !!this.apiKey
+                });
+                // 설정이 로드될 때까지 대기
+                return;
+            }
             
             // Wait for APIs to load
             await this.waitForApis();

@@ -83,6 +83,42 @@ function formatDate(dateInput) {
 }
 
 /**
+ * Convert Google Drive URL to direct access URL
+ * @param {string} url - Google Drive URL
+ * @returns {string} Direct access URL
+ */
+function convertGoogleDriveUrl(url) {
+    if (!url) return url;
+    
+    // Google Drive file ID 추출
+    let fileId = null;
+    
+    // 다양한 Google Drive URL 패턴 지원
+    const patterns = [
+        /[?&]id=([a-zA-Z0-9_-]+)/,                    // ?id=FILE_ID 또는 &id=FILE_ID
+        /\/file\/d\/([a-zA-Z0-9_-]+)/,                // /file/d/FILE_ID/
+        /\/open\?id=([a-zA-Z0-9_-]+)/,                // /open?id=FILE_ID
+        /drive\.google\.com.*\/([a-zA-Z0-9_-]+)/      // 기타 패턴
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) {
+            fileId = match[1];
+            break;
+        }
+    }
+    
+    if (fileId) {
+        // 직접 접근 가능한 URL로 변환
+        return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    }
+    
+    // Google Drive URL이 아니거나 파일 ID를 찾을 수 없으면 원본 반환
+    return url;
+}
+
+/**
  * Sanitize HTML to prevent XSS
  * @param {string} html - HTML string to sanitize
  * @returns {string} Sanitized HTML

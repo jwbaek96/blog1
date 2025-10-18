@@ -1461,15 +1461,15 @@ function setupEditorButtons() {
                 content: content, 
                 tags: tags,
                 readTime: Math.max(1, Math.ceil(htmlToText(content).split(' ').length / 200)), // 읽는 시간 (사용 안함)
-                thumbnail: '', // 썸네일 (아직 미구현)
+                thumbnail: getAutoThumbnail(), // 업로드된 첫 번째 미디어를 썸네일로 자동 설정
                 images: getUploadedFilesByType('image'), // 업로드된 이미지 목록
                 videos: getUploadedFilesByType('video'), // 업로드된 비디오 목록
                 status: status
             };
             
-            // 저장할 전체 요청 데이터
+            // 저장할 전체 요청 데이터 (임시로 모든 경우에 savePost 사용)
             const requestData = {
-                action: isEditMode ? 'updatePost' : 'savePost', // 편집 모드면 updatePost 액션 사용
+                action: 'savePost', // 배포 환경 호환성을 위해 항상 savePost 사용
                 postData: postData
             };
             
@@ -1480,7 +1480,12 @@ function setupEditorButtons() {
             console.log('📄 상태:', status);
             console.log('📊 내용 길이:', content.length, '문자');
             console.log('📖 예상 읽는 시간:', Math.max(1, Math.ceil(htmlToText(content).split(' ').length / 200)), '분');
-            console.log('🖼️ 썸네일:', postData.thumbnail || '(없음)');
+            console.log('🖼️ 자동 썸네일:', postData.thumbnail || '(없음)');
+            if (postData.thumbnail) {
+                console.log('✨ 썸네일 자동 선택됨:', postData.thumbnail);
+            } else {
+                console.log('ℹ️ 업로드된 미디어가 없어 썸네일 없음');
+            }
             console.log('� 이미지:', postData.images || '(없음)');
             console.log('🎥 비디오:', postData.videos || '(없음)');
             console.log('� 요약:', createExcerpt(content).substring(0, 100) + (createExcerpt(content).length > 100 ? '...' : ''));
@@ -1613,6 +1618,39 @@ function getUploadedFilesByType(fileType) {
 }
 
 /**
+ * Auto-select thumbnail from uploaded media
+ * 업로드된 미디어 중 첫 번째를 썸네일로 자동 선택
+ */
+function getAutoThumbnail() {
+    console.log('🖼️ 썸네일 자동 선택 시작...');
+    
+    if (!window.uploadedFiles || window.uploadedFiles.length === 0) {
+        console.log('ℹ️ 업로드된 파일이 없음');
+        return '';
+    }
+    
+    console.log('📁 업로드된 파일 목록:', window.uploadedFiles);
+    
+    // 이미지 우선, 그 다음 비디오
+    const imageFiles = window.uploadedFiles.filter(file => file.type === 'image');
+    if (imageFiles.length > 0) {
+        console.log('✅ 이미지 파일을 썸네일로 선택:', imageFiles[0].url);
+        return imageFiles[0].url; // 첫 번째 이미지
+    }
+    
+    const videoFiles = window.uploadedFiles.filter(file => file.type === 'video');
+    if (videoFiles.length > 0) {
+        // 비디오의 경우 썸네일 URL이 있으면 사용, 없으면 비디오 URL 사용
+        const thumbnailUrl = videoFiles[0].thumbnailUrl || videoFiles[0].url;
+        console.log('✅ 비디오 파일을 썸네일로 선택:', thumbnailUrl);
+        return thumbnailUrl;
+    }
+    
+    console.log('ℹ️ 썸네일로 사용할 미디어 파일 없음');
+    return '';
+}
+
+/**
  * Reset uploaded files list (call when creating new post)
  */
 function resetUploadedFiles() {
@@ -1668,6 +1706,7 @@ if (typeof window !== 'undefined') {
     window.RichTextEditor = RichTextEditor;
     window.editor = editor;
     window.getUploadedFilesByType = getUploadedFilesByType;
+    window.getAutoThumbnail = getAutoThumbnail;
     window.resetUploadedFiles = resetUploadedFiles;
     window.loadUploadedFiles = loadUploadedFiles;
 }

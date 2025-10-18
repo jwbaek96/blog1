@@ -78,6 +78,14 @@ class BlogApp {
     filterPosts() {
         let filteredPosts = [...this.allPosts];
 
+        // Filter by status (비공개 포스트 처리)
+        const isLoggedIn = window.Auth && window.Auth.isLoggedIn();
+        if (!isLoggedIn) {
+            // 로그인하지 않은 경우 private 포스트 제외
+            filteredPosts = filteredPosts.filter(post => post.status !== 'private');
+        }
+        // 로그인한 경우 모든 포스트 표시 (private 포함)
+
         // Filter by tag
         if (this.currentTag) {
             filteredPosts = window.SheetsAPI.filterByTag(filteredPosts, this.currentTag);
@@ -279,6 +287,10 @@ class BlogApp {
             `<a href="?tag=${encodeURIComponent(tag)}" class="post-tag" onclick="event.stopPropagation()">${tag}</a>`
         ).join('');
 
+        // 비공개 포스트 상태 표시
+        const isPrivate = post.status === 'private';
+        const privateLabel = isPrivate ? '<span class="post-private-label">🔒</span>' : '';
+
         // 더보기 버튼과 액션 메뉴 HTML (로그인 상태에서만 표시)
         const isLoggedIn = window.Auth && window.Auth.isLoggedIn();
         const actionsHTML = isLoggedIn ? `
@@ -310,13 +322,15 @@ class BlogApp {
 
         if (hasThumbnail) {
             // 썸네일이 있는 경우: 배경 이미지 카드
+            const thumbnailUrl = convertGoogleDriveUrl(post.thumbnail);
             return `
-                <article class="post-card post-card-with-image" data-post-id="${post.id}" style="background-image: url('${post.thumbnail}')">
+                <article class="post-card post-card-with-image ${isPrivate ? 'post-private' : ''}" data-post-id="${post.id}" style="background-image: url('${thumbnailUrl}')">
                     ${actionsHTML}
                     <div class="post-card-overlay">
                         <div class="post-card-content">
                             <div class="post-card-meta">
                                 <span class="post-date">${formatDate(post.date)}</span>
+                                ${privateLabel}
                             </div>
                             
                             <h2 class="post-card-title">${post.title}</h2>
@@ -330,11 +344,12 @@ class BlogApp {
         } else {
             // 썸네일이 없는 경우: 기본 카드
             return `
-                <article class="post-card post-card-no-image" data-post-id="${post.id}">
+                <article class="post-card post-card-no-image ${isPrivate ? 'post-private' : ''}" data-post-id="${post.id}">
                     ${actionsHTML}
                     <div class="post-card-content">
                         <div class="post-card-meta">
                             <span class="post-date">${formatDate(post.date)}</span>
+                            ${privateLabel}
                         </div>
                         <h2 class="post-card-title">${post.title}</h2>
 
@@ -629,6 +644,8 @@ class BlogApp {
      * Refresh post cards when login state changes
      */
     refreshPostCards() {
+        // 로그인 상태가 변경되었으므로 필터를 다시 적용
+        this.filterPosts();
         this.renderPosts();
     }
 
