@@ -634,7 +634,7 @@ body.post-page .main {
     
     .post-title {
         font-size: 2rem;
-        margin-right: -28px;
+        /* margin-right: -28px; */
     }
     
     .post-admin-actions {
@@ -649,7 +649,8 @@ body.post-page .main {
     .post-date::after {
         display: none;
     }
-    
+    .post-header,
+    .post-body{padding: 0 .5rem;}
     .post-content {
         font-size: 1rem;
     }
