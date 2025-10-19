@@ -1062,7 +1062,6 @@ async function checkAndLoadEditMode() {
                 return false;
             }
             
-            console.log('✅ Editor is ready');
             return true;
         };
         
@@ -1096,11 +1095,8 @@ async function loadPostForEditing(postId) {
             throw new Error('SheetsAPI가 로드되지 않았습니다. sheets.js 파일을 확인하세요.');
         }
         
-        console.log('🔗 SheetsAPI available, fetching posts...');
-        
         // SheetsAPI를 통해 포스트 데이터 가져오기
         const posts = await window.SheetsAPI.fetchPosts();
-        console.log('📊 Total posts loaded:', posts.length);
         
         const post = posts.find(p => String(p.id) === String(postId));
         
@@ -1137,8 +1133,6 @@ async function loadPostForEditing(postId) {
         
         hideLoadingState();
         
-        console.log('✅ Post loaded successfully for editing');
-        
     } catch (error) {
         console.error('❌ Error loading post for editing:', error);
         console.error('Error stack:', error.stack);
@@ -1160,7 +1154,6 @@ function populateFormFields(post) {
     const titleInput = document.getElementById('postTitle');
     if (titleInput && post.title) {
         titleInput.value = post.title;
-        console.log('✅ Title set:', post.title);
     } else {
         console.warn('⚠️ Title not set:', { inputExists: !!titleInput, titleValue: post.title });
     }
@@ -1169,7 +1162,6 @@ function populateFormFields(post) {
     const thumbnailInput = document.getElementById('thumbnail');
     if (thumbnailInput && post.thumbnail) {
         thumbnailInput.value = post.thumbnail;
-        console.log('✅ Thumbnail set:', post.thumbnail);
     } else {
         console.log('ℹ️ Thumbnail field not found (normal for this editor)');
     }
@@ -1192,14 +1184,12 @@ function populateFormFields(post) {
             // TagsInput에 태그 설정
             if (typeof window.tagsInput.setTags === 'function') {
                 window.tagsInput.setTags(tagsArray);
-                console.log('✅ setTags 메서드로 태그 설정 완료');
             } else {
                 // fallback: 직접 설정
                 window.tagsInput.tags = tagsArray;
                 if (typeof window.tagsInput.renderTags === 'function') {
                     window.tagsInput.renderTags();
                 }
-                console.log('✅ 직접 태그 설정 완료');
             }
         } else {
             console.log('ℹ️ 태그 설정 불가:', { 
@@ -1217,10 +1207,8 @@ function populateFormFields(post) {
         const retrySetTags = () => {
             retryCount++;
             if (window.tagsInput) {
-                console.log('✅ TagsInput 준비됨, 태그 설정 시도');
                 setTags();
             } else if (retryCount < 10) {
-                console.log(`⏳ TagsInput 대기 중... (${retryCount}/10)`);
                 setTimeout(retrySetTags, 200);
             } else {
                 console.error('❌ TagsInput 초기화 시간 초과');
@@ -1235,12 +1223,7 @@ function populateFormFields(post) {
     const statusSelect = document.getElementById('status');
     if (statusSelect && post.status) {
         statusSelect.value = post.status;
-        console.log('✅ Status set:', post.status);
-    } else {
-        console.log('ℹ️ Status field not found (normal for this editor)');
     }
-    
-    console.log('📝 Form fields population completed');
 }
 
 /**
@@ -1434,12 +1417,7 @@ function setupEditorButtons() {
         const seconds = String(kstTime.getSeconds()).padStart(2, '0');
         const currentDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         
-        console.log('🕐 ===== 포스트 저장 시간 정보 =====');
-        console.log('📅 로컬 시간 (getKSTTime()):', kstTime);
-        console.log('📝 전송할 날짜 문자열:', currentDateTime);
-        console.log('🌍 로컬 시간 toString():', kstTime.toString());
-        console.log('🌐 UTC 비교 (toISOString()):', kstTime.toISOString());
-        console.log('==========================================');
+
         
         // Validate required fields
         if (!title) {
@@ -1488,27 +1466,7 @@ function setupEditorButtons() {
                 postData: postData
             };
             
-            console.log('💾 ===== 저장 데이터 분석 =====');
-            console.log('📝 제목:', title);
-            console.log('📅 날짜:', currentDateTime);
-            console.log('🏷️ 태그:', tags);
-            console.log('📄 상태:', status);
-            console.log('📊 내용 길이:', content.length, '문자');
-            console.log('📖 예상 읽는 시간:', Math.max(1, Math.ceil(htmlToText(content).split(' ').length / 200)), '분');
-            console.log('🖼️ 자동 썸네일:', postData.thumbnail || '(없음)');
-            if (postData.thumbnail) {
-                console.log('✨ 썸네일 자동 선택됨:', postData.thumbnail);
-            } else {
-                console.log('ℹ️ 업로드된 미디어가 없어 썸네일 없음');
-            }
-            console.log('� 이미지:', postData.images || '(없음)');
-            console.log('🎥 비디오:', postData.videos || '(없음)');
-            console.log('� 요약:', createExcerpt(content).substring(0, 100) + (createExcerpt(content).length > 100 ? '...' : ''));
-            console.log('📦 전체 요청 데이터:', requestData);
-            console.log('🔗 API URL (마스킹됨):', maskSensitiveUrl(CONFIG.UPLOAD_API_URL));
-            console.log('🌍 Current hostname:', window.location.hostname);
-            console.log('🏠 Is Local:', window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-            console.log('===========================');
+
             
             // Check if API URL is configured
             if (!CONFIG.UPLOAD_API_URL || CONFIG.UPLOAD_API_URL.includes('YOUR_')) {
@@ -1516,44 +1474,29 @@ function setupEditorButtons() {
             }
             
             // Send to Google Apps Script (수정 모드에 따라 다른 API 호출)
-            console.log('🚀 Sending request to Google Apps Script...');
-            
             let result;
             
             if (isEditMode) {
-                console.log('🔄 Update mode: calling updatePost via SheetsAPI');
                 result = await window.SheetsAPI.updatePost(postData);
             } else {
-                console.log('➕ Create mode: calling savePost via direct fetch');
-                
                 // GET 방식으로 데이터 전송 (Apps Script 호환성 개선)
                 const urlParams = new URLSearchParams();
                 urlParams.append('action', requestData.action);
                 urlParams.append('data', JSON.stringify(requestData.postData));
                 
                 const requestUrl = `${CONFIG.UPLOAD_API_URL}?${urlParams.toString()}`;
-                console.log('🔗 Request URL 길이:', requestUrl.length);
                 
                 const response = await fetch(requestUrl, {
                     method: 'GET'
                 });
                 
-                console.log('📡 Response received!');
-                console.log('📡 Response status:', response.status);
-                console.log('📡 Response statusText:', response.statusText);
-                
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('❌ Response not OK - Status:', response.status);
-                    console.error('❌ Response error text:', errorText);
                     throw new Error(`HTTP ${response.status}: ${response.statusText}\n응답: ${errorText}`);
                 }
                 
-                console.log('✅ Response OK, parsing JSON...');
                 result = await response.json();
             }
-            
-            console.log('📋 Final result:', result);
             
             if (result.success) {
                 // 편집 모드였는지 확인하여 메시지 변경
@@ -1562,9 +1505,6 @@ function setupEditorButtons() {
                     `포스트가 성공적으로 저장되었습니다! (ID: ${result.postId})`;
                 
                 showToast(successMessage, 'success', 5000);
-                
-                // No cache to clear - posts will always be fresh on next page load
-                console.log('✅ Post saved! Next page load will show fresh data.');
                 
                 // Clear saved draft
                 editor.clearDraft();
@@ -1661,12 +1601,9 @@ function getAutoThumbnail() {
         return '';
     }
     
-    console.log('📁 업로드된 파일 목록:', window.uploadedFiles);
-    
     // 이미지 우선, 그 다음 비디오
     const imageFiles = window.uploadedFiles.filter(file => file.type === 'image');
     if (imageFiles.length > 0) {
-        console.log('✅ 이미지 파일을 썸네일로 선택:', imageFiles[0].url);
         return imageFiles[0].url; // 첫 번째 이미지
     }
     
@@ -1674,11 +1611,8 @@ function getAutoThumbnail() {
     if (videoFiles.length > 0) {
         // 비디오의 경우 썸네일 URL이 있으면 사용, 없으면 비디오 URL 사용
         const thumbnailUrl = videoFiles[0].thumbnailUrl || videoFiles[0].url;
-        console.log('✅ 비디오 파일을 썸네일로 선택:', thumbnailUrl);
         return thumbnailUrl;
     }
-    
-    console.log('ℹ️ 썸네일로 사용할 미디어 파일 없음');
     return '';
 }
 
@@ -1696,17 +1630,11 @@ function loadUploadedFiles(postData) {
     try {
         window.uploadedFiles = [];
         
-        console.log('📁 Loading uploaded files from post data:', {
-            images: postData.images,
-            videos: postData.videos
-        });
-        
         if (postData.images && postData.images.trim()) {
             try {
                 const images = JSON.parse(postData.images);
                 if (Array.isArray(images)) {
                     window.uploadedFiles.push(...images);
-                    console.log('✅ Images loaded:', images.length);
                 }
             } catch (e) {
                 console.warn('⚠️ Failed to parse images JSON:', postData.images);
@@ -1718,14 +1646,11 @@ function loadUploadedFiles(postData) {
                 const videos = JSON.parse(postData.videos);
                 if (Array.isArray(videos)) {
                     window.uploadedFiles.push(...videos);
-                    console.log('✅ Videos loaded:', videos.length);
                 }
             } catch (e) {
                 console.warn('⚠️ Failed to parse videos JSON:', postData.videos);
             }
         }
-        
-        console.log('📁 Total uploaded files loaded:', window.uploadedFiles.length);
         
     } catch (error) {
         console.warn('❌ Failed to load uploaded files:', error);

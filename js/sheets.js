@@ -505,9 +505,6 @@ class SheetsAPI {
         try {
             const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}`;
             
-            console.log('🔗 UpdatePost API URL (마스킹됨):', this.maskUrl(appsScriptUrl));
-            console.log('🌍 Current hostname:', window.location.hostname);
-            
             const response = await fetch(appsScriptUrl, {
                 method: 'POST',
                 headers: {
@@ -518,6 +515,10 @@ class SheetsAPI {
                     postData: postData
                 })
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             
             const result = await response.json();
             

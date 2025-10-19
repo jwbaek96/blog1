@@ -38,7 +38,6 @@ class ArticleApp {
      */
     async loadPosts() {
         try {
-            console.log('📡 Fetching posts from Google Sheets...');
             const allPostsFromSheets = await window.SheetsAPI.fetchPosts();
             
             // Filter for posts that have 'article' tag
@@ -49,7 +48,6 @@ class ArticleApp {
             });
             
             this.filterPosts();
-            console.log(`✅ Loaded ${this.allPosts.length} article posts`);
         } catch (error) {
             console.error('❌ Error loading article posts:', error);
             console.log('⚠️ Failed to load articles. Please check your Google Sheets configuration.');
@@ -247,7 +245,6 @@ class ArticleApp {
                 return;
             }
 
-            console.log('✅ Navigating to article:', post.title);
             // Navigate to post.html with post ID
             window.location.href = `post.html?id=${encodeURIComponent(postId)}`;
             

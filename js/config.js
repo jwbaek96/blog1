@@ -152,15 +152,6 @@ async function initializeConfig() {
                     CONFIG.GOOGLE_CLIENT_ID = localConfig.GOOGLE_CLIENT_ID;
                 }
                 
-                console.log('✅ 로컬 설정 파일 로드 완료');
-                console.log('🔍 Config Source: config.local.json (Local Development)');
-                console.log('� Apps Script URL (마스킹됨):', maskSensitiveUrl(CONFIG.APPS_SCRIPT_URL));
-                console.log('�📋 Loaded configs:', {
-                    APPS_SCRIPT_URL: localConfig.APPS_SCRIPT_URL ? '✅' : '❌',
-                    GOOGLE_DRIVE_API_KEY: localConfig.GOOGLE_DRIVE_API_KEY ? '✅' : '❌',
-                    GOOGLE_CLIENT_ID: localConfig.GOOGLE_CLIENT_ID ? '✅' : '❌'
-                });
-                
                 // 설정 로딩 완료 이벤트 발생
                 if (typeof window !== 'undefined') {
                     window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
@@ -191,13 +182,6 @@ async function initializeConfig() {
             if (response.ok) {
                 const envConfig = await response.json();
                 
-                console.log('🔍 Config Source: Vercel Environment Variables');
-                console.log('📋 Available configs:', {
-                    V_GOOGLE_APPSCRIPT_URL: envConfig.V_GOOGLE_APPSCRIPT_URL ? '✅' : '❌',
-                    V_GOOGLE_DRIVE_API_KEY: envConfig.V_GOOGLE_DRIVE_API_KEY ? '✅' : '❌',
-                    V_GOOGLE_CLIENT_ID: envConfig.V_GOOGLE_CLIENT_ID ? '✅' : '❌'
-                });
-                
                 // Vercel 환경변수에서 설정 업데이트
                 // 배포 환경에서는 항상 Vercel API Routes 사용 (직접 Google Apps Script 호출 금지)
                 // CONFIG.APPS_SCRIPT_URL과 CONFIG.UPLOAD_API_URL은 '/api/sheets'로 고정
@@ -214,10 +198,7 @@ async function initializeConfig() {
                 if (envConfig.V_GOOGLE_CLIENT_ID) {
                     CONFIG.GOOGLE_CLIENT_ID = envConfig.V_GOOGLE_CLIENT_ID;
                 }
-                
-                console.log('✅ Vercel 환경변수 로드 완료');
-                console.log('🔗 Client API URL (배포환경):', CONFIG.APPS_SCRIPT_URL);
-                console.log('🌐 Vercel 환경변수 확인됨:', envConfig.V_GOOGLE_APPSCRIPT_URL ? '✅' : '❌');
+
             }
         } catch (error) {
             console.warn('Vercel 환경변수 로드 실패, 기본값 사용:', error);

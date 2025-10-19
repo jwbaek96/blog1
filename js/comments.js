@@ -50,8 +50,6 @@ class CommentsSystem {
         
         // Initialize comments system and load comments
         this.initializeAndLoadComments();
-        
-        console.log('✅ Comments System initialized for post:', this.postId);
     }
     
     bindEvents() {

@@ -16,13 +16,6 @@ export default async function handler(req, res) {
         // 환경변수에서 실제 Google Apps Script URL 가져오기
         const APPS_SCRIPT_URL = process.env.V_GOOGLE_APPSCRIPT_URL;
         
-        // 디버깅을 위한 환경변수 확인 (민감한 정보 제외)
-        console.log('🔧 Debug - Environment variables check:');
-        console.log('- NODE_ENV:', process.env.NODE_ENV);
-        console.log('- VERCEL:', process.env.VERCEL);
-        console.log('- V_GOOGLE_APPSCRIPT_URL exists:', !!APPS_SCRIPT_URL);
-        console.log('- Available V_ env vars count:', Object.keys(process.env).filter(key => key.startsWith('V_')).length);
-        
         if (!APPS_SCRIPT_URL) {
             console.error('❌ V_GOOGLE_APPSCRIPT_URL environment variable not configured');
             
@@ -56,12 +49,9 @@ export default async function handler(req, res) {
             if (typeof req.body === 'string') {
                 options.body = req.body;
             } else {
-                // JSON 객체인 경우 URLSearchParams로 변환
-                const params = new URLSearchParams();
-                Object.keys(req.body).forEach(key => {
-                    params.append(key, req.body[key]);
-                });
-                options.body = params.toString();
+                // JSON 객체를 JSON 문자열로 전달 (Google Apps Script가 JSON으로 응답하도록)
+                options.body = JSON.stringify(req.body);
+                options.headers['Content-Type'] = 'application/json';
             }
         }
         
@@ -75,7 +65,18 @@ export default async function handler(req, res) {
             throw new Error(`Apps Script returned ${response.status}: ${response.statusText}`);
         }
         
-        const data = await response.json();
+        // 응답 처리 개선
+        const responseText = await response.text();
+        
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            return res.status(500).json({
+                success: false,
+                error: 'Google Apps Script returned invalid JSON'
+            });
+        }
         
         // 응답 반환
         return res.status(200).json(data);
