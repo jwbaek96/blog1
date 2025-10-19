@@ -107,6 +107,21 @@ function validateConfig() {
     return true;
 }
 
+// URL 마스킹 함수 (민감한 정보 보호)
+function maskSensitiveUrl(url) {
+    if (!url) return 'Not set';
+    if (url.startsWith('/api/')) return url; // Vercel API는 안전
+    if (url.includes('script.google.com')) {
+        // Google Apps Script URL은 마스킹
+        const parts = url.split('/');
+        if (parts.length >= 6) {
+            parts[5] = parts[5].substring(0, 8) + '...' + parts[5].substring(parts[5].length - 4);
+        }
+        return parts.join('/');
+    }
+    return url;
+}
+
 // 환경변수 초기화 함수
 async function initializeConfig() {
     if (isLocal) {
@@ -139,7 +154,8 @@ async function initializeConfig() {
                 
                 console.log('✅ 로컬 설정 파일 로드 완료');
                 console.log('🔍 Config Source: config.local.json (Local Development)');
-                console.log('📋 Loaded configs:', {
+                console.log('� Apps Script URL (마스킹됨):', maskSensitiveUrl(CONFIG.APPS_SCRIPT_URL));
+                console.log('�📋 Loaded configs:', {
                     APPS_SCRIPT_URL: localConfig.APPS_SCRIPT_URL ? '✅' : '❌',
                     GOOGLE_DRIVE_API_KEY: localConfig.GOOGLE_DRIVE_API_KEY ? '✅' : '❌',
                     GOOGLE_CLIENT_ID: localConfig.GOOGLE_CLIENT_ID ? '✅' : '❌'
@@ -183,10 +199,9 @@ async function initializeConfig() {
                 });
                 
                 // Vercel 환경변수에서 설정 업데이트
-                if (envConfig.V_GOOGLE_APPSCRIPT_URL) {
-                    CONFIG.APPS_SCRIPT_URL = envConfig.V_GOOGLE_APPSCRIPT_URL;
-                    CONFIG.UPLOAD_API_URL = envConfig.V_GOOGLE_APPSCRIPT_URL;
-                }
+                // 배포 환경에서는 항상 Vercel API Routes 사용 (직접 Google Apps Script 호출 금지)
+                // CONFIG.APPS_SCRIPT_URL과 CONFIG.UPLOAD_API_URL은 '/api/sheets'로 고정
+                // 실제 V_GOOGLE_APPSCRIPT_URL은 서버사이드에서만 사용
                 if (envConfig.V_GOOGLE_DRIVE_FOLDER_ID) {
                     CONFIG.GOOGLE_DRIVE_FOLDER_ID = envConfig.V_GOOGLE_DRIVE_FOLDER_ID;
                 }
@@ -201,7 +216,8 @@ async function initializeConfig() {
                 }
                 
                 console.log('✅ Vercel 환경변수 로드 완료');
-                console.log('🔗 Apps Script URL Preview:', CONFIG.APPS_SCRIPT_URL ? `${CONFIG.APPS_SCRIPT_URL.substring(0, 50)}...` : 'Not set');
+                console.log('🔗 Client API URL (배포환경):', CONFIG.APPS_SCRIPT_URL);
+                console.log('🌐 Vercel 환경변수 확인됨:', envConfig.V_GOOGLE_APPSCRIPT_URL ? '✅' : '❌');
             }
         } catch (error) {
             console.warn('Vercel 환경변수 로드 실패, 기본값 사용:', error);

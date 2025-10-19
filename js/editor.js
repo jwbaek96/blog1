@@ -1,5 +1,20 @@
 // Rich Text Editor Implementation
 
+// URL 마스킹 함수 (민감한 정보 보호)
+function maskSensitiveUrl(url) {
+    if (!url) return 'Not set';
+    if (url.startsWith('/api/')) return url; // Vercel API는 안전
+    if (url.includes('script.google.com')) {
+        // Google Apps Script URL은 마스킹
+        const parts = url.split('/');
+        if (parts.length >= 6) {
+            parts[5] = parts[5].substring(0, 8) + '...' + parts[5].substring(parts[5].length - 4);
+        }
+        return parts.join('/');
+    }
+    return url;
+}
+
 class RichTextEditor {
     constructor(editorId) {
         this.editor = document.getElementById(editorId);
@@ -1490,7 +1505,9 @@ function setupEditorButtons() {
             console.log('🎥 비디오:', postData.videos || '(없음)');
             console.log('� 요약:', createExcerpt(content).substring(0, 100) + (createExcerpt(content).length > 100 ? '...' : ''));
             console.log('📦 전체 요청 데이터:', requestData);
-            console.log('🔗 API URL:', CONFIG.UPLOAD_API_URL);
+            console.log('🔗 API URL (마스킹됨):', maskSensitiveUrl(CONFIG.UPLOAD_API_URL));
+            console.log('🌍 Current hostname:', window.location.hostname);
+            console.log('🏠 Is Local:', window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
             console.log('===========================');
             
             // Check if API URL is configured
@@ -1585,8 +1602,14 @@ function setupEditorButtons() {
                 errorMessage = '네트워크 연결을 확인해주세요. Google Apps Script에 접근할 수 없습니다.';
             } else if (error.message.includes('HTTP')) {
                 errorMessage = `서버 오류: ${error.message}`;
+                // HTTP 에러일 때 더 자세한 정보 표시
+                if (error.message.includes('500')) {
+                    errorMessage += '\n\n가능한 원인:\n1. Vercel 환경변수 설정 확인 필요\n2. Google Apps Script URL 확인 필요';
+                }
             } else if (error.message.includes('Google Apps Script URL')) {
                 errorMessage = 'Google Apps Script URL이 설정되지 않았습니다.';
+            } else if (error.message.includes('V_GOOGLE_APPSCRIPT_URL not configured')) {
+                errorMessage = 'Vercel 환경변수가 설정되지 않았습니다. V_GOOGLE_APPSCRIPT_URL을 확인하세요.';
             } else {
                 errorMessage = `저장 실패: ${error.message}`;
             }

@@ -11,6 +11,21 @@ class SheetsAPI {
         this.waitForConfig();
     }
     
+    // URL 마스킹 함수 (민감한 정보 보호)
+    maskUrl(url) {
+        if (!url) return 'Not set';
+        if (url.startsWith('/api/')) return url; // Vercel API는 안전
+        if (url.includes('script.google.com')) {
+            // Google Apps Script URL은 마스킹
+            const parts = url.split('/');
+            if (parts.length >= 6) {
+                parts[5] = parts[5].substring(0, 8) + '...' + parts[5].substring(parts[5].length - 4);
+            }
+            return parts.join('/');
+        }
+        return url;
+    }
+    
     async waitForConfig() {
         return new Promise((resolve) => {
             if (CONFIG.APPS_SCRIPT_URL && CONFIG.APPS_SCRIPT_URL !== 'null') {
@@ -489,6 +504,9 @@ class SheetsAPI {
     async updatePost(postData) {
         try {
             const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}`;
+            
+            console.log('🔗 UpdatePost API URL (마스킹됨):', this.maskUrl(appsScriptUrl));
+            console.log('🌍 Current hostname:', window.location.hostname);
             
             const response = await fetch(appsScriptUrl, {
                 method: 'POST',

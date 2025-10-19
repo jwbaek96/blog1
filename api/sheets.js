@@ -16,12 +16,24 @@ export default async function handler(req, res) {
         // 환경변수에서 실제 Google Apps Script URL 가져오기
         const APPS_SCRIPT_URL = process.env.V_GOOGLE_APPSCRIPT_URL;
         
+        // 디버깅을 위한 환경변수 확인 (민감한 정보 제외)
+        console.log('🔧 Debug - Environment variables check:');
+        console.log('- NODE_ENV:', process.env.NODE_ENV);
+        console.log('- VERCEL:', process.env.VERCEL);
+        console.log('- V_GOOGLE_APPSCRIPT_URL exists:', !!APPS_SCRIPT_URL);
+        console.log('- Available V_ env vars count:', Object.keys(process.env).filter(key => key.startsWith('V_')).length);
+        
         if (!APPS_SCRIPT_URL) {
             console.error('❌ V_GOOGLE_APPSCRIPT_URL environment variable not configured');
             
             return res.status(500).json({ 
                 success: false, 
-                error: 'V_GOOGLE_APPSCRIPT_URL not configured in Vercel environment variables' 
+                error: 'V_GOOGLE_APPSCRIPT_URL not configured in Vercel environment variables',
+                debug: {
+                    hasEnvVar: !!APPS_SCRIPT_URL,
+                    availableEnvVarsCount: Object.keys(process.env).filter(key => key.startsWith('V_')).length,
+                    vercelEnv: !!process.env.VERCEL
+                }
             });
         }
         
