@@ -1,6 +1,6 @@
-// Article page functionality - filters posts with 'article' tag
+// artwork page functionality - filters posts with 'artwork' tag
 
-class ArticleApp {
+class artworkApp {
     constructor() {
         this.posts = [];
         this.allPosts = [];
@@ -9,17 +9,17 @@ class ArticleApp {
         this.currentTag = getUrlParameter('tag') || '';
         this.isLoading = false;
         
-        // Article-specific filter
-        this.articleFilter = 'article';
+        // artwork-specific filter
+        this.artworkFilter = 'artwork';
         
         this.init();
     }
 
     /**
-     * Initialize the article app
+     * Initialize the artwork app
      */
     async init() {
-        console.log('🚀 Initializing Article App...');
+        console.log('🚀 Initializing artwork App...');
         
         this.setupEventListeners();
         this.showLoading();
@@ -28,40 +28,40 @@ class ArticleApp {
             await this.loadPosts();
             this.renderPage();
         } catch (error) {
-            console.error('❌ Article initialization error:', error);
-            this.showError('아티클을 초기화하는데 실패했습니다.');
+            console.error('❌ artwork initialization error:', error);
+            this.showError('아트워크을 초기화하는데 실패했습니다.');
         }
     }
 
     /**
-     * Load posts from Google Sheets and filter for articles
+     * Load posts from Google Sheets and filter for artworks
      */
     async loadPosts() {
         try {
             const allPostsFromSheets = await window.SheetsAPI.fetchPosts();
             
-            // Filter for posts that have 'article' tag
+            // Filter for posts that have 'artwork' tag
             this.allPosts = allPostsFromSheets.filter(post => {
                 return post.tags && post.tags.some(tag => 
-                    tag.toLowerCase().includes(this.articleFilter.toLowerCase())
+                    tag.toLowerCase().includes(this.artworkFilter.toLowerCase())
                 );
             });
             
             this.filterPosts();
         } catch (error) {
-            console.error('❌ Error loading article posts:', error);
-            console.log('⚠️ Failed to load articles. Please check your Google Sheets configuration.');
+            console.error('❌ Error loading artwork posts:', error);
+            console.log('⚠️ Failed to load artworks. Please check your Google Sheets configuration.');
         }
     }
 
     /**
-     * Filter posts based on current filters (excluding the base 'article' filter)
+     * Filter posts based on current filters (excluding the base 'artwork' filter)
      */
     filterPosts() {
         let filteredPosts = [...this.allPosts];
 
         // Filter by additional tag (if selected)
-        if (this.currentTag && this.currentTag !== this.articleFilter) {
+        if (this.currentTag && this.currentTag !== this.artworkFilter) {
             filteredPosts = window.SheetsAPI.filterByTag(filteredPosts, this.currentTag);
         }
 
@@ -104,15 +104,15 @@ class ArticleApp {
     }
 
     /**
-     * Render tag filters (excluding the base 'article' tag)
+     * Render tag filters (excluding the base 'artwork' tag)
      */
     renderTagFilters() {
         const tagFiltersContainer = document.getElementById('tagFilters');
         if (!tagFiltersContainer) return;
 
-        // Get all tags from article posts, excluding 'article' itself
+        // Get all tags from artwork posts, excluding 'artwork' itself
         const allTags = window.SheetsAPI.getAllTags(this.allPosts).filter(tag => 
-            tag.toLowerCase() !== this.articleFilter.toLowerCase()
+            tag.toLowerCase() !== this.artworkFilter.toLowerCase()
         );
         const tagCounts = this.getTagCounts();
 
@@ -146,7 +146,7 @@ class ArticleApp {
     }
 
     /**
-     * Get tag counts (excluding 'article' tag)
+     * Get tag counts (excluding 'artwork' tag)
      * @returns {Object} Tag counts
      */
     getTagCounts() {
@@ -154,7 +154,7 @@ class ArticleApp {
         
         this.allPosts.forEach(post => {
             post.tags.forEach(tag => {
-                if (tag.toLowerCase() !== this.articleFilter.toLowerCase()) {
+                if (tag.toLowerCase() !== this.artworkFilter.toLowerCase()) {
                     counts[tag] = (counts[tag] || 0) + 1;
                 }
             });
@@ -236,12 +236,12 @@ class ArticleApp {
      */
     async openPostDetail(postId) {
         try {
-            console.log('🔍 Opening article post ID:', postId);
+            console.log('🔍 Opening artwork post ID:', postId);
             
             const post = this.allPosts.find(p => p.id === postId || String(p.id) === String(postId));
             if (!post) {
-                console.error('❌ Article post not found:', postId);
-                showToast('아티클을 찾을 수 없습니다', 'error');
+                console.error('❌ artwork post not found:', postId);
+                showToast('아트워크을 찾을 수 없습니다', 'error');
                 return;
             }
 
@@ -249,8 +249,8 @@ class ArticleApp {
             window.location.href = `post.html?id=${encodeURIComponent(postId)}`;
             
         } catch (error) {
-            console.error('❌ Error opening article:', error);
-            showToast('아티클을 불러오는데 실패했습니다', 'error');
+            console.error('❌ Error opening artwork:', error);
+            showToast('아트워크을 불러오는데 실패했습니다', 'error');
         }
     }
 
@@ -262,9 +262,9 @@ class ArticleApp {
     renderPostCard(post) {
         const hasThumbnail = post.thumbnail && post.thumbnail.trim() !== '';
         
-        // Filter out 'article' tag from display
+        // Filter out 'artwork' tag from display
         const displayTags = post.tags.filter(tag => 
-            tag.toLowerCase() !== this.articleFilter.toLowerCase()
+            tag.toLowerCase() !== this.artworkFilter.toLowerCase()
         );
         
         const tagsHTML = displayTags.map(tag => 
@@ -303,13 +303,13 @@ class ArticleApp {
         if (hasThumbnail) {
             // 썸네일이 있는 경우: 배경 이미지 카드
             return `
-                <article class="post-card post-card-with-image" data-post-id="${post.id}" style="background-image: url('${post.thumbnail}')">
+                <artwork class="post-card post-card-with-image" data-post-id="${post.id}" style="background-image: url('${post.thumbnail}')">
                     ${actionsHTML}
                     <div class="post-card-overlay">
                         <div class="post-card-content">
                             <div class="post-card-meta">
                                 <span class="post-date">${formatDate(post.date)}</span>
-                                <span class="post-type">Article</span>
+                                <span class="post-type">artwork</span>
                             </div>
                             
                             <h2 class="post-card-title">
@@ -323,12 +323,12 @@ class ArticleApp {
                             </div>
                         </div>
                     </div>
-                </article>
+                </artwork>
             `;
         } else {
             // 썸네일이 없는 경우: 기본 카드
             return `
-                <article class="post-card post-card-no-image" data-post-id="${post.id}">
+                <artwork class="post-card post-card-no-image" data-post-id="${post.id}">
                     ${actionsHTML}
                     <div class="post-card-content">
                         <div class="post-card-meta">
@@ -342,7 +342,7 @@ class ArticleApp {
                             ${tagsHTML}
                         </div>
                     </div>
-                </article>
+                </artwork>
             `;
         }
     }
@@ -512,17 +512,16 @@ class ArticleApp {
             emptyMessage.style.display = 'block';
         }
 
-        let message = '아티클이 없습니다.';
+        let message = '게시물이 없습니다.';
         
         if (this.currentTag) {
-            message = `"${this.currentTag}" 태그의 아티클이 없습니다.`;
+            message = `"${this.currentTag}" 태그의 아트워크이 없습니다.`;
         }
 
         if (postsContainer) {
             postsContainer.innerHTML = `
                 <div class="empty-state">
                     <h3>${message}</h3>
-                    <p>아직 작성된 아티클이 없거나, 다른 태그를 시도해보세요.</p>
                     ${this.currentTag ? 
                         '<button class="btn btn-secondary" onclick="app.clearFilters()">필터 초기화</button>' : 
                         '<a href="blog.html" class="btn btn-primary">블로그 둘러보기</a>'
@@ -552,10 +551,10 @@ class ArticleApp {
      * Update page title based on current filters
      */
     updatePageTitle() {
-        let title = 'Articles - ' + CONFIG.BLOG_TITLE;
+        let title = 'Artwork - ' + CONFIG.BLOG_TITLE;
         
         if (this.currentTag) {
-            title = `${this.currentTag} Articles - ${CONFIG.BLOG_TITLE}`;
+            title = `${this.currentTag} Artwork - ${CONFIG.BLOG_TITLE}`;
         }
         
         document.title = title;
@@ -571,10 +570,10 @@ class ArticleApp {
             await window.SheetsAPI.refreshPosts();
             await this.loadPosts();
             this.renderPage();
-            showToast('아티클이 새로고침되었습니다', 'success');
+            showToast('아트워크이 새로고침되었습니다', 'success');
         } catch (error) {
             console.error('❌ Refresh error:', error);
-            this.showError('아티클을 새로고침하는데 실패했습니다.');
+            this.showError('아트워크을 새로고침하는데 실패했습니다.');
         }
     }
 
@@ -583,7 +582,7 @@ class ArticleApp {
      * @param {string} postId - Post ID to edit
      */
     editPost(postId) {
-        console.log('✏️ Editing article post:', postId);
+        console.log('✏️ Editing artwork post:', postId);
         
         // 인증 확인
         if (!window.AuthManager || !window.AuthManager.isLoggedIn()) {
@@ -600,7 +599,7 @@ class ArticleApp {
      * @param {string} postId - Post ID to delete
      */
     async deletePost(postId) {
-        console.log('🗑️ Deleting article post:', postId);
+        console.log('🗑️ Deleting artwork post:', postId);
         
         // 인증 확인
         if (!window.AuthManager || !window.AuthManager.isLoggedIn()) {
@@ -610,19 +609,19 @@ class ArticleApp {
         
         const post = this.allPosts.find(p => p.id === postId || String(p.id) === String(postId));
         if (!post) {
-            showToast('아티클을 찾을 수 없습니다', 'error');
+            showToast('아트워크을 찾을 수 없습니다', 'error');
             return;
         }
         
         // 확인 다이얼로그
-        const confirmed = confirm(`"${post.title}" 아티클을 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`);
+        const confirmed = confirm(`"${post.title}" 아트워크을 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`);
         if (!confirmed) {
             return;
         }
         
         try {
             // 로딩 상태 표시
-            showToast('아티클을 삭제하는 중...', 'info');
+            showToast('아트워크을 삭제하는 중...', 'info');
             
             // Google Sheets에서 삭제
             await window.SheetsAPI.deletePost(postId);
@@ -632,11 +631,11 @@ class ArticleApp {
             this.filterPosts();
             this.renderPage();
             
-            showToast('아티클이 삭제되었습니다', 'success');
+            showToast('아트워크이 삭제되었습니다', 'success');
             
         } catch (error) {
             console.error('❌ Delete error:', error);
-            showToast('아티클 삭제에 실패했습니다', 'error');
+            showToast('아트워크 삭제에 실패했습니다', 'error');
         }
     }
 
@@ -648,44 +647,44 @@ class ArticleApp {
     }
 
     /**
-     * Show article statistics (for debugging)
+     * Show artwork statistics (for debugging)
      */
     showStats() {
         const stats = window.SheetsAPI.getPostsStats(this.allPosts);
         console.table(stats);
         
-        showToast(`총 ${stats.totalPosts}개 아티클, ${stats.totalTags}개 태그`, 'info');
+        showToast(`총 ${stats.totalPosts}개 아트워크, ${stats.totalTags}개 태그`, 'info');
     }
 }
 
-// Initialize article app
+// Initialize artwork app
 let app = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    app = new ArticleApp();
+    app = new artworkApp();
 });
 
 // Export for global use
 if (typeof window !== 'undefined') {
-    window.ArticleApp = ArticleApp;
+    window.artworkApp = artworkApp;
     window.app = app;
 }
 
-// Add some additional utility functions for the article page
-function refreshArticles() {
+// Add some additional utility functions for the artwork page
+function refreshartworks() {
     if (app) {
         app.refreshPosts();
     }
 }
 
-function clearArticleCache() {
+function clearartworkCache() {
     clearCache();
     if (app) {
         app.refreshPosts();
     }
 }
 
-function refreshArticleCards() {
+function refreshartworkCards() {
     if (app) {
         app.refreshPostCards();
     }
@@ -693,10 +692,10 @@ function refreshArticleCards() {
 
 // Add keyboard shortcuts
 document.addEventListener('keydown', (e) => {
-    // Ctrl/Cmd + R: Refresh articles
+    // Ctrl/Cmd + R: Refresh artworks
     if ((e.ctrlKey || e.metaKey) && e.key === 'r' && e.shiftKey) {
         e.preventDefault();
-        refreshArticles();
+        refreshartworks();
     }
     
     // Escape: Clear filters

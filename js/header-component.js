@@ -11,7 +11,7 @@ class HeaderComponent {
         this.navigationItems = [
             { href: '/index.html#about', text: 'ABOUT', type: 'anchor' },
             { href: '/index.html#skills', text: 'SKILLS', type: 'anchor' },
-            { href: 'projects.html', text: 'PROJECTS', type: 'link' },
+            // { href: 'projects.html', text: 'PROJECTS', type: 'link' },
             { href: 'artwork.html', text: 'ARTWORK', type: 'link' },
             { href: 'blog.html', text: 'BLOG', type: 'link' },
             { href: '/index.html#contact', text: 'CONTACT', type: 'anchor' }
