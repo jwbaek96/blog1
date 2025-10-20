@@ -1,0 +1,193 @@
+name: Update Blog Data
+
+# 실행 조건
+on:
+  # 15분마다 자동 실행 (퍼블릭 레포이므로 무료)
+  schedule:
+    - cron: '*/15 * * * *'  # 15분마다
+  
+  # 수동 실행 가능
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update even if no changes'
+        required: false
+        default: 'false'
+        type: boolean
+
+  # main 브랜치에 푸시될 때도 실행
+  push:
+    branches: [ main ]
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/**'
+
+# 권한 설정
+permissions:
+  contents: write  # 파일 수정 권한
+  pages: write     # GitHub Pages 배포 권한
+  id-token: write  # GitHub Pages 배포를 위한 토큰 권한
+
+# 작업 정의
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. 코드 체크아웃
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Node.js 환경 설정
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # 3. 의존성 설치 (필요한 경우)
+      - name: 📦 Install dependencies
+        run: |
+          # 기본 Node.js 모듈들만 사용하므로 별도 설치 불필요
+          echo "Using built-in Node.js modules"
+
+      # 4. Google Sheets에서 데이터 가져와서 JSON 파일 생성
+      - name: 🔄 Update data from Google Sheets
+        env:
+          GOOGLE_APPS_SCRIPT_URL: ${{ secrets.GOOGLE_APPS_SCRIPT_URL }}
+        run: |
+          echo "🚀 Starting data update process..."
+          node scripts/update-data.js
+          echo "✅ Data update completed"
+
+      # 5. 변경사항 확인
+      - name: 📊 Check for changes
+        id: changes
+        run: |
+          # Git 변경사항 확인
+          if git diff --quiet HEAD -- data/; then
+            echo "No changes detected in data files"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected in data files"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            
+            # 변경된 파일들 보기
+            echo "Changed files:"
+            git diff --name-only HEAD -- data/
+            
+            # 변경사항 요약
+            echo "Changes summary:"
+            git diff --stat HEAD -- data/
+          fi
+
+      # 6. 변경사항이 있거나 강제 업데이트인 경우 커밋
+      - name: 💾 Commit and push changes
+        if: steps.changes.outputs.has_changes == 'true' || github.event.inputs.force_update == 'true'
+        run: |
+          # Git 사용자 설정
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # 변경사항 스테이징
+          git add data/
+          
+          # 커밋 메시지 생성
+          commit_message="🔄 Auto-update blog data $(date +'%Y-%m-%d %H:%M:%S UTC')"
+          
+          # 파일별 변경사항 요약 추가
+          if [ -f data/posts.json ]; then
+            posts_count=$(jq '.count // 0' data/posts.json)
+            commit_message="$commit_message\n\n📝 Posts: $posts_count"
+          fi
+          
+          if [ -f data/artworks.json ]; then
+            artworks_count=$(jq '.count // 0' data/artworks.json)
+            commit_message="$commit_message\n🎨 Artworks: $artworks_count"
+          fi
+          
+          if [ -f data/projects.json ]; then
+            projects_count=$(jq '.count // 0' data/projects.json)
+            commit_message="$commit_message\n🚀 Projects: $projects_count"
+          fi
+          
+          # 커밋 실행
+          git commit -m "$commit_message"
+          
+          # 푸시 실행
+          git push
+          
+          echo "✅ Changes committed and pushed successfully"
+
+      # 7. 결과 요약 출력
+      - name: 📋 Summary
+        run: |
+          echo "## 📊 Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.changes.outputs.has_changes }}" == "true" ]; then
+            echo "✅ **Data updated successfully**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📈 Current counts:" >> $GITHUB_STEP_SUMMARY
+            
+            if [ -f data/posts.json ]; then
+              posts_count=$(jq '.count // 0' data/posts.json)
+              echo "- 📝 Posts: $posts_count" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ -f data/artworks.json ]; then
+              artworks_count=$(jq '.count // 0' data/artworks.json)
+              echo "- 🎨 Artworks: $artworks_count" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ -f data/projects.json ]; then
+              projects_count=$(jq '.count // 0' data/projects.json)
+              echo "- 🚀 Projects: $projects_count" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🕒 Last updated:" >> $GITHUB_STEP_SUMMARY
+            echo "$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+            
+          else
+            echo "ℹ️ **No changes detected**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Data is already up to date." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # GitHub Pages 배포 (데이터가 업데이트된 경우에만)
+  deploy-pages:
+    needs: update-data
+    runs-on: ubuntu-latest
+    if: always() && (needs.update-data.result == 'success')
+    
+    steps:
+      # 1. 코드 체크아웃 (최신 데이터 포함)
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main  # 최신 main 브랜치 사용
+
+      # 2. GitHub Pages 아티팩트 생성
+      - name: 📦 Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: 🏗️ Build site
+        run: |
+          # 필요한 경우 빌드 스크립트 실행
+          echo "Building site for GitHub Pages..."
+          
+          # 정적 파일들이 이미 준비되어 있으므로 별도 빌드 불필요
+          echo "✅ Site ready for deployment"
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      # 3. GitHub Pages에 배포
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
