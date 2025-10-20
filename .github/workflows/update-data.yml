@@ -45,13 +45,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          # cache 제거 - package.json이 없으므로 캐싱 비활성화
 
-      # 3. 의존성 설치 (필요한 경우)
-      - name: 📦 Install dependencies
+      # 3. 의존성 확인 (필요한 경우)
+      - name: 📦 Check dependencies
         run: |
           # 기본 Node.js 모듈들만 사용하므로 별도 설치 불필요
-          echo "Using built-in Node.js modules"
+          # 하지만 fetch API를 위해 Node.js 18 이상 필요
+          echo "✅ Using Node.js $(node --version)"
+          echo "✅ Using built-in fetch API and fs modules"
 
       # 4. Google Sheets에서 데이터 가져와서 JSON 파일 생성
       - name: 🔄 Update data from Google Sheets
