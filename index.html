@@ -344,77 +344,7 @@
             }
         });
 
-        // Development Notice Popup Handler
-        document.addEventListener('DOMContentLoaded', function() {
-            const devNoticePopup = document.getElementById('dev-notice-popup');
-            const devNoticeOkBtn = document.getElementById('dev-notice-ok-btn');
-            const devNoticeTodayBtn = document.getElementById('dev-notice-today-btn');
-            const devNoticeCloseBtn = document.querySelector('.dev-notice-close-btn');
-            
-            // 오늘 하루 보지 않기 체크
-            function isDismissedToday() {
-                const dismissedDate = localStorage.getItem('dev-notice-dismissed-date');
-                const today = new Date().toDateString();
-                return dismissedDate === today;
-            }
-            
-            // 팝업 표시
-            function showDevNotice() {
-                if (devNoticePopup) {
-                    devNoticePopup.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                }
-            }
-            
-            // 팝업 숨기기
-            function hideDevNotice() {
-                if (devNoticePopup) {
-                    devNoticePopup.style.display = 'none';
-                    document.body.style.overflow = '';
-                }
-            }
-            
-            // 오늘 하루 보지 않기 설정
-            function dismissForToday() {
-                const today = new Date().toDateString();
-                localStorage.setItem('dev-notice-dismissed-date', today);
-                hideDevNotice();
-            }
-            
-            // 이벤트 리스너
-            if (devNoticeOkBtn) {
-                devNoticeOkBtn.addEventListener('click', hideDevNotice);
-            }
-            
-            if (devNoticeTodayBtn) {
-                devNoticeTodayBtn.addEventListener('click', dismissForToday);
-            }
-            
-            if (devNoticeCloseBtn) {
-                devNoticeCloseBtn.addEventListener('click', hideDevNotice);
-            }
-            
-            // 배경 클릭으로 닫기
-            if (devNoticePopup) {
-                devNoticePopup.addEventListener('click', function(e) {
-                    if (e.target === devNoticePopup) {
-                        hideDevNotice();
-                    }
-                });
-            }
-            
-            // ESC 키로 닫기
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && devNoticePopup.style.display === 'flex') {
-                    hideDevNotice();
-                }
-            });
-            
-            // 페이지 로드 시 팝업 표시 (2초 후)
-            if (!isDismissedToday()) {
-                setTimeout(showDevNotice, 2000);
-            }
-        });
+
     </script>
     
     <!-- Development Notice Popup -->
@@ -468,5 +398,6 @@
     <script src="js/index-blog.js"></script>
     <script src="js/floating-actions.js"></script>
     <script src="js/pwa-install.js"></script>
+    <!-- <script src="js/dev-notice-popup.js"></script> -->
 </body>
 </html>
