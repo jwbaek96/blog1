@@ -116,13 +116,34 @@ class artworkApp {
         );
         const tagCounts = this.getTagCounts();
 
+        // 태그를 개수 > 언어 > 알파벳 순으로 정렬
+        const sortedTags = allTags.sort((a, b) => {
+            const aCount = tagCounts[a] || 0;
+            const bCount = tagCounts[b] || 0;
+            
+            // 1. 개수가 많은 순으로 정렬
+            if (aCount !== bCount) {
+                return bCount - aCount;
+            }
+            
+            // 2. 개수가 같으면 언어별로 정렬 (영어 먼저, 한글 나중)
+            const aIsKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(a);
+            const bIsKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(b);
+            
+            if (aIsKorean && !bIsKorean) return 1;  // 한글이 뒤로
+            if (!aIsKorean && bIsKorean) return -1; // 영어가 앞으로
+            
+            // 3. 같은 언어끼리는 알파벳/가나다 순으로 정렬
+            return a.localeCompare(b, 'ko', { numeric: true, caseFirst: 'lower' });
+        });
+
         let filtersHTML = `
             <button class="tag-filter ${!this.currentTag ? 'active' : ''}" data-tag="">
                 전체 (${this.allPosts.length})
             </button>
         `;
 
-        allTags.forEach(tag => {
+        sortedTags.forEach(tag => {
             const count = tagCounts[tag] || 0;
             const isActive = this.currentTag === tag;
             
