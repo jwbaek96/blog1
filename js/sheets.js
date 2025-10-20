@@ -33,14 +33,14 @@ function fetchWithJSONP(url, params = {}) {
         
         document.head.appendChild(script);
         
-        // 10초 타임아웃
+        // 30초 타임아웃 (방명록 Google Apps Script 응답 대기)
         setTimeout(() => {
             if (window[callbackName]) {
                 document.head.removeChild(script);
                 delete window[callbackName];
                 reject(new Error('JSONP request timeout'));
             }
-        }, 10000);
+        }, 30000);
     });
 }
 

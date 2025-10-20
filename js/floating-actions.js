@@ -897,13 +897,32 @@ const FloatingActions = {
         submitBtn.disabled = true;
         
         try {
+            console.log('✍️ ======================= 방명록 작성 =======================');
+            console.log('👤 이름:', name);
+            console.log('💬 메시지 길이:', message.length);
+            console.log('🔒 비밀번호: [4자리 숫자]');
+            
             // config.js에서 API URL 가져오기
             if (!window.CONFIG || !window.CONFIG.APPS_SCRIPT_URL) {
                 throw new Error('Google Apps Script URL이 설정되지 않았습니다.');
             }
             
+            console.log('🔗 사용할 API URL:', window.CONFIG.APPS_SCRIPT_URL);
+            
             // 클라이언트 IP 주소 가져오기
             const clientIP = await this.getClientIP();
+            console.log('🌐 클라이언트 IP:', clientIP);
+            
+            const requestData = {
+                action: 'addGuestbook',
+                guestData: {
+                    name: name,
+                    message: message,
+                    password: password,
+                    ip: clientIP
+                }
+            };
+            console.log('📤 전송할 데이터:', requestData);
             
             const response = await fetch(window.CONFIG.APPS_SCRIPT_URL, {
                 method: 'POST',
@@ -911,15 +930,7 @@ const FloatingActions = {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: new URLSearchParams({
-                    data: JSON.stringify({
-                        action: 'addGuestbook',
-                        guestData: {
-                            name: name,
-                            message: message,
-                            password: password,
-                            ip: clientIP
-                        }
-                    })
+                    data: JSON.stringify(requestData)
                 })
             });
             
@@ -929,7 +940,9 @@ const FloatingActions = {
             }
             
             // 응답 내용 확인
+            console.log('📡 Response Status:', response.status, response.statusText);
             const responseText = await response.text();
+            console.log('📥 Response Text (first 500 chars):', responseText.substring(0, 500));
             
             // HTML이 반환되었는지 확인
             if (responseText.startsWith('<!DOCTYPE') || responseText.startsWith('<html')) {
@@ -940,11 +953,18 @@ const FloatingActions = {
             let result;
             try {
                 result = JSON.parse(responseText);
+                console.log('✅ JSON 파싱 성공');
+                console.log('📋 파싱된 결과:', result);
             } catch (parseError) {
+                console.error('❌ JSON 파싱 실패:', parseError);
                 throw new Error(`JSON 파싱 오류: ${parseError.message}. 응답: ${responseText.substring(0, 200)}...`);
             }
             
             if (result.success) {
+                console.log('✅ 방명록 등록 성공!');
+                console.log('🆔 등록된 방명록 ID:', result.entryId);
+                console.log('================================================================');
+                
                 // 성공시 폼 초기화
                 document.getElementById('guestName').value = '';
                 document.getElementById('guestMessage').value = '';
@@ -954,6 +974,8 @@ const FloatingActions = {
                 alert('방명록이 등록되었습니다!');
                 this.loadGuestbookEntries(true); // 처음부터 다시 로드
             } else {
+                console.error('❌ 방명록 등록 실패:', result.error);
+                console.log('================================================================');
                 throw new Error(result.error || '방명록 등록에 실패했습니다.');
             }
         } catch (error) {
@@ -991,19 +1013,32 @@ const FloatingActions = {
         this.loadState.loading = true;
         
         try {
+            console.log('📝 ======================= 방명록 데이터 로딩 =======================');
+            console.log('🔄 Reset 모드:', reset);
+            console.log('📊 현재 로드 상태:', this.loadState);
+            
             if (!window.CONFIG || !window.CONFIG.APPS_SCRIPT_URL) {
                 throw new Error('Google Apps Script URL이 설정되지 않았습니다.');
             }
             
-            const response = await fetch(`${window.CONFIG.APPS_SCRIPT_URL}?action=getGuestbook&offset=${this.loadState.offset}&limit=${this.loadState.limit}`);
+            const requestUrl = `${window.CONFIG.APPS_SCRIPT_URL}?action=getGuestbook&offset=${this.loadState.offset}&limit=${this.loadState.limit}`;
+            console.log('🔗 방명록 요청 URL:', requestUrl);
+            
+            // 단순 GET 요청 (CORS 우회 - 예전 방식)
+            const response = await fetch(requestUrl, {
+                method: 'GET'
+                // Content-Type 헤더 없음 = Simple Request
+            });
             
             // 응답 상태 확인
+            console.log('📡 Response Status:', response.status, response.statusText);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
             // 응답 내용 확인
             const responseText = await response.text();
+            console.log('📥 Response Text (first 500 chars):', responseText.substring(0, 500));
             
             // HTML이 반환되었는지 확인
             if (responseText.startsWith('<!DOCTYPE') || responseText.startsWith('<html')) {
@@ -1014,43 +1049,129 @@ const FloatingActions = {
             let result;
             try {
                 result = JSON.parse(responseText);
+                console.log('✅ JSON 파싱 성공');
+                console.log('📋 파싱된 결과:', result);
             } catch (parseError) {
+                console.error('❌ JSON 파싱 실패:', parseError);
                 throw new Error(`JSON 파싱 오류: ${parseError.message}. 응답: ${responseText.substring(0, 200)}...`);
             }
             
             if (result.success) {
                 const newEntries = result.entries || [];
+                console.log('📝 새로 로드된 방명록 엔트리 수:', newEntries.length);
+                console.log('📊 방명록 엔트리 데이터:', newEntries);
+                console.log('🔢 총 방명록 수:', result.totalEntries);
+                console.log('➡️ 더 로드 가능:', result.hasMore);
                 
                 // 새 항목들을 기존 배열 앞에 추가 (상단 표시를 위해)
                 this.loadState.allEntries = [...newEntries, ...this.loadState.allEntries];
                 this.loadState.offset += newEntries.length;
                 this.loadState.hasMore = newEntries.length === this.loadState.limit;
                 
+                console.log('📊 업데이트된 로드 상태:', this.loadState);
+                
                 // UI 업데이트 - reset에 따라 렌더링 방식 결정
                 if (reset) {
                     // 전체 렌더링 (초기 로드)
+                    console.log('🎨 전체 렌더링 모드');
                     this.renderGuestbookEntries();
                 } else {
                     // 새 항목만 추가 (무한 스크롤)
+                    console.log('🎨 증분 렌더링 모드');
                     this.renderGuestbookEntries(true, newEntries);
                 }
                 
+                console.log('✅ 방명록 로딩 완료');
+                console.log('================================================================');
+                
             } else {
+                console.error('❌ API 응답 실패:', result.error);
                 throw new Error(result.error || '방명록 로드에 실패했습니다.');
             }
         } catch (error) {
-            console.error('방명록 로드 오류:', error);
+            console.error('❌ 방명록 로드 오류:', error);
+            console.log('================================================================');
+            
+            // 폴백 시스템: 더미 데이터로 방명록 표시
             if (reset) {
-                entriesContainer.innerHTML = `
-                    <div class="guestbook-error">
-                        <p>방명록을 불러오는 중 오류가 발생했습니다.</p>
-                        <button onclick="FloatingActions.loadGuestbookEntries(true)" class="retry-btn">다시 시도</button>
-                    </div>
-                `;
+                console.log('🔄 방명록 폴백 모드 시작...');
+                try {
+                    await this.loadGuestbookFallback();
+                } catch (fallbackError) {
+                    console.error('❌ 폴백도 실패:', fallbackError);
+                    entriesContainer.innerHTML = `
+                        <div class="guestbook-error">
+                            <p>방명록을 불러올 수 없습니다.</p>
+                            <p><small>Google Apps Script 연결에 문제가 있습니다.</small></p>
+                            <button onclick="FloatingActions.loadGuestbookEntries(true)" class="retry-btn">다시 시도</button>
+                        </div>
+                    `;
+                }
             }
         } finally {
             this.loadState.loading = false;
         }
+    },
+
+    // 방명록 폴백 로딩 (Google Apps Script 실패 시)
+    loadGuestbookFallback: async function() {
+        console.log('🔄 방명록 폴백 시스템 실행 중...');
+        
+        // 방명록이 없는 경우를 시뮬레이션 (실제로는 로컬 스토리지나 다른 소스에서 가져올 수 있음)
+        const fallbackEntries = [
+            {
+                id: 'demo-1',
+                name: '방문자',
+                message: '방명록 시스템이 일시적으로 연결되지 않습니다. 잠시 후 다시 시도해주세요.',
+                date: new Date().toISOString(),
+                isDemoData: true
+            }
+        ];
+        
+        // 폴백 데이터를 상태에 저장
+        this.loadState.allEntries = fallbackEntries;
+        this.loadState.hasMore = false;
+        this.loadState.offset = fallbackEntries.length;
+        
+        // 폴백 데이터로 렌더링
+        this.renderGuestbookEntries();
+        
+        console.log('✅ 방명록 폴백 데이터 로딩 완료');
+        
+        // 폴백 메시지 표시
+        const entriesContainer = document.getElementById('guestbookEntries');
+        const fallbackNotice = document.createElement('div');
+        fallbackNotice.className = 'guestbook-fallback-notice';
+        fallbackNotice.style.cssText = `
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin: 0.5rem;
+            font-size: 0.8rem;
+            color: #856404;
+            text-align: center;
+        `;
+        fallbackNotice.innerHTML = `
+            <strong>알림:</strong> 방명록 시스템 연결 중 문제가 발생했습니다.<br>
+            <small>새로운 방명록 작성은 일시적으로 제한됩니다.</small>
+        `;
+        
+        entriesContainer.insertBefore(fallbackNotice, entriesContainer.firstChild);
+        
+        // 방명록 작성 폼 비활성화
+        const submitBtn = document.querySelector('.guestbook-submit');
+        const formInputs = document.querySelectorAll('#guestMessage, #guestName, #guestPassword');
+        
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.title = '방명록 시스템 연결 중 문제가 발생했습니다';
+        }
+        
+        formInputs.forEach(input => {
+            input.disabled = true;
+            input.placeholder = '일시적으로 사용할 수 없습니다';
+        });
     },
 
     // 방명록 항목들 렌더링

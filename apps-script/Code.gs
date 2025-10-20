@@ -36,19 +36,13 @@ const ALLOWED_ORIGINS = [
  * Create response with CORS headers
  */
 function createCORSResponse(data, origin = null) {
+  // Google Apps Script에서는 ContentService로 생성된 TextOutput에 직접 헤더를 설정할 수 없음
+  // 대신 응답 데이터에 CORS 정보를 포함하거나 JSONP를 사용해야 함
   const output = ContentService.createTextOutput(JSON.stringify(data));
   output.setMimeType(ContentService.MimeType.JSON);
   
-  // Set CORS headers
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
-    output.addHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    output.addHeader('Access-Control-Allow-Origin', '*');
-  }
-  
-  output.addHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
-  output.addHeader('Access-Control-Max-Age', '86400');
+  // Google Apps Script는 웹앱으로 배포될 때 자동으로 일부 CORS 헤더를 처리함
+  // 추가 CORS 설정이 필요한 경우 JSONP 또는 HtmlService 사용 필요
   
   return output;
 }
@@ -82,24 +76,14 @@ function doOptions(e) {
   const origin = e.parameter?.origin || e.headers?.origin;
   console.log('🌐 Origin:', origin);
   
-  const output = ContentService.createTextOutput('');
+  // Google Apps Script에서는 웹앱으로 배포할 때 자동으로 CORS를 처리함
+  // OPTIONS 요청에 대한 기본 응답만 반환
+  const output = ContentService.createTextOutput('OK');
   output.setMimeType(ContentService.MimeType.TEXT);
   
-  // 강화된 CORS 헤더
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
-    output.addHeader('Access-Control-Allow-Origin', origin);
-    console.log('✅ Allowed origin:', origin);
-  } else {
-    output.addHeader('Access-Control-Allow-Origin', '*');
-    console.log('⚠️ Using wildcard origin for:', origin);
-  }
+  console.log('✅ OPTIONS response sent - CORS handled by Google Apps Script');
+  console.log('🌐 Origin was:', origin);
   
-  output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  output.addHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  output.addHeader('Access-Control-Max-Age', '86400');
-  output.addHeader('Access-Control-Allow-Credentials', 'false');
-  
-  console.log('📤 OPTIONS response sent');
   return output;
 }
 
@@ -107,11 +91,12 @@ function doOptions(e) {
  * Handle GET requests (data retrieval)
  */
 function doGet(e) {
+  // callback 변수를 함수 레벨로 이동하여 catch 블록에서도 접근 가능하게 함
+  const origin = e.parameter.origin || e.headers?.origin;
+  const action = e.parameter.action || 'getPosts';
+  const callback = e.parameter.callback; // JSONP 콜백
+  
   try {
-    const origin = e.parameter.origin || e.headers?.origin;
-    const action = e.parameter.action || 'getPosts';
-    const callback = e.parameter.callback; // JSONP 콜백
-    
     let response;
     
     if (action === 'getPosts') {
@@ -830,7 +815,7 @@ function handleGetGuestbook(offset = 0, limit = 10) {
       timestamp: new Date().toISOString()
     };
     
-    return createJsonResponse(response);
+    return createCORSResponse(response);
     
   } catch (error) {
     console.error('❌ Get guestbook error:', error.toString());
@@ -841,7 +826,7 @@ function handleGetGuestbook(offset = 0, limit = 10) {
       timestamp: new Date().toISOString()
     };
     
-    return createJsonResponse(errorResponse);
+    return createCORSResponse(errorResponse);
   }
 }
 
@@ -1769,9 +1754,8 @@ function handleJSONPCallback(originalResponse, callbackName) {
     const output = ContentService.createTextOutput(jsonpContent);
     output.setMimeType(ContentService.MimeType.JAVASCRIPT);
     
-    // CORS 헤더 (JSONP는 사실 불필요하지만 안전을 위해)
-    output.addHeader('Access-Control-Allow-Origin', '*');
-    output.addHeader('Access-Control-Allow-Methods', 'GET');
+    // JSONP 방식은 CORS 우회가 목적이므로 추가 헤더 설정 불필요
+    // Google Apps Script가 웹앱으로 배포될 때 자동 처리됨
     
     console.log('📤 JSONP response sent for callback:', callbackName);
     return output;
@@ -1787,7 +1771,8 @@ function handleJSONPCallback(originalResponse, callbackName) {
     
     const output = ContentService.createTextOutput(`${callbackName}(${errorData});`);
     output.setMimeType(ContentService.MimeType.JAVASCRIPT);
-    output.addHeader('Access-Control-Allow-Origin', '*');
+    
+    // JSONP 에러 응답 - 추가 헤더 설정 불필요
     
     return output;
   }
