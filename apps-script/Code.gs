@@ -78,8 +78,29 @@ const SECURITY_CONFIG = {
  * Handle OPTIONS requests (CORS preflight)
  */
 function doOptions(e) {
-  const origin = e.parameter.origin || e.headers?.origin;
-  return createCORSResponse({}, origin);
+  console.log('📋 OPTIONS request received for CORS preflight');
+  const origin = e.parameter?.origin || e.headers?.origin;
+  console.log('🌐 Origin:', origin);
+  
+  const output = ContentService.createTextOutput('');
+  output.setMimeType(ContentService.MimeType.TEXT);
+  
+  // 강화된 CORS 헤더
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    output.addHeader('Access-Control-Allow-Origin', origin);
+    console.log('✅ Allowed origin:', origin);
+  } else {
+    output.addHeader('Access-Control-Allow-Origin', '*');
+    console.log('⚠️ Using wildcard origin for:', origin);
+  }
+  
+  output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  output.addHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  output.addHeader('Access-Control-Max-Age', '86400');
+  output.addHeader('Access-Control-Allow-Credentials', 'false');
+  
+  console.log('📤 OPTIONS response sent');
+  return output;
 }
 
 /**

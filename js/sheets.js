@@ -75,10 +75,8 @@ class SheetsAPI {
             const requestUrl = `${appsScriptUrl}?action=getPosts&t=${Date.now()}`;
             
             const response = await fetch(requestUrl, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                method: 'GET'
+                // Content-Type 헤더 제거하여 simple request로 만듦
             });
             
             if (!response.ok) {
