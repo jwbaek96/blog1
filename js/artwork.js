@@ -182,6 +182,9 @@ class artworkApp {
         // Hide empty message
         if (emptyMessage) emptyMessage.style.display = 'none';
 
+        // Change grid class to artwork style
+        postsContainer.className = 'artwork-posts-grid';
+
         // Calculate pagination
         const startIndex = (this.currentPage - 1) * this.postsPerPage;
         const endIndex = startIndex + this.postsPerPage;
@@ -202,7 +205,7 @@ class artworkApp {
      * Setup post click handlers
      */
     setupPostClickHandlers() {
-        const postCards = document.querySelectorAll('.post-card');
+        const postCards = document.querySelectorAll('.artwork-post-card');
         postCards.forEach(card => {
             card.addEventListener('click', (e) => {
                 const postId = card.dataset.postId;
@@ -211,8 +214,8 @@ class artworkApp {
 
             // 카드에서 마우스가 벗어나면 액션 메뉴 닫기
             card.addEventListener('mouseleave', (e) => {
-                const postActions = card.querySelector('.post-actions');
-                const postActionsMenu = card.querySelector('.post-actions-menu');
+                const postActions = card.querySelector('.artwork-post-actions');
+                const postActionsMenu = card.querySelector('.artwork-post-actions-menu');
                 
                 if (postActions) postActions.classList.remove('active');
                 if (postActionsMenu) postActionsMenu.classList.remove('active');
@@ -221,9 +224,9 @@ class artworkApp {
 
         // 액션 메뉴 외부 클릭 시 메뉴 닫기
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.post-actions')) {
-                const activeMenus = document.querySelectorAll('.post-actions-menu.active');
-                const activeActions = document.querySelectorAll('.post-actions.active');
+            if (!e.target.closest('.artwork-post-actions')) {
+                const activeMenus = document.querySelectorAll('.artwork-post-actions-menu.active');
+                const activeActions = document.querySelectorAll('.artwork-post-actions.active');
                 activeMenus.forEach(menu => menu.classList.remove('active'));
                 activeActions.forEach(action => action.classList.remove('active'));
             }
@@ -274,22 +277,22 @@ class artworkApp {
         // 더보기 버튼과 액션 메뉴 HTML (로그인 상태에서만 표시)
         const isLoggedIn = window.AuthManager && window.AuthManager.isLoggedIn();
         const actionsHTML = isLoggedIn ? `
-            <div class="post-actions">
-                <button class="post-more-btn" onclick="event.stopPropagation(); this.parentElement.classList.toggle('active'); this.parentElement.querySelector('.post-actions-menu').classList.toggle('active')">
+            <div class="artwork-post-actions">
+                <button class="artwork-post-more-btn" onclick="event.stopPropagation(); this.parentElement.classList.toggle('active'); this.parentElement.querySelector('.artwork-post-actions-menu').classList.toggle('active')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="1"></circle>
                         <circle cx="12" cy="5" r="1"></circle>
                         <circle cx="12" cy="19" r="1"></circle>
                     </svg>
                 </button>
-                <div class="post-actions-menu">
-                    <button class="post-action-btn edit-btn" onclick="event.stopPropagation(); app.editPost('${post.id}')">
+                <div class="artwork-post-actions-menu">
+                    <button class="artwork-post-action-btn edit-btn" onclick="event.stopPropagation(); app.editPost('${post.id}')">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="m18 2 4 4-14 14H4v-4L18 2z"></path>
                         </svg>
                         수정
                     </button>
-                    <button class="post-action-btn delete-btn" onclick="event.stopPropagation(); app.deletePost('${post.id}')">
+                    <button class="artwork-post-action-btn delete-btn" onclick="event.stopPropagation(); app.deletePost('${post.id}')">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3,6 5,6 21,6"></polyline>
                             <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1 2-2h4a2,2 0 0,1 2,2v2"></path>
@@ -301,48 +304,50 @@ class artworkApp {
         ` : '';
 
         if (hasThumbnail) {
-            // 썸네일이 있는 경우: 배경 이미지 카드
+            // 썸네일이 있는 경우: 갤러리 스타일 카드
             return `
-                <artwork class="post-card post-card-with-image" data-post-id="${post.id}" style="background-image: url('${post.thumbnail}')">
+                <div class="artwork-post-card" data-post-id="${post.id}">
                     ${actionsHTML}
-                    <div class="post-card-overlay">
-                        <div class="post-card-content">
-                            <div class="post-card-meta">
-                                <span class="post-date">${formatDate(post.date)}</span>
-                                <span class="post-type">artwork</span>
-                            </div>
-                            
-                            <h2 class="post-card-title">
-                                ${post.title}
-                            </h2>
-                            
-                            <p class="post-card-excerpt">${post.excerpt}</p>
-                            
-                            <div class="post-card-tags">
-                                ${tagsHTML}
-                            </div>
-                        </div>
+                    <div class="artwork-card-image">
+                        <img src="${post.thumbnail}" alt="${post.title}" loading="lazy">
+                        <div class="artwork-image-overlay"></div>
                     </div>
-                </artwork>
-            `;
-        } else {
-            // 썸네일이 없는 경우: 기본 카드
-            return `
-                <artwork class="post-card post-card-no-image" data-post-id="${post.id}">
-                    ${actionsHTML}
-                    <div class="post-card-content">
-                        <div class="post-card-meta">
-                        <span class="post-date">${formatDate(post.date)}</span>
+                    <div class="artwork-card-content">
+                        <div class="artwork-card-meta">
+                            <span class="artwork-card-date">${formatDate(post.date)}</span>
+                            <span class="artwork-card-type">artwork</span>
                         </div>
-                        <h2 class="post-card-title">
-                        ${post.title}
-                        </h2>
-                        <p class="post-card-excerpt">${post.excerpt}</p>
-                        <div class="post-card-tags">
+                        
+                        <h2 class="artwork-card-title">${post.title}</h2>
+                        
+                        <p class="artwork-card-excerpt">${post.excerpt}</p>
+                        
+                        <div class="artwork-card-tags">
                             ${tagsHTML}
                         </div>
                     </div>
-                </artwork>
+                </div>
+            `;
+        } else {
+            // 썸네일이 없는 경우: 텍스트 전용 카드
+            return `
+                <div class="artwork-post-card no-image" data-post-id="${post.id}">
+                    ${actionsHTML}
+                    <div class="artwork-card-content">
+                        <div class="artwork-card-meta">
+                            <span class="artwork-card-date">${formatDate(post.date)}</span>
+                            <span class="artwork-card-type">artwork</span>
+                        </div>
+                        
+                        <h2 class="artwork-card-title">${post.title}</h2>
+                        
+                        <p class="artwork-card-excerpt">${post.excerpt}</p>
+                        
+                        <div class="artwork-card-tags">
+                            ${tagsHTML}
+                        </div>
+                    </div>
+                </div>
             `;
         }
     }
@@ -505,23 +510,25 @@ class artworkApp {
         
         if (!postsContainer) return;
 
-        // Hide posts container and show empty message
+        // Change to artwork grid class and clear content
+        postsContainer.className = 'artwork-posts-grid';
         postsContainer.innerHTML = '';
         
         if (emptyMessage) {
             emptyMessage.style.display = 'block';
         }
 
-        let message = '게시물이 없습니다.';
+        let message = '아트워크가 없습니다.';
         
         if (this.currentTag) {
-            message = `"${this.currentTag}" 태그의 아트워크이 없습니다.`;
+            message = `"${this.currentTag}" 태그의 아트워크가 없습니다.`;
         }
 
         if (postsContainer) {
             postsContainer.innerHTML = `
-                <div class="empty-state">
+                <div class="artwork-empty-state">
                     <h3>${message}</h3>
+                    <p>${this.currentTag ? '다른 태그를 선택하거나 필터를 초기화해보세요.' : '곧 흥미로운 작품들로 찾아뵙겠습니다!'}</p>
                     ${this.currentTag ? 
                         '<button class="btn btn-secondary" onclick="app.clearFilters()">필터 초기화</button>' : 
                         '<a href="blog.html" class="btn btn-primary">블로그 둘러보기</a>'
