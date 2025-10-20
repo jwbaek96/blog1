@@ -9,17 +9,19 @@ class HeaderComponent {
         
         // 기본 네비게이션 아이템 설정
         this.navigationItems = [
-            // { href: '/index.html#home', text: 'HOME', type: 'anchor' },
             { href: '/index.html#about', text: 'ABOUT', type: 'anchor' },
             { href: '/index.html#skills', text: 'SKILLS', type: 'anchor' },
-            { href: 'article.html', text: 'ARTICLE', type: 'link' },
+            { href: 'projects.html', text: 'PROJECTS', type: 'link' },
+            { href: 'artwork.html', text: 'ARTWORK', type: 'link' },
             { href: 'blog.html', text: 'BLOG', type: 'link' },
             { href: '/index.html#contact', text: 'CONTACT', type: 'anchor' }
         ];
         
-        // 현재 페이지에 따라 active 상태 설정 (Home 제외, Article과 Blog만)
+        // 현재 페이지에 따라 active 상태 설정
         this.navigationItems.forEach(item => {
-            if (item.text === 'ARTICLE' && (currentPage === 'article.html' || currentPage.includes('article'))) {
+            if (item.text === 'PROJECTS' && (currentPage === 'projects.html' || currentPage.includes('projects'))) {
+                item.active = true;
+            } else if (item.text === 'ARTWORK' && (currentPage === 'artwork.html' || currentPage.includes('artwork'))) {
                 item.active = true;
             } else if (item.text === 'BLOG' && (currentPage === 'blog.html' || currentPage.includes('blog'))) {
                 item.active = true;

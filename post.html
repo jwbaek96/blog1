@@ -37,38 +37,11 @@
     <script src="js/head-meta.js"></script>
 </head>
 <body class="post-page">
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <a href="index.html">JW.BAEK</a>
-                </div>
-                <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">☰</button>
-                <nav class="nav" id="mainNav">
-                    <!-- <a href="index.html#home" class="nav-link">HOME</a> -->
-                    <a href="index.html#about" class="nav-link">ABOUT</a>
-                    <a href="index.html#skills" class="nav-link">SKILLS</a>
-                    <a href="index.html#exhibition" class="nav-link">ARTICLE</a>
-                    <a href="blog.html" class="nav-link">BLOG</a>
-                    <a href="index.html#contact" class="nav-link">CONTACT</a>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <!-- Mobile Sidebar -->
-    <div class="mobile-sidebar" id="mobileSidebar">
-        <button class="mobile-sidebar-close" onclick="closeMobileSidebar()">✕</button>
-        <nav class="mobile-sidebar-nav">
-            <!-- <a href="index.html#home" onclick="closeMobileSidebar()">HOME</a> -->
-            <a href="index.html#about" onclick="closeMobileSidebar()">ABOUT</a>
-            <a href="index.html#skills" onclick="closeMobileSidebar()">SKILLS</a>
-            <a href="index.html#exhibition" onclick="closeMobileSidebar()">ARTICLE</a>
-            <a href="blog.html" onclick="closeMobileSidebar()">BLOG</a>
-            <a href="index.html#contact" onclick="closeMobileSidebar()">CONTACT</a>
-        </nav>
-    </div>
+    <!-- Header will be inserted by header-component.js -->
+    <div id="header-placeholder"></div>
+    
+    <!-- Mobile Sidebar will be inserted by header-component.js -->
+    <div id="sidebar-placeholder"></div>
 
     <!-- Main Content -->
     <main class="main">
@@ -325,6 +298,8 @@
             }
         });
     </script>
+    <!-- Header Component -->
+    <script src="js/header-component.js"></script>
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/floating-actions.js"></script>

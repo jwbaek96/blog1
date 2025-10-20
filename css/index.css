@@ -265,6 +265,13 @@ html {
     z-index: 1;
 }
 
+.gallery-section .recent-artwork-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+    position: relative;
+}
+
 .gallery-title {
     font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 800;
@@ -273,6 +280,27 @@ html {
     letter-spacing: -0.02em;
     position: relative;
     z-index: 1;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.gallery-section .recent-artwork-link::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(92, 43, 226, 0.342), rgb(92, 43, 226));
+    transition: width 0.4s ease;
+}
+
+.gallery-section .recent-artwork-link:hover::after {
+    width: 100%;
+}
+
+.gallery-section .recent-artwork-link:hover .gallery-title {
+    color: rgb(92, 43, 226);
 }
 
 .gallery-subtitle {
@@ -390,36 +418,6 @@ html {
     font-size: 0.75rem;
     font-weight: 500;
 }
-
-.gallery-footer {
-    text-align: center;
-    position: relative;
-    z-index: 1;
-}
-
-.view-more-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem 2rem;
-    background: transparent;
-    background: #000000;
-    color: #ffffff;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-.view-more-btn span {
-    display: inline-block;
-    transition: transform 0.3s ease;
-}
-.view-more-btn:hover {
-    color: white;
-    text-decoration: none;
-    transform: translateY(-2px);
-    /* padding: 1rem 4rem; */
-}
 .view-more-btn:hover span {
     transform: translateX(5px);
     transition: transform 0.3s ease;
@@ -492,6 +490,11 @@ html {
 @media (max-width: 768px) {
     /* Disable scroll snap on mobile for better touch scrolling */
     html {scroll-snap-type: none;}
+    
+    .gallery-section .recent-artwork-link::after {
+        bottom: -4px;
+        height: 2px;
+    }
 }
 /* ========================== */
 @media (max-width: 480px) {
@@ -729,14 +732,45 @@ html {
 .latest-blog-section .section-header {
     text-align: center;
     margin-bottom: 3rem;
+    /* max-width: 1200px; */
+    padding: 0 1rem;
+}
+
+.latest-blog-section .recent-posts-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+    position: relative;
 }
 
 .latest-blog-section .section-header h2 {
-    font-size: 2.5rem;
+    font-size: 3.5rem;
     font-weight: 700;
     color: #2d3436;
     margin-bottom: 1rem;
     letter-spacing: -0.02em;
+    position: relative;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.latest-blog-section .recent-posts-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(92, 43, 226, 0.342), rgb(92, 43, 226));
+    transition: width 0.4s ease;
+}
+
+.latest-blog-section .recent-posts-link:hover::after {
+    width: 100%;
+}
+
+.latest-blog-section .recent-posts-link:hover h2 {
+    color: rgb(92, 43, 226);
 }
 
 .latest-blog-section .section-header p {
@@ -857,36 +891,7 @@ html {
     font-size: 1rem;
 }
 
-.latest-blog-section .section-footer {
-    text-align: center;
-}
 
-.latest-blog-section .view-more-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 2rem;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.latest-blog-section .view-more-btn:hover {
-    background: #2d3436;
-    transform: translateY(-2px);
-    text-decoration: none;
-    color: white;
-}
-
-.latest-blog-section .view-more-btn span {
-    transition: transform 0.3s ease;
-}
-
-.latest-blog-section .view-more-btn:hover span {
-    transform: translateX(4px);
-}
 
 /* 블로그 에러 상태 */
 .blog-error {
@@ -926,6 +931,11 @@ html {
         font-size: 2rem;
     }
     
+    .latest-blog-section .recent-posts-link::after {
+        bottom: -4px;
+        height: 2px;
+    }
+    
     .blog-post-content {
         flex-direction: column;
         align-items: flex-start;
@@ -941,6 +951,11 @@ html {
 @media (max-width: 480px) {
     .latest-blog-section .section-header h2 {
         font-size: 1.75rem;
+    }
+    
+    .latest-blog-section .recent-posts-link::after {
+        bottom: -2px;
+        height: 2px;
     }
     .blog-posts-grid{padding: 0 .5rem;}
     .blog-post-card {
