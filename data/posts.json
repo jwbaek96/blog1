@@ -1,18 +1,7 @@
 {
-  "lastUpdated": "2025-10-20T15:29:12.179Z",
-  "count": 4,
+  "lastUpdated": "2025-10-20T15:45:09.028Z",
+  "count": 3,
   "posts": [
-    {
-      "id": 5,
-      "title": ".",
-      "date": "2025-10-20T15:14:10.000Z",
-      "thumbnail": "",
-      "content": "<div>여기에 텍스트를 입력하세요.</div>",
-      "tags": [],
-      "images": "",
-      "videos": "",
-      "status": "published"
-    },
     {
       "id": 4,
       "title": "ARTWORK 페이지 레이아웃 테스트용",
