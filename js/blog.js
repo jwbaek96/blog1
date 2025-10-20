@@ -136,12 +136,13 @@ class BlogApp {
         const tagFiltersContainer = document.getElementById('tagFilters');
         if (!tagFiltersContainer) return;
 
-        const allTags = window.SheetsAPI.getAllTags(this.allPosts);
+        const publishedPosts = this.allPosts.filter(post => post.status === 'published');
+        const allTags = window.SheetsAPI.getAllTags(publishedPosts);
         const tagCounts = this.getTagCounts();
 
         let filtersHTML = `
             <button class="tag-filter ${!this.currentTag ? 'active' : ''}" data-tag="">
-                전체 (${this.allPosts.length})
+                전체 (${publishedPosts.length})
             </button>
         `;
 
@@ -175,7 +176,10 @@ class BlogApp {
     getTagCounts() {
         const counts = {};
         
-        this.allPosts.forEach(post => {
+        // 게시된 게시글만 필터링
+        const publishedPosts = this.allPosts.filter(post => post.status === 'published');
+        
+        publishedPosts.forEach(post => {
             // post.tags가 배열이고 비어있지 않은 경우
             if (Array.isArray(post.tags) && post.tags.length > 0) {
                 post.tags.forEach(tag => {
