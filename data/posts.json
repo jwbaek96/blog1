@@ -1,9 +1,20 @@
 {
-  "lastUpdated": "2025-10-20T15:07:19.497Z",
+  "lastUpdated": "2025-10-20T15:29:12.179Z",
   "count": 4,
   "posts": [
     {
       "id": 5,
+      "title": ".",
+      "date": "2025-10-20T15:14:10.000Z",
+      "thumbnail": "",
+      "content": "<div>여기에 텍스트를 입력하세요.</div>",
+      "tags": [],
+      "images": "",
+      "videos": "",
+      "status": "published"
+    },
+    {
+      "id": 4,
       "title": "ARTWORK 페이지 레이아웃 테스트용",
       "date": "2025-10-20T06:11:22.000Z",
       "thumbnail": "https://drive.google.com/uc?id=16aKvV-Y6pHT3tg2dKYDZUxEKCr4oO0vj",
@@ -26,21 +37,6 @@
         "touchdesigner",
         "레딧",
         "patreon"
-      ],
-      "images": "",
-      "videos": "",
-      "status": "published"
-    },
-    {
-      "id": 6,
-      "title": "블로그 사이트 제작 완료!(간략 후기)",
-      "date": "2025-10-20T03:25:09.000Z",
-      "thumbnail": "",
-      "content": "<div style=\"text-align: center;\"><span style=\"font-size: 0.95rem;\">10월 6일 - 10월 20일</span></div><div style=\"text-align: center;\">블로그 제작 완료했다.</div><div style=\"text-align: center;\">꽤 오래 작업한 줄 알았는데 2주밖에 안 지났었구나..</div><div style=\"text-align: center;\">그만큼 몰입해서 작업했다는 뜻이 아닐까 싶다.<br><br></div><div style=\"text-align: center;\">기초적인 바닐라JS 코딩만 할 줄 알던 내게<br>깃허브의 코파일럿 기능은</div><div style=\"text-align: center;\">정말 마른 하늘에 단비같은 존재였다.<br><br></div><div style=\"text-align: center;\">부족했었던 백엔드의 영역을 코파일럿이 커버 해주었고,</div><div style=\"text-align: center;\">자바스크립트도 원하는 기능을 항상 그때 그때 찾고 공부해가며 작업을 해왔었는데</div><div style=\"text-align: center;\">이제는 AI가 함께 고민하며 코드를 작성해주니 속도와 능률이 엄청나게 올라갔다.<br><br></div><div style=\"text-align: center;\">물론 그가 완벽하지는 않았다.<br><br></div><div style=\"text-align: center;\">쉽게 갈 걸 복잡하게 돌아가는 경우를 봤고,<br>간단한 문제를 어렵게 돌아가느라 못 푸는 경우를 종종 보았다.</div><div style=\"text-align: center;\">1을 해달라고 했는데 3을 하려는 경우도 더러 있었는데,<br>이 부분은 좋으면서도 안 좋은(?)... 그런 성향인 것 같다.<br><br></div><div style=\"text-align: center;\">내 작업에 이름을 붙이자면 \"하프 바이브 코딩\"이라고 하면 딱 맞을 것 같다.</div><div style=\"text-align: center;\">ai가 작업해 준 걸 직접 수정하고, 개발자적 시점에서 지시를 내리는?</div><div style=\"text-align: center;\">아무튼 이 코파일럿이 정말 많은 도움이 되었다.<br><br></div><div style=\"text-align: center;\">사업자를 내고 첫번째 프로젝트를 마치며,</div><div style=\"text-align: center;\">급하게 사업자를 낸 탓에</div><div style=\"text-align: center;\">아카이빙 할 수 있는 제대로 된 통로가 없었다.</div><div style=\"text-align: center;\">때문에 블로그 제작을 시작하게 되었는데</div><div style=\"text-align: center;\">생각보다 빨리 작업이 끝나서 다행이다.</div><div style=\"text-align: center;\"><br>But!<br><br></div><div style=\"text-align: center;\">개인 블로그는 완성했지만 아직도 회사 사이트가 없다.</div><div style=\"text-align: center;\">다음 작업은 회사 사이트 제작을 들어갈 계획이다.</div><div style=\"text-align: center;\">.</div><div style=\"text-align: center;\">블로그에 글들은 차차 하나하나 올릴 예정이다.</div><div style=\"text-align: center;\">자잘한 디버깅과 수정을 반복하며</div><div style=\"text-align: center;\">그냥 내 일상적인 글부터 작업 글들까지 여러가지를 포스팅하게 될 듯 하다.</div><div style=\"text-align: center;\">.</div><div style=\"text-align: center;\">\"ARTWORK\", \"PROJECTS\" 페이지가 추가 될 예정인데 아직 레이아웃이 고민이라</div><div style=\"text-align: center;\">우선 블로그로써만 기능할 듯!</div><div style=\"text-align: center;\">.</div><div style=\"text-align: center;\">.</div><div style=\"text-align: center;\">p.s. 구글 스프레드 시트를 DB로 쓰는 온전한 블로그 제작이 가능할까하는 생각이</div><div style=\"text-align: center;\">검증되어 기쁜 마음이다.</div><div style=\"text-align: center;\">.</div><div style=\"text-align: center;\">.</div><div style=\"text-align: center;\">.</div><div style=\"text-align: center;\">이상 간략한 블로그 개발 후기 끝!</div>",
-      "tags": [
-        "일상",
-        "개발",
-        "블로그 제작"
       ],
       "images": "",
       "videos": "",
