@@ -92,15 +92,21 @@ class SheetsAPI {
     }
 
     /**
-     * Get Apps Script URL from Supabase or fallback to CONFIG
+     * Get Apps Script URL from CONFIG (already loaded from Supabase)
      */
     async getAppsScriptUrl() {
         try {
+            // CONFIG 객체에서 직접 가져오기 (이미 Supabase에서 로드됨)
+            if (CONFIG && CONFIG.APPS_SCRIPT_URL && CONFIG.APPS_SCRIPT_URL !== 'null') {
+                return CONFIG.APPS_SCRIPT_URL;
+            }
+            
+            // Fallback: Supabase에서 직접 가져오기
             const appsScriptUrl = await getConfig('GOOGLE_APPS_SCRIPT_URL');
-            return appsScriptUrl || CONFIG.APPS_SCRIPT_URL;
+            return appsScriptUrl || null;
         } catch (error) {
-            console.warn('⚠️ Failed to get Apps Script URL from Supabase, using CONFIG fallback');
-            return CONFIG.APPS_SCRIPT_URL;
+            console.warn('⚠️ Failed to get Apps Script URL:', error);
+            return CONFIG?.APPS_SCRIPT_URL || null;
         }
     }
 
@@ -557,7 +563,14 @@ class SheetsAPI {
      */
     async updatePost(postData) {
         try {
+            console.log('🔄 포스트 업데이트 시작:', postData.id);
             const appsScriptUrl = await this.getAppsScriptUrl();
+            
+            if (!appsScriptUrl) {
+                throw new Error('Google Apps Script URL이 설정되지 않았습니다');
+            }
+            
+            console.log('🔗 사용할 URL:', appsScriptUrl);
             
             const response = await fetch(appsScriptUrl, {
                 method: 'POST',
@@ -570,11 +583,14 @@ class SheetsAPI {
                 })
             });
             
+            console.log('📡 Response status:', response.status, response.statusText);
+            
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
             const result = await response.json();
+            console.log('✅ Update result:', result);
             
             if (!result.success) {
                 throw new Error(result.error || 'Failed to update post');
@@ -595,7 +611,14 @@ class SheetsAPI {
      */
     async createPost(postData) {
         try {
+            console.log('📝 새 포스트 생성 시작');
             const appsScriptUrl = await this.getAppsScriptUrl();
+            
+            if (!appsScriptUrl) {
+                throw new Error('Google Apps Script URL이 설정되지 않았습니다');
+            }
+            
+            console.log('🔗 사용할 URL:', appsScriptUrl);
             
             const response = await fetch(appsScriptUrl, {
                 method: 'POST',
@@ -608,11 +631,14 @@ class SheetsAPI {
                 })
             });
             
+            console.log('📡 Response status:', response.status, response.statusText);
+            
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
             const result = await response.json();
+            console.log('✅ Create result:', result);
             
             if (!result.success) {
                 throw new Error(result.error || 'Failed to create post');

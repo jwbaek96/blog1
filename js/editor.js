@@ -1389,8 +1389,25 @@ function setupEditorButtons() {
      * Save post to Google Sheets
      */
     async function savePostToSheets() {
+        console.log('📤 포스트 저장 시작...');
+        
         if (!editor) {
+            console.error('❌ 에디터가 초기화되지 않았습니다');
             showToast('에디터가 초기화되지 않았습니다', 'error');
+            return;
+        }
+        
+        // 필수 의존성 확인
+        console.log('🔍 의존성 확인:', {
+            editor: !!editor,
+            SheetsAPI: !!window.SheetsAPI,
+            CONFIG: !!window.CONFIG,
+            APPS_SCRIPT_URL: window.CONFIG?.APPS_SCRIPT_URL
+        });
+        
+        if (!window.SheetsAPI) {
+            console.error('❌ SheetsAPI가 로드되지 않았습니다');
+            showToast('SheetsAPI가 로드되지 않았습니다. 페이지를 새로고침해 주세요.', 'error');
             return;
         }
         
@@ -1468,14 +1485,19 @@ function setupEditorButtons() {
             
 
             
-            // Check if API URL is configured
-            const appsScriptUrl = await getConfig('GOOGLE_APPS_SCRIPT_URL');
-            if (!appsScriptUrl) {
-                throw new Error('Google Apps Script URL이 설정되지 않았습니다. Supabase 환경변수를 확인해주세요.');
-            }
+            console.log('📊 저장할 포스트 데이터:', {
+                isEditMode,
+                postId: postData.id,
+                title: postData.title,
+                contentLength: postData.content?.length,
+                tags: postData.tags,
+                status: postData.status
+            });
             
             // Send to Google Apps Script (수정 모드에 따라 다른 API 호출)
             let result;
+            
+            console.log('🚀 API 호출 시작:', isEditMode ? 'updatePost' : 'createPost');
             
             if (isEditMode) {
                 result = await window.SheetsAPI.updatePost(postData);
@@ -1521,6 +1543,7 @@ function setupEditorButtons() {
             console.error('- Error type:', error.constructor.name);
             console.error('- Error message:', error.message);
             console.error('- Error stack:', error.stack);
+            console.error('- Current CONFIG:', window.CONFIG);
             
             let errorMessage = '저장에 실패했습니다';
             

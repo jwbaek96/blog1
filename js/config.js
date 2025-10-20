@@ -18,12 +18,9 @@ class SupabaseConfig {
             return this.supabaseClient;
         }
 
-        if (typeof supabase === 'undefined') {
-            console.warn('Supabase client not loaded. Loading from CDN...');
-            await this.loadSupabaseSDK();
-        }
-        
-        this.supabaseClient = supabase.createClient(this.supabaseUrl, this.supabaseAnonKey);
+    if (typeof supabase === 'undefined') {
+        await this.loadSupabaseSDK();
+    }        this.supabaseClient = supabase.createClient(this.supabaseUrl, this.supabaseAnonKey);
         return this.supabaseClient;
     }
 
@@ -55,14 +52,8 @@ class SupabaseConfig {
         this.loading = true;
 
         try {
-            console.log('🔌 Supabase 클라이언트 초기화 중...');
-            console.log('🌐 Supabase URL:', this.supabaseUrl);
-            console.log('🔑 Supabase Anon Key:', this.supabaseAnonKey ? '[설정됨]' : '[설정 안됨]');
-            
             const client = await this.initSupabase();
-            console.log('✅ Supabase 클라이언트 초기화 완료');
             
-            console.log('📊 env_variables 테이블에서 데이터 조회 중...');
             const { data, error } = await client
                 .from('env_variables')
                 .select('name, value');
@@ -71,22 +62,15 @@ class SupabaseConfig {
                 console.error('❌ Supabase 데이터 조회 실패:', error);
                 throw error;
             }
-            
-            console.log('📦 Supabase에서 받은 raw 데이터:', data);
-            console.log('📝 환경변수 개수:', data ? data.length : 0);
 
             // 배열을 객체로 변환
             this.config = {};
             if (data && data.length > 0) {
                 data.forEach(item => {
                     this.config[item.name] = item.value;
-                    console.log(`  - ${item.name}: ${item.value ? '[설정됨]' : '[빈값]'}`);
                 });
-            } else {
-                console.warn('⚠️ Supabase에서 환경변수가 하나도 조회되지 않았습니다!');
             }
 
-            console.log('✅ Config loaded successfully from Supabase');
             return this.config;
 
         } catch (error) {
@@ -94,12 +78,11 @@ class SupabaseConfig {
             
             // 폴백: 기본 설정 사용
             this.config = {
-                GOOGLE_APPS_SCRIPT_URL: '', // 에러 시 빈 문자열
+                GOOGLE_APPS_SCRIPT_URL: '',
                 SUPABASE_URL: this.supabaseUrl,
                 SUPABASE_ANON_KEY: this.supabaseAnonKey
             };
             
-            console.warn('Using fallback configuration');
             return this.config;
         } finally {
             this.loading = false;
@@ -234,27 +217,11 @@ function validateConfig() {
     const missingFields = requiredFields.filter(field => !CONFIG[field] || CONFIG[field].includes('YOUR_'));
     
     if (missingFields.length > 0) {
-        console.warn('⚠️ Configuration incomplete. Missing or not configured:', missingFields);
-        console.info('📖 Please update js/config.js with your Google Sheets ID and Apps Script URL');
+        console.warn('⚠️ Configuration incomplete:', missingFields);
         return false;
     }
     
     return true;
-}
-
-// URL 마스킹 함수 (민감한 정보 보호)
-function maskSensitiveUrl(url) {
-    if (!url) return 'Not set';
-    if (url.startsWith('/api/')) return url; // Vercel API는 안전
-    if (url.includes('script.google.com')) {
-        // Google Apps Script URL은 마스킹
-        const parts = url.split('/');
-        if (parts.length >= 6) {
-            parts[5] = parts[5].substring(0, 8) + '...' + parts[5].substring(parts[5].length - 4);
-        }
-        return parts.join('/');
-    }
-    return url;
 }
 
 // 환경변수 초기화 함수 - Supabase 버전
@@ -264,53 +231,27 @@ async function initializeConfig() {
         const supabaseConfigInstance = getSupabaseConfigInstance();
         const supabaseConfig = await supabaseConfigInstance.getAll();
         
-        console.log('📋 =========================== SUPABASE 환경변수 로드 ===========================');
-        console.log('📥 Supabase에서 가져온 전체 설정:', supabaseConfig);
-        console.log('');
-        
         // Supabase 설정으로 CONFIG 업데이트
         if (supabaseConfig.GOOGLE_APPS_SCRIPT_URL) {
             CONFIG.APPS_SCRIPT_URL = supabaseConfig.GOOGLE_APPS_SCRIPT_URL;
-            console.log('🔗 GOOGLE_APPS_SCRIPT_URL:', supabaseConfig.GOOGLE_APPS_SCRIPT_URL);
-        } else {
-            console.warn('⚠️ GOOGLE_APPS_SCRIPT_URL: 설정되지 않음');
         }
-        
-        // UPLOAD_API_URL은 Supabase에서 관리하지 않음 (Google Apps Script가 처리)
         
         if (supabaseConfig.ADMIN_KEY) {
             CONFIG.LOCAL_ADMIN_KEY = supabaseConfig.ADMIN_KEY;
-            console.log('🔐 ADMIN_KEY:', supabaseConfig.ADMIN_KEY);
-        } else {
-            console.warn('⚠️ ADMIN_KEY: 설정되지 않음');
         }
         
         if (supabaseConfig.GOOGLE_DRIVE_FOLDER_ID) {
             CONFIG.GOOGLE_DRIVE_FOLDER_ID = supabaseConfig.GOOGLE_DRIVE_FOLDER_ID;
-            console.log('📁 GOOGLE_DRIVE_FOLDER_ID:', supabaseConfig.GOOGLE_DRIVE_FOLDER_ID);
-        } else {
-            console.warn('⚠️ GOOGLE_DRIVE_FOLDER_ID: 설정되지 않음');
         }
         
         if (supabaseConfig.GOOGLE_DRIVE_API_KEY) {
             CONFIG.GOOGLE_DRIVE_API_KEY = supabaseConfig.GOOGLE_DRIVE_API_KEY;
             CONFIG.GOOGLE_API_KEY = supabaseConfig.GOOGLE_DRIVE_API_KEY;
-            console.log('🔑 GOOGLE_DRIVE_API_KEY: [설정됨]');
-        } else {
-            console.warn('⚠️ GOOGLE_DRIVE_API_KEY: 설정되지 않음');
         }
         
         if (supabaseConfig.GOOGLE_CLIENT_ID) {
             CONFIG.GOOGLE_CLIENT_ID = supabaseConfig.GOOGLE_CLIENT_ID;
-            console.log('🆔 GOOGLE_CLIENT_ID:', supabaseConfig.GOOGLE_CLIENT_ID);
-        } else {
-            console.warn('⚠️ GOOGLE_CLIENT_ID: 설정되지 않음');
         }
-        
-        console.log('');
-        console.log('📊 업데이트된 CONFIG 객체:', CONFIG);
-        console.log('================================================================================');
-        console.log('✅ 설정이 Supabase에서 성공적으로 로드되었습니다');
         
         // 설정 로딩 완료 이벤트 발생
         if (typeof window !== 'undefined') {
@@ -319,7 +260,6 @@ async function initializeConfig() {
         
     } catch (error) {
         console.error('❌ Supabase 설정 로드 실패:', error);
-        console.info('💡 기본 설정을 사용합니다');
         
         // 오류 상태로도 이벤트 발생 (기본값 사용)
         if (typeof window !== 'undefined') {
@@ -344,7 +284,7 @@ async function initializeConfig() {
             font-weight: 500;
             display: none;
         `;
-        banner.innerHTML = '⚠️ 블로그 설정이 완료되지 않았습니다. Supabase 환경변수를 확인해주세요.';
+        banner.innerHTML = '⚠️ 블로그 설정이 완료되지 않았습니다.';
         document.body.prepend(banner);
         
         setTimeout(() => banner.remove(), 1000);

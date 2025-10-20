@@ -182,8 +182,19 @@ class CommentsSystem {
             const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?${params}`);
             const result = await response.json();
             
+            console.log('💬 댓글 데이터 응답:', result);
+            
             if (result.success) {
                 this.comments = result.data || [];
+                
+                console.log(`📝 포스트 ${this.postId}의 댓글 ${this.comments.length}개 로드됨:`);
+                if (this.comments.length > 0) {
+                    this.comments.forEach((comment, index) => {
+                        console.log(`  ${index + 1}. [${comment.id}] ${comment.author}: ${comment.content.substring(0, 50)}${comment.content.length > 50 ? '...' : ''} ${comment.isDeleted ? '(삭제됨)' : ''}`);
+                    });
+                } else {
+                    console.log('  (댓글 없음)');
+                }
                 
                 // 캐시에 저장
                 this.commentsCache.set(this.postId, {
