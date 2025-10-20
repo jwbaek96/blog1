@@ -1,4 +1,6 @@
 // Vercel API endpoint to provide environment variables to client
+export const maxDuration = 60; // 60초 타임아웃 설정
+
 export default function handler(req, res) {
     // CORS 헤더 설정
     res.setHeader('Access-Control-Allow-Origin', '*');

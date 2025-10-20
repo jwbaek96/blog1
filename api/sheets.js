@@ -1,6 +1,8 @@
 // Vercel Serverless Function for Google Apps Script Proxy
 // This hides the actual Google Apps Script URL from the client
 
+export const maxDuration = 60; // 60초 타임아웃 설정
+
 export default async function handler(req, res) {
     // CORS 헤더 설정
     res.setHeader('Access-Control-Allow-Origin', '*');

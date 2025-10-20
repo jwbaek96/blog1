@@ -124,18 +124,28 @@ function doGet(e) {
 }
 
 /**
- * Handle get posts requests
+ * Handle get posts requests (OPTIMIZED)
  */
 function handleGetPosts() {
   try {
+    // 캐시 확인 (5분 캐시)
+    const cache = CacheService.getScriptCache();
+    const cacheKey = 'blog_posts_cache';
+    const cachedData = cache.get(cacheKey);
+    
+    if (cachedData) {
+      console.log('✅ Returning cached posts data');
+      return createJsonResponse(JSON.parse(cachedData));
+    }
+    
     const spreadsheet = getSpreadsheet();
     const sheet = spreadsheet.getActiveSheet();
     
-    // Get all data (excluding header row)
-    const dataRange = sheet.getDataRange();
-    const values = dataRange.getValues();
+    // 최적화: 필요한 범위만 읽기
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
     
-    if (values.length <= 1) {
+    if (lastRow <= 1) {
       return createJsonResponse({
         success: true,
         posts: [],
@@ -143,38 +153,31 @@ function handleGetPosts() {
       });
     }
     
-    // Skip header row and process data
-    const posts = [];
+    // 배치로 데이터 읽기 (헤더 제외하고 데이터만)
+    const values = sheet.getRange(2, 1, lastRow - 1, Math.min(lastCol, 10)).getValues();
     
-    for (let i = 1; i < values.length; i++) {
-      const row = values[i];
-      
-      // Skip empty rows - check both title and content
-      if (!row[1] || row[1].toString().trim() === '') {
-        continue;
-      }
-      
-      // Skip rows that look like fragmented HTML content (no proper title)
-      const title = row[1].toString().trim();
-      if (title.includes('<div>') || title.includes('</div>') || title.match(/^\d+$/)) {
-        continue;
-      }
-      
-      const post = {
-        id: row[0] || i,                 // A: ID
-        title: title,                    // B: Title
-        date: row[2] || '',              // C: Date
-        thumbnail: row[3] || '',         // D: Thumbnail
-        content: row[4] || '',           // E: Content
-        tags: row[5] || '',              // F: Tags
-        images: row[6] || '',            // G: Images
-        videos: row[7] || '',            // H: Videos
-        status: row[8] || 'published',   // I: Status
-        comment: row[9] || ''            // J: Comment (댓글 데이터)
-      };
-      
-      posts.push(post);
-    }
+    // 빈 행 필터링을 위한 사전 처리
+    const validRows = values.filter(row => 
+      row[1] && // title 존재
+      row[1].toString().trim() !== '' && // 빈 제목 제외
+      !row[1].toString().includes('<div>') && // HTML 조각 제외
+      !row[1].toString().includes('</div>') &&
+      !row[1].toString().match(/^\d+$/) // 숫자만인 제목 제외
+    );
+    
+    // 배치 처리로 posts 배열 생성
+    const posts = validRows.map((row, index) => ({
+      id: row[0] || (index + 2), // 원본 행 번호 고려
+      title: row[1].toString().trim(),
+      date: row[2] || '',
+      thumbnail: row[3] || '',
+      content: row[4] || '',
+      tags: row[5] || '',
+      images: row[6] || '',
+      videos: row[7] || '',
+      status: row[8] || 'published',
+      comment: row[9] || ''
+    }));
     
     const response = {
       success: true,
@@ -182,6 +185,14 @@ function handleGetPosts() {
       count: posts.length,
       timestamp: new Date().toISOString()
     };
+    
+    // 캐시에 저장 (5분)
+    try {
+      cache.put(cacheKey, JSON.stringify(response), 300);
+      console.log('✅ Posts data cached for 5 minutes');
+    } catch (cacheError) {
+      console.warn('⚠️ Failed to cache data:', cacheError);
+    }
     
     return createJsonResponse(response);
     
@@ -371,6 +382,15 @@ function handlePostSave(requestData) {
     const lastRow = sheet.getLastRow();
     const calculatedId = lastRow - 1;
     
+    // 캐시 무효화 (새 포스트가 추가되었으므로)
+    const cache = CacheService.getScriptCache();
+    try {
+      cache.remove('blog_posts_cache');
+      console.log('✅ Post cache invalidated after save');
+    } catch (cacheError) {
+      console.warn('⚠️ Failed to invalidate cache:', cacheError);
+    }
+    
     const response = {
       success: true,
       postId: calculatedId,
@@ -466,6 +486,16 @@ function handlePostUpdate(requestData) {
     // Update the specific row
     const range = sheet.getRange(targetRow, 1, 1, updatedRowData.length);
     range.setValues([updatedRowData]);
+    
+    // 캐시 무효화 (포스트가 업데이트되었으므로)
+    const cache = CacheService.getScriptCache();
+    try {
+      cache.remove('blog_posts_cache');
+      cache.remove(`comments_${postId}`); // 해당 포스트의 댓글 캐시도 무효화
+      console.log('✅ Post cache invalidated after update');
+    } catch (cacheError) {
+      console.warn('⚠️ Failed to invalidate cache:', cacheError);
+    }
     
     console.log(`✅ Post updated successfully: ${postData.title} (ID: ${postId})`);
     
@@ -1083,7 +1113,7 @@ function initializeCommentsSystem() {
 }
 
 /**
- * 댓글 조회
+ * 댓글 조회 (OPTIMIZED)
  */
 function getComments(postId) {
     try {
@@ -1096,15 +1126,19 @@ function getComments(postId) {
             });
         }
         
-        const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-        if (!spreadsheet) {
-            return createJsonResponse({ 
-                success: false, 
-                error: 'Spreadsheet not found' 
-            });
+        // 캐시 확인
+        const cache = CacheService.getScriptCache();
+        const cacheKey = `comments_${postId}`;
+        const cachedComments = cache.get(cacheKey);
+        
+        if (cachedComments) {
+            console.log('✅ Returning cached comments for post:', postId);
+            return createJsonResponse(JSON.parse(cachedComments));
         }
         
+        const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
         const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+        
         if (!sheet) {
             return createJsonResponse({ 
                 success: false, 
@@ -1112,67 +1146,75 @@ function getComments(postId) {
             });
         }
         
-        const dataRange = sheet.getDataRange();
-        if (!dataRange) {
+        // 최적화: 헤더만 먼저 읽고 컬럼 인덱스 파악
+        const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        const idColumnIndex = headers.findIndex(h => h.toLowerCase() === 'id') + 1;
+        const commentColumnIndex = headers.findIndex(h => h.toLowerCase() === 'comment') + 1;
+        
+        if (idColumnIndex === 0) {
             return createJsonResponse({ 
                 success: false, 
-                error: 'No data found in sheet' 
+                error: 'ID column not found' 
             });
         }
         
-        const data = dataRange.getValues();
-        const headers = data[0];
+        // 최적화: ID 컬럼만 읽어서 빠르게 행 찾기
+        const lastRow = sheet.getLastRow();
+        const idValues = sheet.getRange(2, idColumnIndex, lastRow - 1, 1).getValues();
         
-        // postId로 해당 행 찾기 (타입 변환 추가)
-        console.log('🔍 Looking for postId:', postId, 'Type:', typeof postId);
-        console.log('📋 Available headers:', headers);
+        let targetRowIndex = -1;
+        const searchId = String(postId);
         
-        let postRow = null;
-        for (let i = 1; i < data.length; i++) {
-            const row = {};
-            headers.forEach((header, index) => {
-                row[header] = data[i][index];
-            });
-            
-            // 타입을 맞춰서 비교 (숫자/문자열 모두 처리)
-            const rowId = String(row.id || row.ID || row.Id);
-            const searchId = String(postId);
-            
-            console.log(`📝 Row ${i}: id="${rowId}", searching for "${searchId}"`);
-            
-            if (rowId === searchId) {
-                postRow = row;
-                console.log('✅ Found matching post row:', postRow);
+        for (let i = 0; i < idValues.length; i++) {
+            if (String(idValues[i][0]) === searchId) {
+                targetRowIndex = i + 2; // 헤더 행 고려한 실제 행 번호
                 break;
             }
         }
         
-        if (!postRow) {
+        if (targetRowIndex === -1) {
             return createJsonResponse({ 
                 success: false, 
                 error: 'Post not found' 
             });
         }
         
+        // 해당 행의 댓글 컬럼만 읽기
+        let commentData = '';
+        if (commentColumnIndex > 0) {
+            const commentCell = sheet.getRange(targetRowIndex, commentColumnIndex).getValue();
+            commentData = commentCell || '';
+        }
+        
         // 댓글 데이터 파싱
         let comments = [];
-        if (postRow.comment) {
+        if (commentData) {
             try {
-                comments = JSON.parse(postRow.comment);
+                comments = JSON.parse(commentData);
                 if (!Array.isArray(comments)) {
                     comments = [];
                 }
             } catch (parseError) {
-                console.warn('⚠️ Failed to parse comments, initializing empty array:', parseError);
+                console.warn('⚠️ Failed to parse comments:', parseError);
                 comments = [];
             }
         }
         
-        console.log('✅ Retrieved comments:', comments.length);
-        return createJsonResponse({ 
+        const response = { 
             success: true, 
             data: comments 
-        });
+        };
+        
+        // 캐시 저장 (2분)
+        try {
+            cache.put(cacheKey, JSON.stringify(response), 120);
+            console.log('✅ Comments cached for post:', postId);
+        } catch (cacheError) {
+            console.warn('⚠️ Failed to cache comments:', cacheError);
+        }
+        
+        console.log('✅ Retrieved comments:', comments.length);
+        return createJsonResponse(response);
         
     } catch (error) {
         console.error('❌ Error getting comments:', error);
@@ -1220,14 +1262,8 @@ function addComment(requestData) {
         }
         
         const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-        if (!spreadsheet) {
-            return createJsonResponse({ 
-                success: false, 
-                error: 'Spreadsheet not found' 
-            });
-        }
-        
         const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+        
         if (!sheet) {
             return createJsonResponse({ 
                 success: false, 
@@ -1235,50 +1271,51 @@ function addComment(requestData) {
             });
         }
         
-        const dataRange = sheet.getDataRange();
-        if (!dataRange) {
+        // 최적화: 헤더와 필요한 컬럼만 읽기
+        const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        const idColumnIndex = headers.findIndex(h => h.toLowerCase() === 'id') + 1;
+        const commentColumnIndex = headers.findIndex(h => h.toLowerCase() === 'comment') + 1;
+        
+        if (idColumnIndex === 0) {
             return createJsonResponse({ 
                 success: false, 
-                error: 'No data found in sheet' 
+                error: 'ID column not found' 
             });
         }
         
-        const data = dataRange.getValues();
-        const headers = data[0];
+        // 최적화: ID 컬럼만 읽어서 빠르게 행 찾기
+        const lastRow = sheet.getLastRow();
+        const idValues = sheet.getRange(2, idColumnIndex, lastRow - 1, 1).getValues();
         
-        // postId로 해당 행 찾기
         let postRowIndex = -1;
-        let postRow = null;
+        const searchId = String(postId);
         
-        for (let i = 1; i < data.length; i++) {
-            const row = {};
-            headers.forEach((header, index) => {
-                row[header] = data[i][index];
-            });
-            
-            // 타입을 맞춰서 비교 (숫자/문자열 모두 처리)
-            const rowId = String(row.id || row.ID || row.Id);
-            const searchId = String(postId);
-            
-            if (rowId === searchId) {
-                postRowIndex = i + 1; // 1-based index for sheets
-                postRow = row;
+        for (let i = 0; i < idValues.length; i++) {
+            if (String(idValues[i][0]) === searchId) {
+                postRowIndex = i + 2; // 헤더 행 고려한 실제 행 번호
                 break;
             }
         }
         
-        if (!postRow) {
+        if (postRowIndex === -1) {
             return createJsonResponse({ 
                 success: false, 
                 error: 'Post not found' 
             });
         }
         
+        // 최적화: 해당 행의 댓글 컬럼만 읽기
+        let commentData = '';
+        if (commentColumnIndex > 0) {
+            const commentCell = sheet.getRange(postRowIndex, commentColumnIndex).getValue();
+            commentData = commentCell || '';
+        }
+        
         // 기존 댓글 데이터 가져오기
         let comments = [];
-        if (postRow.comment && postRow.comment.trim()) {
+        if (commentData && commentData.trim()) {
             try {
-                comments = JSON.parse(postRow.comment);
+                comments = JSON.parse(commentData);
             } catch (parseError) {
                 console.warn('⚠️ Failed to parse existing comments:', parseError);
                 comments = [];
@@ -1304,8 +1341,7 @@ function addComment(requestData) {
         // 댓글 배열에 추가
         comments.push(newComment);
         
-        // 스프레드시트 업데이트
-        const commentColumnIndex = headers.indexOf('comment') + 1; // 1-based
+        // 스프레드시트 업데이트 (이미 commentColumnIndex는 위에서 계산됨)
         if (commentColumnIndex === 0) {
             return createJsonResponse({ 
                 success: false, 
@@ -1314,6 +1350,16 @@ function addComment(requestData) {
         }
         
         sheet.getRange(postRowIndex, commentColumnIndex).setValue(JSON.stringify(comments));
+        
+        // 캐시 무효화 (댓글이 추가되었으므로)
+        const cache = CacheService.getScriptCache();
+        try {
+            cache.remove(`comments_${postId}`);
+            cache.remove('blog_posts_cache'); // 전체 포스트 캐시도 무효화
+            console.log('✅ Cache invalidated for post:', postId);
+        } catch (cacheError) {
+            console.warn('⚠️ Failed to invalidate cache:', cacheError);
+        }
         
         console.log('✅ Comment added successfully:', newCommentId);
         return createJsonResponse({ 
