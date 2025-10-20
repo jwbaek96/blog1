@@ -1,9 +1,9 @@
 {
-  "lastUpdated": "2025-10-20T14:06:29.484Z",
+  "lastUpdated": "2025-10-20T14:30:00.661Z",
   "count": 4,
   "posts": [
     {
-      "id": 8,
+      "id": 5,
       "title": "ARTWORK 페이지 레이아웃 테스트용",
       "date": "2025-10-20T06:11:22.000Z",
       "thumbnail": "https://drive.google.com/uc?id=16aKvV-Y6pHT3tg2dKYDZUxEKCr4oO0vj",
@@ -47,7 +47,7 @@
       "status": "published"
     },
     {
-      "id": 3,
+      "id": 1,
       "title": "간단한 블로깅 테스트",
       "date": "2025-10-16T09:24:11.000Z",
       "thumbnail": "https://drive.google.com/uc?id=1YBPvkBPUgNYFPdfxAsV76iucUHPXrjhp",
