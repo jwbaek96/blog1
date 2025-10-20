@@ -278,8 +278,33 @@ function doPost(e) {
     const origin = e.parameter?.origin || e.headers?.origin;
     let requestData;
     
+    // Handle URLSearchParams (새로운 방식 - CORS 해결)
+    if (e.parameter && e.parameter.action) {
+      console.log('📥 URLSearchParams 방식으로 데이터 수신');
+      requestData = {
+        action: e.parameter.action
+      };
+      
+      // postData가 있으면 JSON 파싱
+      if (e.parameter.postData) {
+        try {
+          requestData.postData = JSON.parse(e.parameter.postData);
+          console.log('✅ postData 파싱 성공:', requestData.action);
+        } catch (parseError) {
+          console.error('❌ postData 파싱 실패:', parseError);
+          throw new Error('Invalid postData format');
+        }
+      }
+      
+      // 기타 필드들 복사
+      Object.keys(e.parameter).forEach(key => {
+        if (key !== 'action' && key !== 'postData') {
+          requestData[key] = e.parameter[key];
+        }
+      });
+    }
     // Handle FormData (from form submission)
-    if (e.parameters && e.parameters.data) {
+    else if (e.parameters && e.parameters.data) {
       requestData = JSON.parse(e.parameters.data[0]); // FormData values are arrays
     }
     // Handle direct JSON (fallback)
