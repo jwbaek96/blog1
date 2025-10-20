@@ -1,3 +1,5 @@
+// ⚠️ DEPRECATED: 이 파일은 더 이상 사용되지 않습니다
+// Supabase로 완전히 마이그레이션됨 - js/config.js에서 Supabase 환경변수 직접 로드
 // Vercel API endpoint to provide environment variables to client
 export const maxDuration = 60; // 60초 타임아웃 설정
 

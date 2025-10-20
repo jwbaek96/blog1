@@ -55,24 +55,38 @@ class SupabaseConfig {
         this.loading = true;
 
         try {
-            const client = await this.initSupabase();
+            console.log('🔌 Supabase 클라이언트 초기화 중...');
+            console.log('🌐 Supabase URL:', this.supabaseUrl);
+            console.log('🔑 Supabase Anon Key:', this.supabaseAnonKey ? '[설정됨]' : '[설정 안됨]');
             
+            const client = await this.initSupabase();
+            console.log('✅ Supabase 클라이언트 초기화 완료');
+            
+            console.log('📊 env_variables 테이블에서 데이터 조회 중...');
             const { data, error } = await client
                 .from('env_variables')
                 .select('name, value');
 
             if (error) {
-                console.error('Failed to load config from Supabase:', error);
+                console.error('❌ Supabase 데이터 조회 실패:', error);
                 throw error;
             }
+            
+            console.log('📦 Supabase에서 받은 raw 데이터:', data);
+            console.log('📝 환경변수 개수:', data ? data.length : 0);
 
             // 배열을 객체로 변환
             this.config = {};
-            data.forEach(item => {
-                this.config[item.name] = item.value;
-            });
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    this.config[item.name] = item.value;
+                    console.log(`  - ${item.name}: ${item.value ? '[설정됨]' : '[빈값]'}`);
+                });
+            } else {
+                console.warn('⚠️ Supabase에서 환경변수가 하나도 조회되지 않았습니다!');
+            }
 
-            console.log('Config loaded successfully from Supabase');
+            console.log('✅ Config loaded successfully from Supabase');
             return this.config;
 
         } catch (error) {
@@ -250,27 +264,52 @@ async function initializeConfig() {
         const supabaseConfigInstance = getSupabaseConfigInstance();
         const supabaseConfig = await supabaseConfigInstance.getAll();
         
+        console.log('📋 =========================== SUPABASE 환경변수 로드 ===========================');
+        console.log('📥 Supabase에서 가져온 전체 설정:', supabaseConfig);
+        console.log('');
+        
         // Supabase 설정으로 CONFIG 업데이트
         if (supabaseConfig.GOOGLE_APPS_SCRIPT_URL) {
             CONFIG.APPS_SCRIPT_URL = supabaseConfig.GOOGLE_APPS_SCRIPT_URL;
+            console.log('🔗 GOOGLE_APPS_SCRIPT_URL:', supabaseConfig.GOOGLE_APPS_SCRIPT_URL);
+        } else {
+            console.warn('⚠️ GOOGLE_APPS_SCRIPT_URL: 설정되지 않음');
         }
-        if (supabaseConfig.UPLOAD_API_URL) {
-            CONFIG.UPLOAD_API_URL = supabaseConfig.UPLOAD_API_URL;
+        
+        // UPLOAD_API_URL은 Supabase에서 관리하지 않음 (Google Apps Script가 처리)
+        
+        if (supabaseConfig.ADMIN_KEY) {
+            CONFIG.LOCAL_ADMIN_KEY = supabaseConfig.ADMIN_KEY;
+            console.log('🔐 ADMIN_KEY:', supabaseConfig.ADMIN_KEY);
+        } else {
+            console.warn('⚠️ ADMIN_KEY: 설정되지 않음');
         }
-        if (supabaseConfig.LOCAL_ADMIN_KEY) {
-            CONFIG.LOCAL_ADMIN_KEY = supabaseConfig.LOCAL_ADMIN_KEY;
-        }
+        
         if (supabaseConfig.GOOGLE_DRIVE_FOLDER_ID) {
             CONFIG.GOOGLE_DRIVE_FOLDER_ID = supabaseConfig.GOOGLE_DRIVE_FOLDER_ID;
+            console.log('📁 GOOGLE_DRIVE_FOLDER_ID:', supabaseConfig.GOOGLE_DRIVE_FOLDER_ID);
+        } else {
+            console.warn('⚠️ GOOGLE_DRIVE_FOLDER_ID: 설정되지 않음');
         }
+        
         if (supabaseConfig.GOOGLE_DRIVE_API_KEY) {
             CONFIG.GOOGLE_DRIVE_API_KEY = supabaseConfig.GOOGLE_DRIVE_API_KEY;
             CONFIG.GOOGLE_API_KEY = supabaseConfig.GOOGLE_DRIVE_API_KEY;
-        }
-        if (supabaseConfig.GOOGLE_CLIENT_ID) {
-            CONFIG.GOOGLE_CLIENT_ID = supabaseConfig.GOOGLE_CLIENT_ID;
+            console.log('🔑 GOOGLE_DRIVE_API_KEY: [설정됨]');
+        } else {
+            console.warn('⚠️ GOOGLE_DRIVE_API_KEY: 설정되지 않음');
         }
         
+        if (supabaseConfig.GOOGLE_CLIENT_ID) {
+            CONFIG.GOOGLE_CLIENT_ID = supabaseConfig.GOOGLE_CLIENT_ID;
+            console.log('🆔 GOOGLE_CLIENT_ID:', supabaseConfig.GOOGLE_CLIENT_ID);
+        } else {
+            console.warn('⚠️ GOOGLE_CLIENT_ID: 설정되지 않음');
+        }
+        
+        console.log('');
+        console.log('📊 업데이트된 CONFIG 객체:', CONFIG);
+        console.log('================================================================================');
         console.log('✅ 설정이 Supabase에서 성공적으로 로드되었습니다');
         
         // 설정 로딩 완료 이벤트 발생
