@@ -586,8 +586,20 @@ class SheetsAPI {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-            const result = await response.json();
-            console.log('✅ Update result:', result);
+            // 응답을 텍스트로 먼저 확인
+            const responseText = await response.text();
+            console.log('📄 Raw response:', responseText);
+            
+            // JSON 파싱 시도
+            let result;
+            try {
+                result = JSON.parse(responseText);
+                console.log('✅ Update result:', result);
+            } catch (parseError) {
+                console.error('❌ JSON Parse Error:', parseError);
+                console.error('📄 Response was:', responseText);
+                throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
+            }
             
             if (!result.success) {
                 throw new Error(result.error || 'Failed to update post');
@@ -631,8 +643,20 @@ class SheetsAPI {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-            const result = await response.json();
-            console.log('✅ Create result:', result);
+            // 응답을 텍스트로 먼저 확인
+            const responseText = await response.text();
+            console.log('📄 Raw response:', responseText);
+            
+            // JSON 파싱 시도
+            let result;
+            try {
+                result = JSON.parse(responseText);
+                console.log('✅ Create result:', result);
+            } catch (parseError) {
+                console.error('❌ JSON Parse Error:', parseError);
+                console.error('📄 Response was:', responseText);
+                throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
+            }
             
             if (!result.success) {
                 throw new Error(result.error || 'Failed to create post');
