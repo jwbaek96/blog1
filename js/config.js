@@ -303,6 +303,7 @@ async function initializeConfig() {
             text-align: center;
             z-index: 9999;
             font-weight: 500;
+            display: none;
         `;
         banner.innerHTML = '⚠️ 블로그 설정이 완료되지 않았습니다. Supabase 환경변수를 확인해주세요.';
         document.body.prepend(banner);
