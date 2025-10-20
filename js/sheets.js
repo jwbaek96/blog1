@@ -1,5 +1,49 @@
 // Google Sheets integration for blog data
 
+// JSONP 헬퍼 함수 (CORS 완전 우회)
+function fetchWithJSONP(url, params = {}) {
+    return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+        
+        // 콜백 함수를 전역으로 등록
+        window[callbackName] = function(data) {
+            document.head.removeChild(script);
+            delete window[callbackName];
+            resolve(data);
+        };
+        
+        // 파라미터에 콜백 추가
+        params.callback = callbackName;
+        
+        // URL 생성
+        const queryString = Object.keys(params)
+            .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
+            .join('&');
+        
+        const fullUrl = url + (url.includes('?') ? '&' : '?') + queryString;
+        
+        // 스크립트 태그로 요청
+        const script = document.createElement('script');
+        script.src = fullUrl;
+        script.onerror = () => {
+            document.head.removeChild(script);
+            delete window[callbackName];
+            reject(new Error('JSONP request failed'));
+        };
+        
+        document.head.appendChild(script);
+        
+        // 10초 타임아웃
+        setTimeout(() => {
+            if (window[callbackName]) {
+                document.head.removeChild(script);
+                delete window[callbackName];
+                reject(new Error('JSONP request timeout'));
+            }
+        }, 10000);
+    });
+}
+
 class SheetsAPI {
     constructor() {
         this.sheetUrl = CONFIG.GOOGLE_SHEET_URL;
@@ -42,6 +86,11 @@ class SheetsAPI {
         });
     }
 
+    // JSONP 메서드 (클래스 내부)
+    async fetchWithJSONP(url, params = {}) {
+        return fetchWithJSONP(url, params);
+    }
+
     /**
      * Get Apps Script URL from Supabase or fallback to CONFIG
      */
@@ -71,20 +120,11 @@ class SheetsAPI {
                 return this.fetchPostsFromCSV();
             }
             
-            // Use Apps Script Web App URL with getPosts action
-            const requestUrl = `${appsScriptUrl}?action=getPosts&t=${Date.now()}`;
-            
-            const response = await fetch(requestUrl, {
-                method: 'GET'
-                // Content-Type 헤더 제거하여 simple request로 만듦
+            // JSONP 방식으로 CORS 완전 우회
+            const result = await this.fetchWithJSONP(appsScriptUrl, {
+                action: 'getPosts',
+                t: Date.now()
             });
-            
-            if (!response.ok) {
-                console.warn('⚠️ Apps Script failed, falling back to CSV method');
-                return this.fetchPostsFromCSV();
-            }
-            
-            const result = await response.json();
             
             if (!result.success) {
                 throw new Error(result.error || 'Apps Script returned error');

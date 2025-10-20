@@ -110,9 +110,12 @@ function doGet(e) {
   try {
     const origin = e.parameter.origin || e.headers?.origin;
     const action = e.parameter.action || 'getPosts';
+    const callback = e.parameter.callback; // JSONP 콜백
+    
+    let response;
     
     if (action === 'getPosts') {
-      return handleGetPosts(origin);
+      response = handleGetPosts(origin);
     } else if (action === 'savePost') {
       // Handle post save via GET request (from editor)
       const postData = JSON.parse(e.parameter.data || '{}');
@@ -169,6 +172,14 @@ function doGet(e) {
       throw new Error('Invalid action: ' + action);
     }
     
+    // JSONP 콜백이 있으면 JSONP 응답으로 변환
+    if (callback) {
+      const jsonpResponse = handleJSONPCallback(response, callback);
+      return jsonpResponse;
+    }
+    
+    return response;
+    
   } catch (error) {
     console.error('❌ GET request error:', error.toString());
     
@@ -177,6 +188,11 @@ function doGet(e) {
       error: error.toString(),
       timestamp: new Date().toISOString()
     };
+    
+    // JSONP 에러 응답도 처리
+    if (callback) {
+      return handleJSONPCallback(createJsonResponse(errorResponse), callback);
+    }
     
     return createJsonResponse(errorResponse);
   }
@@ -1732,4 +1748,47 @@ function checkRateLimit(author) {
     }
     
     return { isValid: true };
+}
+
+/**
+ * JSONP 콜백 처리 (CORS 완전 우회)
+ */
+function handleJSONPCallback(originalResponse, callbackName) {
+  try {
+    // 원본 응답에서 JSON 데이터 추출
+    let jsonData;
+    if (originalResponse && originalResponse.getContent) {
+      jsonData = originalResponse.getContent();
+    } else {
+      jsonData = JSON.stringify(originalResponse || {});
+    }
+    
+    // JSONP 응답 생성: callback(data);
+    const jsonpContent = `${callbackName}(${jsonData});`;
+    
+    const output = ContentService.createTextOutput(jsonpContent);
+    output.setMimeType(ContentService.MimeType.JAVASCRIPT);
+    
+    // CORS 헤더 (JSONP는 사실 불필요하지만 안전을 위해)
+    output.addHeader('Access-Control-Allow-Origin', '*');
+    output.addHeader('Access-Control-Allow-Methods', 'GET');
+    
+    console.log('📤 JSONP response sent for callback:', callbackName);
+    return output;
+    
+  } catch (error) {
+    console.error('❌ JSONP callback error:', error);
+    
+    // 에러 시에도 유효한 JSONP 응답
+    const errorData = JSON.stringify({
+      success: false,
+      error: 'JSONP callback error: ' + error.toString()
+    });
+    
+    const output = ContentService.createTextOutput(`${callbackName}(${errorData});`);
+    output.setMimeType(ContentService.MimeType.JAVASCRIPT);
+    output.addHeader('Access-Control-Allow-Origin', '*');
+    
+    return output;
+  }
 }
