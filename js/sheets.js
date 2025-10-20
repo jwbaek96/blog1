@@ -574,12 +574,9 @@ class SheetsAPI {
             
             const response = await fetch(appsScriptUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+                body: new URLSearchParams({
                     action: 'updatePost',
-                    postData: postData
+                    postData: JSON.stringify(postData)
                 })
             });
             
@@ -622,12 +619,9 @@ class SheetsAPI {
             
             const response = await fetch(appsScriptUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+                body: new URLSearchParams({
                     action: 'savePost',
-                    postData: postData
+                    postData: JSON.stringify(postData)
                 })
             });
             
