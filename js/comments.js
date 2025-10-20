@@ -1,50 +1,6 @@
 // Comments System for Blog Posts
 // Handles comment display, creation, and deletion with 2-level structure
 
-// JSONP 헬퍼 함수 (CORS 완전 우회) - 댓글용
-function fetchWithJSONP(url, params = {}) {
-    return new Promise((resolve, reject) => {
-        const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-        
-        // 콜백 함수를 전역으로 등록
-        window[callbackName] = function(data) {
-            document.head.removeChild(script);
-            delete window[callbackName];
-            resolve(data);
-        };
-        
-        // 파라미터에 콜백 추가
-        params.callback = callbackName;
-        
-        // URL 생성
-        const queryString = Object.keys(params)
-            .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
-            .join('&');
-        
-        const fullUrl = url + (url.includes('?') ? '&' : '?') + queryString;
-        
-        // 스크립트 태그로 요청
-        const script = document.createElement('script');
-        script.src = fullUrl;
-        script.onerror = () => {
-            document.head.removeChild(script);
-            delete window[callbackName];
-            reject(new Error('JSONP request failed'));
-        };
-        
-        document.head.appendChild(script);
-        
-        // 30초 타임아웃 (댓글 Google Apps Script 응답 대기)
-        setTimeout(() => {
-            if (window[callbackName]) {
-                document.head.removeChild(script);
-                delete window[callbackName];
-                reject(new Error('JSONP request timeout'));
-            }
-        }, 30000);
-    });
-}
-
 class CommentsSystem {
     constructor() {
         this.postId = null;
@@ -216,12 +172,15 @@ class CommentsSystem {
                 }
             }
             
-            // JSONP로 CORS 우회
-            const result = await fetchWithJSONP(CONFIG.APPS_SCRIPT_URL, {
+            // Google Apps Script는 자동으로 CORS를 처리하므로 일반 fetch 사용
+            const params = new URLSearchParams({
                 action: 'getComments',
                 postId: this.postId,
                 t: Date.now()
             });
+            
+            const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?${params}`);
+            const result = await response.json();
             
             if (result.success) {
                 this.comments = result.data || [];
