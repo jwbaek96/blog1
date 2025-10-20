@@ -124,6 +124,40 @@ class CommentsSystem {
         try {
             console.log('📥 Loading comments for post:', this.postId);
             
+            // CONFIG.APPS_SCRIPT_URL 확인
+            if (!CONFIG || !CONFIG.APPS_SCRIPT_URL) {
+                console.warn('⚠️ APPS_SCRIPT_URL not available, waiting for config...');
+                
+                // CONFIG 로딩 완료를 기다림
+                await new Promise((resolve) => {
+                    if (CONFIG && CONFIG.APPS_SCRIPT_URL) {
+                        resolve();
+                        return;
+                    }
+                    
+                    const checkConfig = () => {
+                        if (CONFIG && CONFIG.APPS_SCRIPT_URL) {
+                            window.removeEventListener('configLoaded', checkConfig);
+                            resolve();
+                        }
+                    };
+                    
+                    window.addEventListener('configLoaded', checkConfig);
+                    
+                    // 5초 타임아웃
+                    setTimeout(() => {
+                        window.removeEventListener('configLoaded', checkConfig);
+                        resolve();
+                    }, 5000);
+                });
+                
+                if (!CONFIG || !CONFIG.APPS_SCRIPT_URL) {
+                    throw new Error('APPS_SCRIPT_URL이 설정되지 않았습니다. Supabase에서 GOOGLE_APPS_SCRIPT_URL을 확인해주세요.');
+                }
+            }
+            
+            console.log('🔗 Using APPS_SCRIPT_URL:', CONFIG.APPS_SCRIPT_URL);
+            
             // 캐시 확인 (성능 향상)
             if (!forceRefresh && this.commentsCache.has(this.postId)) {
                 const cached = this.commentsCache.get(this.postId);
@@ -358,6 +392,38 @@ class CommentsSystem {
             submitBtn.disabled = true;
             submitBtn.classList.add('loading');
             
+            // CONFIG.APPS_SCRIPT_URL 확인
+            if (!CONFIG || !CONFIG.APPS_SCRIPT_URL) {
+                console.warn('⚠️ APPS_SCRIPT_URL not available for comment submission, waiting for config...');
+                
+                // CONFIG 로딩 완료를 기다림
+                await new Promise((resolve) => {
+                    if (CONFIG && CONFIG.APPS_SCRIPT_URL) {
+                        resolve();
+                        return;
+                    }
+                    
+                    const checkConfig = () => {
+                        if (CONFIG && CONFIG.APPS_SCRIPT_URL) {
+                            window.removeEventListener('configLoaded', checkConfig);
+                            resolve();
+                        }
+                    };
+                    
+                    window.addEventListener('configLoaded', checkConfig);
+                    
+                    // 5초 타임아웃
+                    setTimeout(() => {
+                        window.removeEventListener('configLoaded', checkConfig);
+                        resolve();
+                    }, 5000);
+                });
+                
+                if (!CONFIG || !CONFIG.APPS_SCRIPT_URL) {
+                    throw new Error('APPS_SCRIPT_URL이 설정되지 않았습니다. Supabase에서 GOOGLE_APPS_SCRIPT_URL을 확인해주세요.');
+                }
+            }
+            
             const commentData = {
                 postId: this.postId,
                 author: author,
@@ -377,6 +443,7 @@ class CommentsSystem {
                 timestamp: Date.now()
             });
             
+            console.log('🔗 Submitting comment to:', CONFIG.APPS_SCRIPT_URL);
             const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?${params.toString()}`);
             
             const result = await response.json();
@@ -429,6 +496,38 @@ class CommentsSystem {
             submitBtn.disabled = true;
             submitBtn.classList.add('loading');
             
+            // CONFIG.APPS_SCRIPT_URL 확인
+            if (!CONFIG || !CONFIG.APPS_SCRIPT_URL) {
+                console.warn('⚠️ APPS_SCRIPT_URL not available for reply submission, waiting for config...');
+                
+                // CONFIG 로딩 완료를 기다림
+                await new Promise((resolve) => {
+                    if (CONFIG && CONFIG.APPS_SCRIPT_URL) {
+                        resolve();
+                        return;
+                    }
+                    
+                    const checkConfig = () => {
+                        if (CONFIG && CONFIG.APPS_SCRIPT_URL) {
+                            window.removeEventListener('configLoaded', checkConfig);
+                            resolve();
+                        }
+                    };
+                    
+                    window.addEventListener('configLoaded', checkConfig);
+                    
+                    // 5초 타임아웃
+                    setTimeout(() => {
+                        window.removeEventListener('configLoaded', checkConfig);
+                        resolve();
+                    }, 5000);
+                });
+                
+                if (!CONFIG || !CONFIG.APPS_SCRIPT_URL) {
+                    throw new Error('APPS_SCRIPT_URL이 설정되지 않았습니다. Supabase에서 GOOGLE_APPS_SCRIPT_URL을 확인해주세요.');
+                }
+            }
+            
             const commentData = {
                 postId: this.postId,
                 author: author,
@@ -448,6 +547,7 @@ class CommentsSystem {
                 timestamp: Date.now()
             });
             
+            console.log('🔗 Submitting reply to:', CONFIG.APPS_SCRIPT_URL);
             const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?${params.toString()}`);
             
             const result = await response.json();
@@ -569,6 +669,38 @@ class CommentsSystem {
             confirmBtn.disabled = true;
             confirmBtn.classList.add('loading');
             
+            // CONFIG.APPS_SCRIPT_URL 확인
+            if (!CONFIG || !CONFIG.APPS_SCRIPT_URL) {
+                console.warn('⚠️ APPS_SCRIPT_URL not available for comment deletion, waiting for config...');
+                
+                // CONFIG 로딩 완료를 기다림
+                await new Promise((resolve) => {
+                    if (CONFIG && CONFIG.APPS_SCRIPT_URL) {
+                        resolve();
+                        return;
+                    }
+                    
+                    const checkConfig = () => {
+                        if (CONFIG && CONFIG.APPS_SCRIPT_URL) {
+                            window.removeEventListener('configLoaded', checkConfig);
+                            resolve();
+                        }
+                    };
+                    
+                    window.addEventListener('configLoaded', checkConfig);
+                    
+                    // 5초 타임아웃
+                    setTimeout(() => {
+                        window.removeEventListener('configLoaded', checkConfig);
+                        resolve();
+                    }, 5000);
+                });
+                
+                if (!CONFIG || !CONFIG.APPS_SCRIPT_URL) {
+                    throw new Error('APPS_SCRIPT_URL이 설정되지 않았습니다. Supabase에서 GOOGLE_APPS_SCRIPT_URL을 확인해주세요.');
+                }
+            }
+            
             // GET 방식으로 변경 (URL 인코딩 사용)
             const params = new URLSearchParams({
                 action: 'deleteComment',
@@ -579,6 +711,7 @@ class CommentsSystem {
                 timestamp: Date.now()
             });
             
+            console.log('🔗 Deleting comment via:', CONFIG.APPS_SCRIPT_URL);
             const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?${params.toString()}`);
             
             const result = await response.json();
