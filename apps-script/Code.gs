@@ -24,6 +24,35 @@ const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/avi'
 const SHEET_NAME = '시트1';
 const ADMIN_KEY = '9632'; // 관리자 인증 키
 
+// CORS Configuration
+const ALLOWED_ORIGINS = [
+  'https://jwbaek96.github.io',
+  'https://jwbaek.kr',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500'
+];
+
+/**
+ * Create response with CORS headers
+ */
+function createCORSResponse(data, origin = null) {
+  const output = ContentService.createTextOutput(JSON.stringify(data));
+  output.setMimeType(ContentService.MimeType.JSON);
+  
+  // Set CORS headers
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    output.addHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    output.addHeader('Access-Control-Allow-Origin', '*');
+  }
+  
+  output.addHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
+  output.addHeader('Access-Control-Max-Age', '86400');
+  
+  return output;
+}
+
 // 보안 설정
 const SECURITY_CONFIG = {
     maxCommentLength: 500,
@@ -46,14 +75,23 @@ const SECURITY_CONFIG = {
 };
 
 /**
+ * Handle OPTIONS requests (CORS preflight)
+ */
+function doOptions(e) {
+  const origin = e.parameter.origin || e.headers?.origin;
+  return createCORSResponse({}, origin);
+}
+
+/**
  * Handle GET requests (data retrieval)
  */
 function doGet(e) {
   try {
+    const origin = e.parameter.origin || e.headers?.origin;
     const action = e.parameter.action || 'getPosts';
     
     if (action === 'getPosts') {
-      return handleGetPosts();
+      return handleGetPosts(origin);
     } else if (action === 'savePost') {
       // Handle post save via GET request (from editor)
       const postData = JSON.parse(e.parameter.data || '{}');
@@ -126,7 +164,7 @@ function doGet(e) {
 /**
  * Handle get posts requests (OPTIMIZED)
  */
-function handleGetPosts() {
+function handleGetPosts(origin = null) {
   try {
     // 캐시 확인 (5분 캐시)
     const cache = CacheService.getScriptCache();
@@ -135,7 +173,7 @@ function handleGetPosts() {
     
     if (cachedData) {
       console.log('✅ Returning cached posts data');
-      return createJsonResponse(JSON.parse(cachedData));
+      return createCORSResponse(JSON.parse(cachedData), origin);
     }
     
     const spreadsheet = getSpreadsheet();
@@ -194,18 +232,19 @@ function handleGetPosts() {
       console.warn('⚠️ Failed to cache data:', cacheError);
     }
     
-    return createJsonResponse(response);
+    return createCORSResponse(response, origin);
     
   } catch (error) {
-    console.error('❌ Get posts error:', error.toString());
+    console.error('❌ Get request error:', error.toString());
     
+    const origin = e.parameter.origin || e.headers?.origin;
     const errorResponse = {
       success: false,
       error: error.toString(),
       timestamp: new Date().toISOString()
     };
     
-    return createJsonResponse(errorResponse);
+    return createCORSResponse(errorResponse, origin);
   }
 }
 
@@ -214,6 +253,7 @@ function handleGetPosts() {
  */
 function doPost(e) {
   try {
+    const origin = e.parameter?.origin || e.headers?.origin;
     let requestData;
     
     // Handle FormData (from form submission)
@@ -252,15 +292,16 @@ function doPost(e) {
     }
     
   } catch (error) {
-    console.error('❌ Request error:', error.toString());
+    console.error('❌ Post request error:', error.toString());
     
+    const origin = e.parameter?.origin || e.headers?.origin;
     const errorResponse = {
       success: false,
       error: error.toString(),
       timestamp: new Date().toISOString()
     };
     
-    return createJsonResponse(errorResponse);
+    return createCORSResponse(errorResponse, origin);
   }
 }
 
@@ -1034,35 +1075,10 @@ function generateUniqueFileName(originalName) {
 }
 
 /**
- * Create JSON response with proper headers
+ * Create JSON response with proper headers (deprecated - use createCORSResponse)
  */
 function createJsonResponse(data) {
-  const output = ContentService
-    .createTextOutput(JSON.stringify(data, null, 2))
-    .setMimeType(ContentService.MimeType.JSON);
-  
-  // CORS 헤더 추가
-  try {
-    output.setHeaders({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    });
-  } catch (e) {
-    console.log('⚠️ Could not set headers (older Apps Script version)');
-  }
-  
-  return output;
-}
-
-/**
- * Handle OPTIONS requests (CORS preflight)
- */
-function doOptions(e) {
-  return createJsonResponse({
-    success: true,
-    message: 'CORS preflight response'
-  });
+  return createCORSResponse(data, null);
 }
 
 // ==================== 댓글 시스템 함수들 ====================
