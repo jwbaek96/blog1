@@ -535,6 +535,44 @@ class SheetsAPI {
     }
 
     /**
+     * Create a new post
+     * @param {Object} postData - Post data to create
+     * @returns {Promise<Object>} Creation result
+     */
+    async createPost(postData) {
+        try {
+            const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}`;
+            
+            const response = await fetch(appsScriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'savePost',
+                    postData: postData
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to create post');
+            }
+            
+            return result;
+            
+        } catch (error) {
+            console.error('❌ Error creating post:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Get posts statistics  
      * @param {Array} posts - Array of posts
      * @returns {Object} Statistics object

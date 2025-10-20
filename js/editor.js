@@ -1479,23 +1479,8 @@ function setupEditorButtons() {
             if (isEditMode) {
                 result = await window.SheetsAPI.updatePost(postData);
             } else {
-                // GET 방식으로 데이터 전송 (Apps Script 호환성 개선)
-                const urlParams = new URLSearchParams();
-                urlParams.append('action', requestData.action);
-                urlParams.append('data', JSON.stringify(requestData.postData));
-                
-                const requestUrl = `${CONFIG.UPLOAD_API_URL}?${urlParams.toString()}`;
-                
-                const response = await fetch(requestUrl, {
-                    method: 'GET'
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}\n응답: ${errorText}`);
-                }
-                
-                result = await response.json();
+                // POST 방식으로 새 포스트 생성
+                result = await window.SheetsAPI.createPost(postData);
             }
             
             if (result.success) {
