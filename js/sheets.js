@@ -43,6 +43,19 @@ class SheetsAPI {
     }
 
     /**
+     * Get Apps Script URL from Supabase or fallback to CONFIG
+     */
+    async getAppsScriptUrl() {
+        try {
+            const appsScriptUrl = await getConfig('GOOGLE_APPS_SCRIPT_URL');
+            return appsScriptUrl || CONFIG.APPS_SCRIPT_URL;
+        } catch (error) {
+            console.warn('⚠️ Failed to get Apps Script URL from Supabase, using CONFIG fallback');
+            return CONFIG.APPS_SCRIPT_URL;
+        }
+    }
+
+    /**
      * Fetch posts using Apps Script API (more reliable than CSV)
      * @returns {Promise<Array>} Array of posts
      */
@@ -52,15 +65,16 @@ class SheetsAPI {
             await this.waitForConfig();
             
             // CONFIG.APPS_SCRIPT_URL이 설정되어 있는지 확인
-            if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL === 'null') {
+            const appsScriptUrl = await this.getAppsScriptUrl();
+            if (!appsScriptUrl || appsScriptUrl === 'null') {
                 console.warn('⚠️ Apps Script URL not configured, using CSV method');
                 return this.fetchPostsFromCSV();
             }
             
             // Use Apps Script Web App URL with getPosts action
-            const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}?action=getPosts&t=${Date.now()}`;
+            const requestUrl = `${appsScriptUrl}?action=getPosts&t=${Date.now()}`;
             
-            const response = await fetch(appsScriptUrl, {
+            const response = await fetch(requestUrl, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -473,6 +487,8 @@ class SheetsAPI {
      */
     async deletePost(postId) {
         try {
+            const appsScriptUrl = await this.getAppsScriptUrl();
+            
             // GET 방식으로 변경 (CORS 문제 해결)
             const params = new URLSearchParams({
                 action: 'deletePost',
@@ -480,7 +496,7 @@ class SheetsAPI {
                 timestamp: Date.now()
             });
             
-            const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?${params.toString()}`);
+            const response = await fetch(`${appsScriptUrl}?${params.toString()}`);
             
             const result = await response.json();
             
@@ -503,7 +519,7 @@ class SheetsAPI {
      */
     async updatePost(postData) {
         try {
-            const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}`;
+            const appsScriptUrl = await this.getAppsScriptUrl();
             
             const response = await fetch(appsScriptUrl, {
                 method: 'POST',
@@ -541,7 +557,7 @@ class SheetsAPI {
      */
     async createPost(postData) {
         try {
-            const appsScriptUrl = `${CONFIG.APPS_SCRIPT_URL}`;
+            const appsScriptUrl = await this.getAppsScriptUrl();
             
             const response = await fetch(appsScriptUrl, {
                 method: 'POST',

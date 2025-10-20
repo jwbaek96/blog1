@@ -1,4 +1,125 @@
-// Configuration file for Google Sheets Blog
+// Configuration file for Google Sheets Blog - Supabase Version
+
+// Supabase 환경변수 로더
+class SupabaseConfig {
+    constructor() {
+        // Supabase 퍼블릭 설정 (민감하지 않은 정보)
+        this.supabaseUrl = 'https://mcdpmkipopgishxjpbvi.supabase.co';
+        this.supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jZHBta2lwb3BnaXNoeGpwYnZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5NDM1NDIsImV4cCI6MjA3NjUxOTU0Mn0.UyASY-e556o1qCs4INZOxpLjz1n1DC9erxOowImVkQ8';
+        
+        this.config = null;
+        this.loading = false;
+        this.supabaseClient = null;
+    }
+
+    // Supabase 클라이언트 초기화
+    async initSupabase() {
+        if (this.supabaseClient) {
+            return this.supabaseClient;
+        }
+
+        if (typeof supabase === 'undefined') {
+            console.warn('Supabase client not loaded. Loading from CDN...');
+            await this.loadSupabaseSDK();
+        }
+        
+        this.supabaseClient = supabase.createClient(this.supabaseUrl, this.supabaseAnonKey);
+        return this.supabaseClient;
+    }
+
+    // Supabase SDK 동적 로드
+    async loadSupabaseSDK() {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@supabase/supabase-js@2';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    // 환경변수 로드
+    async loadConfig() {
+        if (this.config) {
+            return this.config;
+        }
+
+        if (this.loading) {
+            // 이미 로딩 중이면 기다림
+            while (this.loading) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            return this.config;
+        }
+
+        this.loading = true;
+
+        try {
+            const client = await this.initSupabase();
+            
+            const { data, error } = await client
+                .from('env_variables')
+                .select('name, value');
+
+            if (error) {
+                console.error('Failed to load config from Supabase:', error);
+                throw error;
+            }
+
+            // 배열을 객체로 변환
+            this.config = {};
+            data.forEach(item => {
+                this.config[item.name] = item.value;
+            });
+
+            console.log('Config loaded successfully from Supabase');
+            return this.config;
+
+        } catch (error) {
+            console.error('Error loading config:', error);
+            
+            // 폴백: 기본 설정 사용
+            this.config = {
+                GOOGLE_APPS_SCRIPT_URL: '', // 에러 시 빈 문자열
+                SUPABASE_URL: this.supabaseUrl,
+                SUPABASE_ANON_KEY: this.supabaseAnonKey
+            };
+            
+            console.warn('Using fallback configuration');
+            return this.config;
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    // 특정 환경변수 가져오기
+    async get(key) {
+        const config = await this.loadConfig();
+        return config[key];
+    }
+
+    // 모든 환경변수 가져오기
+    async getAll() {
+        return await this.loadConfig();
+    }
+
+    // 설정 새로고침
+    async refresh() {
+        this.config = null;
+        return await this.loadConfig();
+    }
+}
+
+// 전역 Supabase 설정 인스턴스 (지연 초기화)
+let supabaseConfigInstance = null;
+
+function getSupabaseConfigInstance() {
+    if (!supabaseConfigInstance) {
+        supabaseConfigInstance = new SupabaseConfig();
+        window.SupabaseConfigInstance = supabaseConfigInstance;
+    }
+    return supabaseConfigInstance;
+}
 
 // 환경 감지
 const isLocal = window.location.hostname === 'localhost' || 
@@ -6,19 +127,19 @@ const isLocal = window.location.hostname === 'localhost' ||
                window.location.hostname === '';
 
 const CONFIG = {
-    // API URLs - 환경에 따라 다르게 설정 (config.local.json에서 로드됨)
-    APPS_SCRIPT_URL: isLocal ? null : '/api/sheets', // 로컬에서는 config.local.json에서 로드
-    UPLOAD_API_URL: isLocal ? null : '/api/sheets',  // 배포환경에서는 Vercel API Routes 사용
+    // API URLs - 이제 정적 파일 또는 Supabase에서 로드
+    APPS_SCRIPT_URL: null, // Supabase에서 로드됨
+    UPLOAD_API_URL: null,  // Supabase에서 로드됨
     
     // Google Sheets (공개된 시트는 노출되어도 상관없음)
     GOOGLE_SHEET_ID: '1X9uL2ZmuaHTc4kl8Z6C63fJ8lb99_LDP4CVqSoP2FqY', // 공개된 Google 스프레드시트 ID
     GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXRuG3cRUqGABTludaX-ddVgqUCsfJ0EV37n3IifaAbREUxSqa4rJYp64evCH15v9hC8O-YSNMtPMc/pub?output=csv', // 공개된 시트 CSV URL
     
-    // Google Drive Settings (config.local.json에서 로드됨)
-    GOOGLE_DRIVE_FOLDER_ID: null, // config.local.json에서 로드
-    GOOGLE_DRIVE_API_KEY: null, // config.local.json에서 로드  
-    GOOGLE_API_KEY: null, // config.local.json에서 로드
-    GOOGLE_CLIENT_ID: null, // config.local.json에서 로드
+    // Google Drive Settings (Supabase에서 로드됨)
+    GOOGLE_DRIVE_FOLDER_ID: null, // Supabase에서 로드
+    GOOGLE_DRIVE_API_KEY: null, // Supabase에서 로드  
+    GOOGLE_API_KEY: null, // Supabase에서 로드
+    GOOGLE_CLIENT_ID: null, // Supabase에서 로드
     
     // Blog Settings
     BLOG_TITLE: 'JW.BAEK - Blog',
@@ -30,8 +151,8 @@ const CONFIG = {
     DEV_MODE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
     DEV_PORT: 5500, // 로컬 개발 서버 포트
     
-    // Local Admin Settings (config.local.json에서 로드됨)
-    LOCAL_ADMIN_KEY: null, // config.local.json에서 로드
+    // Local Admin Settings (Supabase에서 로드됨)
+    LOCAL_ADMIN_KEY: null, // Supabase에서 로드
     
     // Pagination
     POSTS_PER_PAGE: 10,
@@ -122,89 +243,46 @@ function maskSensitiveUrl(url) {
     return url;
 }
 
-// 환경변수 초기화 함수
+// 환경변수 초기화 함수 - Supabase 버전
 async function initializeConfig() {
-    if (isLocal) {
-        // 로컬 환경: config.local.json에서 설정 로드
-        try {
-            const response = await fetch('/config.local.json');
-            if (response.ok) {
-                const localConfig = await response.json();
-                
-                // 로컬 설정으로 CONFIG 업데이트
-                if (localConfig.APPS_SCRIPT_URL) {
-                    CONFIG.APPS_SCRIPT_URL = localConfig.APPS_SCRIPT_URL;
-                }
-                if (localConfig.UPLOAD_API_URL) {
-                    CONFIG.UPLOAD_API_URL = localConfig.UPLOAD_API_URL;
-                }
-                if (localConfig.LOCAL_ADMIN_KEY) {
-                    CONFIG.LOCAL_ADMIN_KEY = localConfig.LOCAL_ADMIN_KEY;
-                }
-                if (localConfig.GOOGLE_DRIVE_FOLDER_ID) {
-                    CONFIG.GOOGLE_DRIVE_FOLDER_ID = localConfig.GOOGLE_DRIVE_FOLDER_ID;
-                }
-                if (localConfig.GOOGLE_DRIVE_API_KEY) {
-                    CONFIG.GOOGLE_DRIVE_API_KEY = localConfig.GOOGLE_DRIVE_API_KEY;
-                    CONFIG.GOOGLE_API_KEY = localConfig.GOOGLE_DRIVE_API_KEY;
-                }
-                if (localConfig.GOOGLE_CLIENT_ID) {
-                    CONFIG.GOOGLE_CLIENT_ID = localConfig.GOOGLE_CLIENT_ID;
-                }
-                
-                // 설정 로딩 완료 이벤트 발생
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
-                }
-            } else {
-                // config.local.json 파일이 없으면 오류 표시
-                console.error('❌ config.local.json 파일을 찾을 수 없습니다!');
-                console.info('💡 config.local.json.example을 복사하여 config.local.json을 생성하세요.');
-                
-                // 오류 상태로도 이벤트 발생 (기본값 사용)
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
-                }
-            }
-        } catch (error) {
-            console.error('❌ 로컬 설정 파일 로드 실패:', error);
-            console.info('💡 config.local.json.example을 복사하여 config.local.json을 생성하세요.');
-            
-            // 오류 상태로도 이벤트 발생 (기본값 사용)
-            if (typeof window !== 'undefined') {
-                window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
-            }
+    try {
+        // Supabase에서 환경변수 로드
+        const supabaseConfigInstance = getSupabaseConfigInstance();
+        const supabaseConfig = await supabaseConfigInstance.getAll();
+        
+        // Supabase 설정으로 CONFIG 업데이트
+        if (supabaseConfig.GOOGLE_APPS_SCRIPT_URL) {
+            CONFIG.APPS_SCRIPT_URL = supabaseConfig.GOOGLE_APPS_SCRIPT_URL;
         }
-    } else {
-        // Vercel 환경: API 엔드포인트를 통해 환경변수 로드
-        try {
-            const response = await fetch('/api/config');
-            if (response.ok) {
-                const envConfig = await response.json();
-                
-                // Vercel 환경변수에서 설정 업데이트
-                // 배포 환경에서는 항상 Vercel API Routes 사용 (직접 Google Apps Script 호출 금지)
-                // CONFIG.APPS_SCRIPT_URL과 CONFIG.UPLOAD_API_URL은 '/api/sheets'로 고정
-                // 실제 V_GOOGLE_APPSCRIPT_URL은 서버사이드에서만 사용
-                if (envConfig.V_GOOGLE_DRIVE_FOLDER_ID) {
-                    CONFIG.GOOGLE_DRIVE_FOLDER_ID = envConfig.V_GOOGLE_DRIVE_FOLDER_ID;
-                }
-                if (envConfig.V_GOOGLE_DRIVE_API_KEY) {
-                    CONFIG.GOOGLE_DRIVE_API_KEY = envConfig.V_GOOGLE_DRIVE_API_KEY;
-                }
-                if (envConfig.V_GOOGLE_API_KEY) {
-                    CONFIG.GOOGLE_API_KEY = envConfig.V_GOOGLE_API_KEY;
-                }
-                if (envConfig.V_GOOGLE_CLIENT_ID) {
-                    CONFIG.GOOGLE_CLIENT_ID = envConfig.V_GOOGLE_CLIENT_ID;
-                }
-
-            }
-        } catch (error) {
-            console.warn('Vercel 환경변수 로드 실패, 기본값 사용:', error);
+        if (supabaseConfig.UPLOAD_API_URL) {
+            CONFIG.UPLOAD_API_URL = supabaseConfig.UPLOAD_API_URL;
+        }
+        if (supabaseConfig.LOCAL_ADMIN_KEY) {
+            CONFIG.LOCAL_ADMIN_KEY = supabaseConfig.LOCAL_ADMIN_KEY;
+        }
+        if (supabaseConfig.GOOGLE_DRIVE_FOLDER_ID) {
+            CONFIG.GOOGLE_DRIVE_FOLDER_ID = supabaseConfig.GOOGLE_DRIVE_FOLDER_ID;
+        }
+        if (supabaseConfig.GOOGLE_DRIVE_API_KEY) {
+            CONFIG.GOOGLE_DRIVE_API_KEY = supabaseConfig.GOOGLE_DRIVE_API_KEY;
+            CONFIG.GOOGLE_API_KEY = supabaseConfig.GOOGLE_DRIVE_API_KEY;
+        }
+        if (supabaseConfig.GOOGLE_CLIENT_ID) {
+            CONFIG.GOOGLE_CLIENT_ID = supabaseConfig.GOOGLE_CLIENT_ID;
         }
         
-        // Vercel 환경에서도 설정 로딩 완료 이벤트 발생
+        console.log('✅ 설정이 Supabase에서 성공적으로 로드되었습니다');
+        
+        // 설정 로딩 완료 이벤트 발생
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
+        }
+        
+    } catch (error) {
+        console.error('❌ Supabase 설정 로드 실패:', error);
+        console.info('💡 기본 설정을 사용합니다');
+        
+        // 오류 상태로도 이벤트 발생 (기본값 사용)
         if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('configLoaded', { detail: CONFIG }));
         }
@@ -226,16 +304,41 @@ async function initializeConfig() {
             z-index: 9999;
             font-weight: 500;
         `;
-        banner.innerHTML = '⚠️ 블로그 설정이 완료되지 않았습니다. js/config.js 파일을 확인해주세요.';
+        banner.innerHTML = '⚠️ 블로그 설정이 완료되지 않았습니다. Supabase 환경변수를 확인해주세요.';
         document.body.prepend(banner);
         
         setTimeout(() => banner.remove(), 1000);
     }
 }
 
+// 편의 함수들
+window.getConfig = async (key) => {
+    const instance = getSupabaseConfigInstance();
+    return await instance.get(key);
+};
+
+window.getAllConfig = async () => {
+    const instance = getSupabaseConfigInstance();
+    return await instance.getAll();
+};
+
+window.refreshConfig = async () => {
+    const instance = getSupabaseConfigInstance();
+    return await instance.refresh();
+};
+
 // Auto-initialize on load
 if (typeof window !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', initializeConfig);
+    // 즉시 인스턴스 생성 (지연 초기화)
+    window.SupabaseConfigInstance = getSupabaseConfigInstance();
+    
+    // DOM 로드 완료 후 설정 초기화
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeConfig);
+    } else {
+        // 이미 로드된 경우 즉시 실행
+        setTimeout(initializeConfig, 100);
+    }
 }
 
 // Make CONFIG available globally
@@ -245,5 +348,5 @@ if (typeof window !== 'undefined') {
 
 // Export for Node.js environments
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = CONFIG;
+    module.exports = { CONFIG, SupabaseConfig };
 }

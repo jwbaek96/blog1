@@ -1469,8 +1469,9 @@ function setupEditorButtons() {
 
             
             // Check if API URL is configured
-            if (!CONFIG.UPLOAD_API_URL || CONFIG.UPLOAD_API_URL.includes('YOUR_')) {
-                throw new Error('Google Apps Script URL이 설정되지 않았습니다. config.js를 확인해주세요.');
+            const appsScriptUrl = await getConfig('GOOGLE_APPS_SCRIPT_URL');
+            if (!appsScriptUrl) {
+                throw new Error('Google Apps Script URL이 설정되지 않았습니다. Supabase 환경변수를 확인해주세요.');
             }
             
             // Send to Google Apps Script (수정 모드에 따라 다른 API 호출)
