@@ -305,11 +305,17 @@ class artworkApp {
 
         if (hasThumbnail) {
             // 썸네일이 있는 경우: 갤러리 스타일 카드
+            const thumbnailUrl = convertGoogleDriveUrl(post.thumbnail);
+            const fallbackUrls = getGoogleDriveFallbackUrls(post.thumbnail);
+            
             return `
                 <div class="artwork-post-card" data-post-id="${post.id}">
                     ${actionsHTML}
                     <div class="artwork-card-image">
-                        <img src="${post.thumbnail}" alt="${post.title}" loading="lazy">
+                        <img src="${thumbnailUrl}" alt="${post.title}" loading="lazy"
+                             data-fallback-urls='${JSON.stringify(fallbackUrls)}'
+                             data-current-index="0"
+                             onerror="tryFallbackImage(this);">
                         <div class="artwork-image-overlay"></div>
                     </div>
                     <div class="artwork-card-content">
