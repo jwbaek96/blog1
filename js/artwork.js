@@ -321,19 +321,19 @@ class artworkApp {
                     <div class="artwork-card-content">
                         <div class="artwork-card-meta">
                             <span class="artwork-card-date">${formatDate(post.date)}</span>
-                            <span class="artwork-card-type">artwork</span>
-                        </div>
-                        
-                        <h2 class="artwork-card-title">${post.title}</h2>
-                        
-                        <p class="artwork-card-excerpt">${post.excerpt}</p>
-                        
-                        <div class="artwork-card-tags">
+                            </div>
+                            
+                            <h2 class="artwork-card-title">${post.title}</h2>
+                            
+                            <p class="artwork-card-excerpt">${post.excerpt}</p>
+                            
+                            <div class="artwork-card-tags">
                             ${tagsHTML}
                         </div>
                     </div>
                 </div>
-            `;
+                `;
+                            // <span class="artwork-card-type">artwork</span>
         } else {
             // 썸네일이 없는 경우: 텍스트 전용 카드
             return `
