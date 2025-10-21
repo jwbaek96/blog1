@@ -1,7 +1,20 @@
 {
-  "lastUpdated": "2025-10-21T01:04:46.760Z",
-  "count": 3,
+  "lastUpdated": "2025-10-21T02:01:40.662Z",
+  "count": 4,
   "posts": [
+    {
+      "id": 5,
+      "title": "미래란건 사실 없어. 결정되지 않은 현재만 있을 뿐이지...",
+      "date": "2025-10-21T01:13:37.000Z",
+      "thumbnail": "",
+      "content": "<div style=\"text-align: center;\"><br><div><div class=\"media-wrapper\"><img src=\"https://drive.google.com/thumbnail?id=106hVtaBqG5HxlGt-4PaTn1jIYuZHlY9s&amp;sz=w1000\" alt=\"업로드된 이미지\" loading=\"lazy\" class=\"media-image\"></div>미래란 건 사실 없어.<br>결정되지 않은 현재만 있을 뿐이지.<br>지금 내가 너에게 고백하는 걸 미루기로 선택한다면 그건 그저 가능성 있는 현재를 놓칠 뿐이야.</div><div>그러니까...<br>네가 미래라 생각하는 그것을 현재로 끌고 와!<br>이 세상엔 현재, 지금밖에 없다고!</div><br></div>",
+      "tags": [
+        "글쓰기"
+      ],
+      "images": "",
+      "videos": "",
+      "status": "published"
+    },
     {
       "id": 4,
       "title": "ARTWORK 페이지 레이아웃 테스트용",
