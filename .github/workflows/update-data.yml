@@ -2,9 +2,9 @@ name: Update Blog Data
 
 # 실행 조건
 on:
-  # 10분마다 자동 실행 (퍼블릭 레포이므로 무료)
+  # 1시간마다 자동 실행 (퍼블릭 레포이므로 무료)
   schedule:
-    - cron: '*/20 * * * *'  # 10분마다
+    - cron: '1 * * * *'  # 1시간마다
   
   # 수동 실행 가능
   workflow_dispatch:
