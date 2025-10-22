@@ -154,6 +154,7 @@ body.post-page .main {
     margin-bottom: 1.5rem;
     font-size: 0.9rem;
     color: var(--text-secondary);
+    width: 100%;
 }
 
 .post-private-label {
@@ -168,11 +169,7 @@ body.post-page .main {
     font-weight: 500;
 }
 
-/* .post-date::after {
-    content: '•';
-    margin: 0 0.5rem;
-    color: var(--border-color);
-} */
+.post-date{width: 100%;}
 
 /* Post Title Section */
 .post-title-section {
