@@ -11,38 +11,6 @@
     margin: 0 auto;
 }
 
-/* Desktop: Maximum 5 columns */
-@media (min-width: 1200px) {
-    .artwork-posts-grid {
-        grid-template-columns: repeat(5, 1fr);
-        gap: 24px;
-    }
-}
-
-/* Desktop Medium: 4 columns */
-@media (min-width: 992px) and (max-width: 1199px) {
-    .artwork-posts-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-    }
-}
-
-/* Tablet: 3 columns */
-@media (min-width: 768px) and (max-width: 991px) {
-    .artwork-posts-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-    }
-}
-
-/* Mobile: 3 columns but smaller */
-@media (max-width: 767px) {
-    .artwork-posts-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        padding: 16px 0;
-    }
-}
 
 /* Artwork Post Card */
 .artwork-post-card {
@@ -348,44 +316,7 @@
     color: #dc2626;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    
-    .artwork-card-content {
-        padding: 30px 16px 16px 16px;
-        background: linear-gradient(
-            to top,
-            rgba(0, 0, 0, 0.85) 0%,
-            rgba(0, 0, 0, 0.6) 60%,
-            rgba(0, 0, 0, 0.3) 85%,
-            transparent 100%
-        );
-    }
-    
-    .artwork-card-title {
-        font-size: 1.2rem;
-    }
-    
-    .artwork-post-actions {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
-@media (max-width: 480px) {
-    
-    .artwork-card-content {
-        padding: 14px;
-    }
-    
-    .artwork-card-title {
-        font-size: 1.1rem;
-    }
-    
-    .artwork-card-excerpt {
-        font-size: 0.9rem;
-    }
-}
 
 /* Large screens - more columns */
 @media (min-width: 1200px) {
@@ -402,6 +333,55 @@
     }
 }
 
+
+/* Desktop: Maximum 5 columns */
+@media (min-width: 1200px) {
+    .artwork-posts-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 24px;
+    }
+}
+
+/* Desktop Medium: 4 columns */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .artwork-posts-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+}
+
+/* Tablet: 3 columns */
+@media (min-width: 768px) and (max-width: 991px) {
+    .artwork-posts-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+}
+
+/* Mobile: 3 columns but smaller */
+/* Responsive Design */
+@media (max-width: 767px) {
+    .artwork-posts-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px 0;}
+    .artwork-card-content {
+        padding: 30px 16px 16px 16px;
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.85) 0%,
+            rgba(0, 0, 0, 0.6) 60%,
+            rgba(0, 0, 0, 0.3) 85%,
+            transparent 100%
+        );
+    }
+    
+    .artwork-card-title {font-size: 1.2rem;}
+    .artwork-post-actions { opacity: 1; transform: translateY(0);}
+}
+
+@media (max-width: 480px) {
+    .artwork-card-content {padding: .7rem;}
+    .artwork-card-title {font-size: .9rem;}
+    .artwork-card-excerpt {font-size: 0.75rem;}
+}
 /* Loading States */
 .artwork-card-image.loading {
     background: var(--background-secondary);
