@@ -3,7 +3,7 @@
 /* Artwork Posts Grid - Gallery Layout */
 .artwork-posts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
     padding: 20px 0;
     margin: 0;
@@ -54,6 +54,10 @@
     cursor: pointer;
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    
+    /* 4:5 비율 고정 */
+    aspect-ratio: 4 / 5;
+    width: 100%;
 }
 
 /* .artwork-post-card:hover {
@@ -66,23 +70,12 @@
 .artwork-card-image {
     position: relative;
     width: 100%;
-    height: 240px;
+    height: 100%;
     overflow: hidden;
     background: var(--background-secondary);
 }
 
 /* Responsive image heights */
-@media (max-width: 767px) {
-    .artwork-card-image {
-        height: 180px;
-    }
-}
-
-@media (max-width: 480px) {
-    .artwork-card-image {
-        height: 150px;
-    }
-}
 
 .artwork-card-image img {
     width: 100%;
@@ -190,6 +183,7 @@
 /* Artwork Card Tags */
 .artwork-card-tags {
     display: flex;
+    display: none;
     flex-wrap: wrap;
     gap: 6px;
     margin-top: 12px;
@@ -217,11 +211,11 @@
 
 /* Card without Image (Text Only) */
 .artwork-post-card.no-image {
-    min-height: 280px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     background: linear-gradient(135deg, var(--surface-color) 0%, var(--background-secondary) 100%);
+    /* min-height 제거 - aspect-ratio가 높이를 제어 */
 }
 
 .artwork-post-card.no-image .artwork-card-content {
@@ -356,15 +350,6 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .artwork-posts-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        padding: 16px 0;
-    }
-    
-    .artwork-card-image {
-        height: 200px;
-    }
     
     .artwork-card-content {
         padding: 30px 16px 16px 16px;
@@ -388,14 +373,6 @@
 }
 
 @media (max-width: 480px) {
-    .artwork-posts-grid {
-        grid-template-columns: 1fr;
-        padding: 12px 0;
-    }
-    
-    .artwork-card-image {
-        height: 180px;
-    }
     
     .artwork-card-content {
         padding: 14px;

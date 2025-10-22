@@ -1610,18 +1610,36 @@ function getAutoThumbnail() {
         return '';
     }
     
-    // 이미지 우선, 그 다음 비디오
+    // 이미지 우선 - 가장 최근 업로드된 이미지 선택
     const imageFiles = window.uploadedFiles.filter(file => file.type === 'image');
     if (imageFiles.length > 0) {
-        return imageFiles[0].url; // 첫 번째 이미지
+        // 타임스탬프가 있다면 가장 최근 것, 없다면 마지막 것
+        const latestImage = imageFiles.sort((a, b) => {
+            if (a.timestamp && b.timestamp) {
+                return b.timestamp - a.timestamp; // 최신순
+            }
+            return 0; // 순서 유지
+        })[0];
+        
+        console.log('✅ 썸네일로 선택된 이미지:', latestImage.url);
+        return latestImage.url;
     }
     
+    // 비디오 폴백 - 가장 최근 업로드된 비디오 선택
     const videoFiles = window.uploadedFiles.filter(file => file.type === 'video');
     if (videoFiles.length > 0) {
-        // 비디오의 경우 썸네일 URL이 있으면 사용, 없으면 비디오 URL 사용
-        const thumbnailUrl = videoFiles[0].thumbnailUrl || videoFiles[0].url;
+        const latestVideo = videoFiles.sort((a, b) => {
+            if (a.timestamp && b.timestamp) {
+                return b.timestamp - a.timestamp; // 최신순
+            }
+            return 0; // 순서 유지
+        })[0];
+        
+        const thumbnailUrl = latestVideo.thumbnailUrl || latestVideo.url;
+        console.log('✅ 썸네일로 선택된 비디오:', thumbnailUrl);
         return thumbnailUrl;
     }
+    
     return '';
 }
 
