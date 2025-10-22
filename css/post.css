@@ -624,14 +624,11 @@ body.post-page .main {
 /* Responsive Design */
 @media (max-width: 768px) {
     .post-title-section {
-        /* flex-direction: column;
-        align-items: flex-start; */
         gap: 0;
     }
     
     .post-title {
         font-size: 2rem;
-        /* margin-right: -28px; */
     }
     
     .post-admin-actions {
@@ -682,7 +679,9 @@ body.post-page .main {
     .post-header{margin-bottom: 1.5rem; padding-bottom: .0rem;}
     .post-article{padding: 0;}
     .post-meta{margin-bottom: 0;}
-    .post-title {font-size: 1.75rem; margin-bottom: 0;}
+    .post-date{font-size: 0.9rem;}
+    .post-title-section{margin-bottom: 1rem;}
+    .post-title {font-size: 1.1rem;margin-top: 5px; margin-bottom: 0;}
     
     .post-content h2 {font-size: 1.5rem;}
     .post-content h3 {font-size: 1.3rem;}
