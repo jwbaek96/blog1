@@ -40,8 +40,9 @@ body.blog-page .mobile-sidebar {
     background: rgba(238, 238, 238, 0.1);
 }
 
-body.blog-page .mobile-sidebar-nav a {
-    color: #333;
+body.blog-page .mobile-sidebar-nav a{
+    color: #ffffff !important;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.694)
 }
 
 body.blog-page .mobile-sidebar-close {

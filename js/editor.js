@@ -269,26 +269,32 @@ class RichTextEditor {
                 switch (e.key.toLowerCase()) {
                     case 'b':
                         e.preventDefault();
+                        console.log('🔥 Ctrl+B 단축키 실행');
                         this.executeCommand('bold');
                         break;
                     case 'i':
                         e.preventDefault();
+                        console.log('🔥 Ctrl+I 단축키 실행');
                         this.executeCommand('italic');
                         break;
                     case 'u':
                         e.preventDefault();
+                        console.log('🔥 Ctrl+U 단축키 실행');
                         this.executeCommand('underline');
                         break;
                     case 'z':
                         e.preventDefault();
+                        console.log('🔥 Ctrl+Z 단축키 실행');
                         this.executeCommand('undo');
                         break;
                     case 'y':
                         e.preventDefault();
+                        console.log('🔥 Ctrl+Y 단축키 실행');
                         this.executeCommand('redo');
                         break;
                     case 's':
                         e.preventDefault();
+                        console.log('🔥 Ctrl+S 단축키 실행');
                         this.exportHTML();
                         break;
                 }
@@ -366,11 +372,112 @@ class RichTextEditor {
      */
     executeCommand(command, value = null) {
         try {
-            document.execCommand(command, false, value);
-            this.updateToolbarState();
+            // 에디터에 포커스 설정
+            this.editor.focus();
+            
+            // 선택 영역이 에디터 내부에 있는지 확인
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                if (!this.editor.contains(range.commonAncestorContainer)) {
+                    // 에디터 내부에 선택영역이 없으면 끝부분에 커서 위치
+                    const newRange = document.createRange();
+                    newRange.selectNodeContents(this.editor);
+                    newRange.collapse(false);
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                }
+            }
+            
+            // 명령 실행
+            const success = document.execCommand(command, false, value);
+            
+            if (success) {
+                console.log(`✅ Command executed: ${command}`);
+                this.updateToolbarState();
+                
+                // 변경사항을 트리거
+                this.editor.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+                console.warn(`⚠️ Command failed: ${command}`);
+                
+                // 폴백: 직접 스타일 적용
+                this.applyStyleDirectly(command, value);
+            }
         } catch (error) {
-            console.error('Command execution error:', error);
+            console.error('❌ Command execution error:', error);
+            
+            // 폴백: 직접 스타일 적용
+            this.applyStyleDirectly(command, value);
         }
+    }
+    
+    /**
+     * 직접 스타일 적용 (document.execCommand 폴백)
+     */
+    applyStyleDirectly(command, value) {
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return;
+        
+        const range = selection.getRangeAt(0);
+        
+        if (range.collapsed) {
+            // 선택영역이 없으면 현재 위치에 빈 요소 삽입
+            const span = document.createElement('span');
+            span.style.display = 'inline';
+            
+            switch (command) {
+                case 'bold':
+                    span.style.fontWeight = 'bold';
+                    break;
+                case 'italic':
+                    span.style.fontStyle = 'italic';
+                    break;
+                case 'underline':
+                    span.style.textDecoration = 'underline';
+                    break;
+                case 'foreColor':
+                    span.style.color = value;
+                    break;
+                case 'backColor':
+                    span.style.backgroundColor = value;
+                    break;
+            }
+            
+            span.innerHTML = '&nbsp;';
+            range.insertNode(span);
+            range.selectNodeContents(span);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } else {
+            // 선택된 텍스트에 스타일 적용
+            const contents = range.extractContents();
+            const span = document.createElement('span');
+            
+            switch (command) {
+                case 'bold':
+                    span.style.fontWeight = 'bold';
+                    break;
+                case 'italic':
+                    span.style.fontStyle = 'italic';
+                    break;
+                case 'underline':
+                    span.style.textDecoration = 'underline';
+                    break;
+                case 'foreColor':
+                    span.style.color = value;
+                    break;
+                case 'backColor':
+                    span.style.backgroundColor = value;
+                    break;
+            }
+            
+            span.appendChild(contents);
+            range.insertNode(span);
+        }
+        
+        this.updateToolbarState();
+        this.editor.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     /**
@@ -808,6 +915,21 @@ class RichTextEditor {
             this.editor.appendChild(wrapper);
         }
         
+        // Add to uploaded files list for thumbnail selection
+        if (!window.uploadedFiles) {
+            window.uploadedFiles = [];
+        }
+        
+        // Create image file object
+        const imageFile = {
+            type: 'image',
+            url: imageUrl,
+            timestamp: Date.now() // 최신 파일 식별용
+        };
+        
+        window.uploadedFiles.push(imageFile);
+        console.log('🖼️ 이미지가 uploadedFiles에 추가됨:', imageFile);
+        
         showToast('이미지가 삽입되었습니다', 'success');
     }
 
@@ -845,6 +967,27 @@ class RichTextEditor {
 
         // Insert using execCommand to ensure proper HTML
         this.executeCommand('insertHTML', videoHTML);
+
+        // Add to uploaded files list for thumbnail selection
+        if (!window.uploadedFiles) {
+            window.uploadedFiles = [];
+        }
+        
+        // Create video file object
+        const videoFile = {
+            type: 'video',
+            url: videoUrl,
+            timestamp: Date.now() // 최신 파일 식별용
+        };
+        
+        // Add thumbnailUrl for Google Drive videos
+        if (fileId) {
+            // Google Drive video thumbnail
+            videoFile.thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h300`;
+        }
+        
+        window.uploadedFiles.push(videoFile);
+        console.log('📹 동영상이 uploadedFiles에 추가됨:', videoFile);
 
         showToast('동영상이 삽입되었습니다', 'success');
     }
@@ -1030,8 +1173,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 전역 변수: 현재 편집 중인 포스트 ID
+// 전역 변수: 현재 편집 중인 포스트 ID와 데이터
 let currentEditingPostId = null;
+let currentEditingPostData = null;
 
 /**
  * 수정 모드인지 확인하고 기존 포스트 데이터 로드
@@ -1106,6 +1250,9 @@ async function loadPostForEditing(postId) {
         }
         
         console.log('📄 Post data loaded:', post);
+        
+        // 원본 포스트 데이터 저장 (썸네일 유지용)
+        currentEditingPostData = { ...post };
         
         // 폼 필드에 데이터 채우기
         populateFormFields(post);
@@ -1471,7 +1618,9 @@ function setupEditorButtons() {
                 content: content, 
                 tags: tags,
                 readTime: Math.max(1, Math.ceil(htmlToText(content).split(' ').length / 200)), // 읽는 시간 (사용 안함)
-                thumbnail: getAutoThumbnail(), // 업로드된 첫 번째 미디어를 썸네일로 자동 설정
+                thumbnail: isEditMode && currentEditingPostData ? 
+                    currentEditingPostData.thumbnail : // 편집 모드에서는 기존 썸네일 유지
+                    getAutoThumbnail(), // 새 포스트에서만 자동 썸네일 설정
                 images: getUploadedFilesByType('image'), // 업로드된 이미지 목록
                 videos: getUploadedFilesByType('video'), // 업로드된 비디오 목록
                 status: status
@@ -1520,6 +1669,7 @@ function setupEditorButtons() {
                 // 편집 모드 해제
                 if (isEditMode) {
                     currentEditingPostId = null;
+                    currentEditingPostData = null;
                 }
                 
                 // 저장 완료 후 2초 뒤에 뒤로가기
@@ -1610,34 +1760,28 @@ function getAutoThumbnail() {
         return '';
     }
     
-    // 이미지 우선 - 가장 최근 업로드된 이미지 선택
-    const imageFiles = window.uploadedFiles.filter(file => file.type === 'image');
-    if (imageFiles.length > 0) {
-        // 타임스탬프가 있다면 가장 최근 것, 없다면 마지막 것
-        const latestImage = imageFiles.sort((a, b) => {
-            if (a.timestamp && b.timestamp) {
-                return b.timestamp - a.timestamp; // 최신순
-            }
-            return 0; // 순서 유지
-        })[0];
-        
-        console.log('✅ 썸네일로 선택된 이미지:', latestImage.url);
-        return latestImage.url;
-    }
+    // 첫 번째 업로드된 미디어를 썸네일로 선택 (업로드 순서 기준)
+    const allFiles = [...window.uploadedFiles];
     
-    // 비디오 폴백 - 가장 최근 업로드된 비디오 선택
-    const videoFiles = window.uploadedFiles.filter(file => file.type === 'video');
-    if (videoFiles.length > 0) {
-        const latestVideo = videoFiles.sort((a, b) => {
-            if (a.timestamp && b.timestamp) {
-                return b.timestamp - a.timestamp; // 최신순
-            }
-            return 0; // 순서 유지
-        })[0];
+    // 타임스탬프 기준으로 정렬 (가장 오래된 것부터 = 첫 번째 업로드)
+    allFiles.sort((a, b) => {
+        if (a.timestamp && b.timestamp) {
+            return a.timestamp - b.timestamp; // 오래된 순 (첫 번째 업로드)
+        }
+        return 0; // 순서 유지
+    });
+    
+    if (allFiles.length > 0) {
+        const firstFile = allFiles[0];
         
-        const thumbnailUrl = latestVideo.thumbnailUrl || latestVideo.url;
-        console.log('✅ 썸네일로 선택된 비디오:', thumbnailUrl);
-        return thumbnailUrl;
+        if (firstFile.type === 'video') {
+            const thumbnailUrl = firstFile.thumbnailUrl || firstFile.url;
+            console.log('✅ 썸네일로 선택된 첫 번째 미디어 (동영상):', thumbnailUrl);
+            return thumbnailUrl;
+        } else if (firstFile.type === 'image') {
+            console.log('✅ 썸네일로 선택된 첫 번째 미디어 (이미지):', firstFile.url);
+            return firstFile.url;
+        }
     }
     
     return '';
