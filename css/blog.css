@@ -348,7 +348,7 @@ body {
     bottom: 0;
     background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.1) 0%,
+        rgba(0, 0, 0, 0.35) 0%,
         rgba(0, 0, 0, 0.5) 50%,
         rgba(0, 0, 0, 0.6) 100%
     );
@@ -464,9 +464,12 @@ body {
 /* Tags styling */
 .post-card-tags {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-xs);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ffffff68 transparent;
 }
 
 /* Tags for image cards */
@@ -480,11 +483,11 @@ body {
     color: white;
     text-decoration: none;
     transition: var(--transition-fast);
+    flex-shrink: 0;
 }
 
 .post-card-with-image .post-tag:hover {
     background-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
 }
 
 /* Tags for no-image cards */
