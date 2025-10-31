@@ -30,7 +30,7 @@ html {
     left: 0;
     right: 0;
     height: 40px;
-    background: rgba(144, 255, 80, 0.442);
+    background: rgba(255, 255, 255, 0.771);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -43,7 +43,8 @@ html {
     align-items: center;
     height: 100%;
     white-space: nowrap;
-    animation: scrollNotice 45s linear infinite;
+    animation: scrollNoticeInfinite 60s linear infinite;
+    width: fit-content;
 }
 
 .notice-text {
@@ -51,16 +52,17 @@ html {
     font-weight: 500;
     color: rgba(0, 0, 0, 0.9);
     text-shadow: 0 0 10px rgba(142, 142, 142, 0.9);
-    padding-right: 2rem;
+    padding-left: 5rem;
     display: inline-block;
+    flex-shrink: 0;
 }
 
-@keyframes scrollNotice {
+@keyframes scrollNoticeInfinite {
     0% {
-        transform: translateX(100%);
+        transform: translateX(0);
     }
     100% {
-        transform: translateX(-100%);
+        transform: translateX(-50%);
     }
 }
 
@@ -491,11 +493,11 @@ html {
     
     /* Notice Banner Mobile */
     .notice-banner {
-        height: 40px;
+        height: 35px;
     }
     
     .notice-text {
-        padding-right: 1.5rem;
+        font-size: 0.9rem;
     }
     .about-section{
         padding: 0;
@@ -564,12 +566,11 @@ html {
     
     /* Notice Banner Extra Small Mobile */
     .notice-banner {
-        height: 40px;
+        height: 32px;
     }
     
     .notice-text {
         font-size: 0.8rem;
-        padding-right: 1rem;
     }
 }
 
