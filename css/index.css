@@ -23,6 +23,47 @@ html {
     scroll-snap-align: start;
 }
 
+/* Notice Banner Styles */
+.notice-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: rgba(144, 255, 80, 0.442);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    z-index: 3;
+}
+
+.notice-content {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    white-space: nowrap;
+    animation: scrollNotice 45s linear infinite;
+}
+
+.notice-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.9);
+    text-shadow: 0 0 10px rgba(142, 142, 142, 0.9);
+    padding-right: 2rem;
+    display: inline-block;
+}
+
+@keyframes scrollNotice {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
 .hero-content {
     position: relative;
     z-index: 2;
@@ -447,6 +488,15 @@ html {
         flex-direction: column;
         align-items: center;
     }
+    
+    /* Notice Banner Mobile */
+    .notice-banner {
+        height: 40px;
+    }
+    
+    .notice-text {
+        padding-right: 1.5rem;
+    }
     .about-section{
         padding: 0;
     }
@@ -510,6 +560,16 @@ html {
     }
     .skill-name{
         font-size: 0.9rem;
+    }
+    
+    /* Notice Banner Extra Small Mobile */
+    .notice-banner {
+        height: 40px;
+    }
+    
+    .notice-text {
+        font-size: 0.8rem;
+        padding-right: 1rem;
     }
 }
 
