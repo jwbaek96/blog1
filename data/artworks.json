@@ -1,7 +1,24 @@
 {
-  "lastUpdated": "2025-11-13T09:10:08.509Z",
+  "lastUpdated": "2025-11-13T10:10:09.306Z",
   "count": 2,
   "artworks": [
+    {
+      "id": 6,
+      "title": "상업용 AI 모델 작업",
+      "date": "2025-11-13T10:01:44.000Z",
+      "thumbnail": "https://drive.google.com/uc?id=1RysPSLd6txMR9RsXYi63EcpHVcKq4uOy",
+      "content": "<div><br><div><b><div><div class=\"media-wrapper\"><img src=\"https://drive.google.com/thumbnail?id=1RysPSLd6txMR9RsXYi63EcpHVcKq4uOy&amp;sz=w1000\" alt=\"업로드된 이미지\" loading=\"lazy\" class=\"media-image\"></div><div><div class=\"media-wrapper\"><img src=\"https://drive.google.com/thumbnail?id=1djCs7OsX2U3s3PiAg_EyMSXKd8pAoTwC&amp;sz=w1000\" alt=\"업로드된 이미지\" loading=\"lazy\" class=\"media-image\"></div><div><div class=\"media-wrapper\"><img src=\"https://drive.google.com/thumbnail?id=1x9-J_w_ommxbv3hDSu_jZ0TUFxKVRXsM&amp;sz=w1000\" alt=\"업로드된 이미지\" loading=\"lazy\" class=\"media-image\"></div><div><div class=\"media-wrapper\"><img src=\"https://drive.google.com/thumbnail?id=1bo3No0qABgv6HaKYCixURp5Lbm5279Fk&amp;sz=w1000\" alt=\"업로드된 이미지\" loading=\"lazy\" class=\"media-image\"></div></div></div></div></div>상업용 AI 모델 작업<div><div>2025.10</div></div></b><div><div></div></div><div>의뢰처 : 비타테리움<div>.<div><div>.</div></div></div></div></div></div><div>[<b>사용툴</b>]&nbsp;Gemini + Snow + 업스케일링 툴 + Figma</div><div>*리플렛 제작 건에 포함된 작업</div><div>여러 시행착오와 다양한 툴을 섞어가며 작업물을 뽑아내었다.</div><div>피드백 단계에서 디테일한 조정들을 요청하셔서 그부분이 어려웠음👨‍🏫</div><div>//할머니 이미지는 단독 모델이 있었는데, 최종 조정을 반반합성된 이미지에서 한번 더 제너레이팅하는 단계를 거쳐 1번 이미지처럼 변형되었다. 그래서 할머니 단독 이미지는 없음.</div><div>//마지막 두 모델은 컨셉 조정 전 마음에 들어하셨던 모델인데 잘 뽑혀서 올려본다.</div>",
+      "tags": [
+        "artwork",
+        "work",
+        "ai",
+        "ai모델",
+        "gemini"
+      ],
+      "images": "",
+      "videos": "",
+      "status": "published"
+    },
     {
       "id": 8,
       "title": "1945 RE:LIGHT [이머시브 미디어아트 프로젝트]",
@@ -18,23 +35,6 @@
       ],
       "images": "",
       "videos": "",
-      "status": "published"
-    },
-    {
-      "id": 6,
-      "title": "상업용 AI 모델 작업",
-      "date": "2025-10-22T05:58:48.000Z",
-      "thumbnail": "https://drive.google.com/uc?id=1RysPSLd6txMR9RsXYi63EcpHVcKq4uOy",
-      "content": "<div><br><div><b><div><div class=\"media-wrapper\"><img src=\"https://drive.google.com/thumbnail?id=1RysPSLd6txMR9RsXYi63EcpHVcKq4uOy&amp;sz=w1000\" alt=\"업로드된 이미지\" loading=\"lazy\" class=\"media-image\"></div><div><div class=\"media-wrapper\"><img src=\"https://drive.google.com/thumbnail?id=1djCs7OsX2U3s3PiAg_EyMSXKd8pAoTwC&amp;sz=w1000\" alt=\"업로드된 이미지\" loading=\"lazy\" class=\"media-image\"></div><div><div class=\"media-wrapper\"><img src=\"https://drive.google.com/thumbnail?id=1x9-J_w_ommxbv3hDSu_jZ0TUFxKVRXsM&amp;sz=w1000\" alt=\"업로드된 이미지\" loading=\"lazy\" class=\"media-image\"></div><div><div class=\"media-wrapper\"><img src=\"https://drive.google.com/thumbnail?id=1bo3No0qABgv6HaKYCixURp5Lbm5279Fk&amp;sz=w1000\" alt=\"업로드된 이미지\" loading=\"lazy\" class=\"media-image\"></div><br></div><br></div><br></div><br></div>상업용 AI 모델 작업<div><div>2025.10</div></div></b><div><div><div></div></div></div><div>의뢰처 : 비타테리움<div>.<div><div>.</div></div></div></div></div></div><div>[<b>사용툴</b>]&nbsp;Gemini + Snow + 업스케일링 툴 + Figma</div><div>*리플렛 제작 건에 포함된 작업</div><div>여러 시행착오와 다양한 툴을 섞어가며 작업물을 뽑아내었다.</div><div>피드백 단계에서 디테일한 조정들을 요청하셔서 그부분이 어려웠음👨‍🏫</div><div>//할머니 이미지는 단독 모델이 있었는데, 최종 조정을 반반합성된 이미지에서 한번 더 제너레이팅하는 단계를 거쳐 1번 이미지처럼 변형되었다. 그래서 할머니 단독 이미지는 없음.</div><div>//마지막 두 모델은 컨셉 조정 전 마음에 들어하셨던 모델인데 잘 뽑혀서 올려본다.</div>",
-      "tags": [
-        "artwork",
-        "work",
-        "ai",
-        "ai모델",
-        "gemini"
-      ],
-      "images": "[{\"url\":\"https://drive.google.com/uc?id=1RysPSLd6txMR9RsXYi63EcpHVcKq4uOy\",\"filename\":\"SNOW_20251017_181844_935.jpg\",\"type\":\"image\",\"uploadedAt\":\"2025-10-22T05:56:56.057Z\"},{\"url\":\"https://drive.google.com/uc?id=1djCs7OsX2U3s3PiAg_EyMSXKd8pAoTwC\",\"filename\":\"SNOW_20251013_183621_942_imgupscaler.ai_일반 확대_4K.jpg\",\"type\":\"image\",\"uploadedAt\":\"2025-10-22T05:57:40.991Z\"},{\"url\":\"https://drive.google.com/uc?id=1x9-J_w_ommxbv3hDSu_jZ0TUFxKVRXsM\",\"filename\":\"11.png\",\"type\":\"image\",\"uploadedAt\":\"2025-10-22T05:58:20.233Z\"},{\"url\":\"https://drive.google.com/uc?id=1bo3No0qABgv6HaKYCixURp5Lbm5279Fk\",\"filename\":\"SNOW_up.png\",\"type\":\"image\",\"uploadedAt\":\"2025-10-22T05:58:42.610Z\"}]",
-      "videos": "[]",
       "status": "published"
     }
   ]
