@@ -111,10 +111,40 @@ class SheetsAPI {
     }
 
     /**
-     * Fetch posts using Apps Script API (more reliable than CSV)
+     * Fetch posts from posts.json (GitHub Actions generated)
      * @returns {Promise<Array>} Array of posts
      */
     async fetchPosts() {
+        try {
+            // posts.json에서 직접 데이터 가져오기
+            const timestamp = Date.now();
+            const response = await fetch(`/data/posts.json?t=${timestamp}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const posts = await response.json();
+            
+            if (!Array.isArray(posts)) {
+                throw new Error('Invalid posts data format');
+            }
+            
+            // ID 순서로 정렬 (내림차순 - 최신 포스트 먼저)
+            return posts.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+            
+        } catch (error) {
+            console.error('❌ Error fetching posts from posts.json:', error);
+            console.warn('⚠️ Falling back to Apps Script/CSV method');
+            return this.fetchPostsFromAppsScript();
+        }
+    }
+
+    /**
+     * Fallback: Fetch posts using Apps Script API
+     * @returns {Promise<Array>} Array of posts
+     */
+    async fetchPostsFromAppsScript() {
         try {
             // Config 로딩 완료 대기
             await this.waitForConfig();
@@ -586,20 +616,8 @@ class SheetsAPI {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-            // 응답을 텍스트로 먼저 확인
-            const responseText = await response.text();
-            console.log('📄 Raw response:', responseText);
-            
-            // JSON 파싱 시도
-            let result;
-            try {
-                result = JSON.parse(responseText);
-                console.log('✅ Update result:', result);
-            } catch (parseError) {
-                console.error('❌ JSON Parse Error:', parseError);
-                console.error('📄 Response was:', responseText);
-                throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
-            }
+            const result = await response.json();
+            console.log('✅ Update result:', result);
             
             if (!result.success) {
                 throw new Error(result.error || 'Failed to update post');
@@ -643,20 +661,8 @@ class SheetsAPI {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-            // 응답을 텍스트로 먼저 확인
-            const responseText = await response.text();
-            console.log('📄 Raw response:', responseText);
-            
-            // JSON 파싱 시도
-            let result;
-            try {
-                result = JSON.parse(responseText);
-                console.log('✅ Create result:', result);
-            } catch (parseError) {
-                console.error('❌ JSON Parse Error:', parseError);
-                console.error('📄 Response was:', responseText);
-                throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
-            }
+            const result = await response.json();
+            console.log('✅ Create result:', result);
             
             if (!result.success) {
                 throw new Error(result.error || 'Failed to create post');

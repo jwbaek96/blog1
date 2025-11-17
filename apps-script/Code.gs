@@ -316,7 +316,7 @@ function doPost(e) {
     }
     
     // Check request type
-    if (requestData.action === 'savePost' || requestData.action === 'createPost') {
+    if (requestData.action === 'savePost') {
       return handlePostSave(requestData);
     } else if (requestData.action === 'updatePost') {
       return handlePostUpdate(requestData);
