@@ -159,9 +159,9 @@ const CONFIG = {
     CACHE_KEY: 'blog_posts_cache',
     
     // Upload Settings
-    MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB (Google Drive 용)
-    MAX_IMAGE_SIZE: 10 * 1024 * 1024, // 10MB (이미지)
-    MAX_VIDEO_SIZE: 100 * 1024 * 1024, // 100MB (비디오)
+    MAX_FILE_SIZE: Infinity, // 무제한 (Google Drive 용)
+    MAX_IMAGE_SIZE: Infinity, // 무제한 (이미지)
+    MAX_VIDEO_SIZE: Infinity, // 무제한 (비디오)
     ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
     ALLOWED_VIDEO_TYPES: ['video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov'],
     IMAGE_MAX_WIDTH: 1920, // 리사이즈 최대 너비
