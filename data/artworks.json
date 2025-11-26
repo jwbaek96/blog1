@@ -1,7 +1,23 @@
 {
-  "lastUpdated": "2025-11-26T13:19:11.476Z",
-  "count": 2,
+  "lastUpdated": "2025-11-26T14:09:21.217Z",
+  "count": 3,
   "artworks": [
+    {
+      "id": 9,
+      "title": "VJing [베이루트 택시 단독공연(먼데이프로젝트)]",
+      "date": "2025-11-26T14:02:16.000Z",
+      "thumbnail": "https://drive.google.com/uc?id=1iEQqKb7QEt6rC2uU6djNAba15VaNyZ82",
+      "content": "<div class=\"media-wrapper\"><br><iframe src=\"https://drive.google.com/uc?id=1iEQqKb7QEt6rC2uU6djNAba15VaNyZ82/preview\" width=\"100%\" height=\"auto\" class=\"media-video\" frameborder=\"0\" allowfullscreen=\"\"></iframe></div>",
+      "tags": [
+        "VJing",
+        "베이루트 택시",
+        "artwork",
+        "work"
+      ],
+      "images": "[]",
+      "videos": "[{\"url\":\"https://drive.google.com/uc?id=1iEQqKb7QEt6rC2uU6djNAba15VaNyZ82\",\"filename\":\"C0107_1.mp4\",\"type\":\"video\",\"uploadedAt\":\"2025-11-26T13:47:06.674Z\"}]",
+      "status": "published"
+    },
     {
       "id": 6,
       "title": "상업용 AI 모델 작업",
